@@ -1,0 +1,63 @@
+﻿<div ng-controller="uSyncMigrationDashboardController as vm">
+    <umb-box>
+        <umb-box-header title-key="usyncmigrate_title"></umb-box-header>
+        <umb-box-content>
+            <localize key="usyncmigrate_intro"></localize>
+        </umb-box-content>
+    </umb-box>
+
+    <umb-box ng-if="vm.options.hasPending == true">
+        <umb-box-header title="Pending Migrations"></umb-box-header>
+        <umb-box-content>
+            There are Umbraco 7 files in your uSync folder, you can migrate these 
+        </umb-box-content>
+        <umb-box-content>
+            <div ng-repeat="handler in vm.options.handlers">
+                <umb-checkbox 
+                    model="handler.include"
+                    value="handler.include">{{handler.name}}</umb-checkbox>
+            </div>
+        </umb-box-content>
+        <umb-box-content>
+            <umb-button action="vm.migrate()"
+                        label="Convert Files"
+                        button-style="success"
+                        disabled="vm.converted"></umb-button>
+        </umb-box-content>
+    </umb-box>
+
+    <umb-box ng-if="vm.converted">
+        <umb-box-header title="File Conversion results"></umb-box-header>
+        <umb-box-content ng-if="vm.results.success">
+            <p>The files have successfully been migrated to your uSync folder, 
+            you can now run reports, imports to get the files into uSync</p>
+        </umb-box-content>
+        <umb-box-content>
+            <div class="umb-table">
+                <div class="umb-table-head">
+                    <div class="umb-table-row">
+                        <div class="umb-table-cell"></div>
+                        <div class="umb-table-cell">Type</div>
+                        <div class="umb-table-cell">Item</div>
+                        <div class="umb-table-cell">Message</div>
+                    </div>
+                </div>
+
+                <div class="umb-table-body">
+                    <div ng-repeat="m in vm.results.messages"
+                         class="umb-table-row">
+                        <div class="umb-table-cell">
+                            <i class="icon icon-check color-green" ng-if="m.messageType == 'Success'"></i>
+                            <i class="icon icon-alert color-orange" ng-if="m.messageType == 'Warning'"></i>
+                            <i class="icon icon-wrong color-red" ng-if="m.messageType == 'Error'"></i>
+                        </div>
+                        <div class="umb-table-cell">{{m.itemType}}</div>
+                        <div class="umb-table-cell">{{m.itemName}}</div>
+                        <div class="umb-table-cell">{{m.message}}</div>
+                    </div>
+                </div>
+            </div>
+
+        </umb-box-content>
+    </umb-box>
+</div>

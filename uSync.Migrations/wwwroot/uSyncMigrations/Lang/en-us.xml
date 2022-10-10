@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<language alias="en" intName="English (US)" localName="English (US)" lcid="" culture="en-US">
+	<creator>
+		<name>Jumoo</name>
+		<link>http://jumoo.uk</link>
+	</creator>
+	<area alias="usyncmigrate">
+
+		<key alias="title">uSync Migrations</key>
+		<key alias="intro"><![CDATA[
+		<p>uSync.Migrations is a tool to help you migrate your site settings and content from
+		Umbraco 7.x to the latest and greatest versions of umbraco</p>]]></key>
+	</area>
+</language>
