@@ -92,7 +92,7 @@ internal class ContentBaseMigrationHandler
                 new XElement("Path", path),
                 new XElement("Trashed", false),
                 new XElement("ContentType", contentType),
-                new XElement("CreateDate", createdDate),
+                new XElement("CreateDate", createdDate.ToString("s")),
                 new XElement("NodeName", new XAttribute("Default", alias)),
                 new XElement("SortOrder", sortOrder)));
 
