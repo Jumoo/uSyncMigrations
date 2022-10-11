@@ -1,15 +1,23 @@
-﻿using uSync.Migrations.Models;
+﻿using Umbraco.Cms.Core.Services;
+using Umbraco.Cms.Infrastructure.DependencyInjection;
+
+using uSync.Migrations.Models;
 using uSync.Migrations.Services;
 
 namespace uSync.Migrations.Handlers;
 
 internal class ContentTypeMigrationHandler : ContentTypeBaseMigrationHandler, ISyncMigrationHandler
 {
+    private IFileService _fileService;
+
     public ContentTypeMigrationHandler(
         MigrationFileService migrationFileService,
-        SyncMigratorCollection migrators)
-        : base(migrationFileService,migrators, "ContentType")
-    { }
+        SyncMigratorCollection migrators,
+        IFileService fileService)
+        : base(migrationFileService, migrators, "ContentType")
+    {
+        _fileService = fileService;
+    }
 
     public int Priority => 20;
 
@@ -22,5 +30,10 @@ internal class ContentTypeMigrationHandler : ContentTypeBaseMigrationHandler, IS
     public void PrepMigrations(Guid migrationId, string sourceFolder, MigrationContext context)
     {
         PrepContext(Path.Combine(sourceFolder, "DocumentType"), context);
+
+        foreach (var template in _fileService.GetTemplates())
+        {
+            context.AddTemplateKey(template.Alias, template.Key);
+        }
     }
 }

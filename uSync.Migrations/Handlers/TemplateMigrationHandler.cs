@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
+﻿using System.Xml.Linq;
 
 using Microsoft.Extensions.Logging;
-
-using Umbraco.Cms.Core.Strings;
 
 using uSync.Core;
 using uSync.Migrations.Models;
@@ -92,5 +85,21 @@ internal class TemplateMigrationHandler : ISyncMigrationHandler
     }
 
     public void PrepMigrations(Guid migrationId, string sourceFolder, MigrationContext context)
-    { }
+    {
+        var folder = Path.Combine(sourceFolder, "Template");
+
+        if (!Directory.Exists(folder)) return;
+
+        var files = Directory.GetFiles(folder, "*.config").ToList();
+        foreach (var file in files)
+        {
+            var source = XElement.Load(file);
+
+            context.AddTemplateKey(
+                source.Element("Alias").ValueOrDefault(string.Empty),
+                source.Element("Key").ValueOrDefault(Guid.Empty));
+        }
+
+       
+    }
 }
