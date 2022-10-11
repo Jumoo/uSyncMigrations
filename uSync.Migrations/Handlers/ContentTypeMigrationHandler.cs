@@ -1,7 +1,11 @@
-﻿using Umbraco.Cms.Core.Services;
+﻿using System.Xml.Linq;
+
+using Umbraco.Cms.Core.Events;
+using Umbraco.Cms.Core.Services;
 using Umbraco.Cms.Infrastructure.DependencyInjection;
 
 using uSync.Migrations.Models;
+using uSync.Migrations.Notifications;
 using uSync.Migrations.Services;
 
 namespace uSync.Migrations.Handlers;
@@ -11,10 +15,11 @@ internal class ContentTypeMigrationHandler : ContentTypeBaseMigrationHandler, IS
     private IFileService _fileService;
 
     public ContentTypeMigrationHandler(
+        IEventAggregator eventAggregator,
         MigrationFileService migrationFileService,
         SyncMigratorCollection migrators,
         IFileService fileService)
-        : base(migrationFileService, migrators, "ContentType")
+        : base(eventAggregator, migrationFileService, migrators, "ContentType")
     {
         _fileService = fileService;
     }
@@ -35,5 +40,20 @@ internal class ContentTypeMigrationHandler : ContentTypeBaseMigrationHandler, IS
         {
             context.AddTemplateKey(template.Alias, template.Key);
         }
+    }
+
+    protected override bool FireStartingNotification(XElement source)
+    {
+        var notification = new SyncContentTypeMigratingNotification(source);
+        _eventAggregator.PublishCancelable(notification);
+        return !notification.Cancel;
+    }
+
+    protected override XElement FireCompletedNotification(XElement target)
+    {
+        // notification before we save anything.
+        var notification = new SyncContentTypeMigratedNotification(target);
+        _eventAggregator.Publish(notification);
+        return notification.Result;
     }
 }

@@ -18,7 +18,7 @@ public class SyncMigrationComposer : IComposer
     public void Compose(IUmbracoBuilder builder)
     {
         builder.WithCollectionBuilder<SyncMigratorCollectionBuilder>()
-            .Add(() => builder.TypeLoader.GetTypes<ISyncMigrator>());
+            .Append(builder.TypeLoader.GetTypes<ISyncMigrator>());
 
         builder.Services.AddTransient<MigrationFileService>();
 

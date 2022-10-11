@@ -1,18 +1,23 @@
 ﻿using System.Xml.Linq;
 
+using Umbraco.Cms.Core.Events;
+
 using uSync.Core;
 using uSync.Migrations.Models;
 using uSync.Migrations.Services;
 
 namespace uSync.Migrations.Handlers;
-internal class ContentTypeBaseMigrationHandler
+internal abstract class ContentTypeBaseMigrationHandler
 {
     public virtual string ItemType { get; protected set; }
 
     private readonly MigrationFileService _migrationFileService;
     private readonly SyncMigratorCollection _migrators;
 
+    protected readonly IEventAggregator _eventAggregator;
+
     public ContentTypeBaseMigrationHandler(
+        IEventAggregator eventAggregator,
         MigrationFileService migrationFileService,
         SyncMigratorCollection migrators,
         string itemType)
@@ -21,6 +26,7 @@ internal class ContentTypeBaseMigrationHandler
         _migrators = migrators;
 
         ItemType = itemType;
+        _eventAggregator = eventAggregator;
     }
 
     public void PrepContext(string sourceFolder, MigrationContext context)
@@ -65,6 +71,8 @@ internal class ContentTypeBaseMigrationHandler
         {
             var source = XElement.Load(file);
 
+            if (!FireStartingNotification(source)) continue;
+
             var target = ConvertContentType(source, baseType, level, context);
             if (target != null)
             {
@@ -83,7 +91,8 @@ internal class ContentTypeBaseMigrationHandler
     
     private MigrationMessage SaveTargetXml(Guid id, XElement xml, string folder)
     {
-        _migrationFileService.SaveMigrationFile(id, xml, folder);
+        var result = FireCompletedNotification(xml);
+        _migrationFileService.SaveMigrationFile(id, result, folder);
         return new MigrationMessage(ItemType, xml.GetAlias(), MigrationMessageType.Success);
     }
 
@@ -201,4 +210,9 @@ internal class ContentTypeBaseMigrationHandler
         if (sourceStructure != null)
             target.Add(XElement.Parse(sourceStructure.ToString()));
     }
+
+
+    protected abstract bool FireStartingNotification(XElement source);
+
+    protected abstract XElement FireCompletedNotification(XElement target);
 }
