@@ -5,7 +5,9 @@ VisualStudioVersion = 17.3.32901.215
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "uSync.Migrations", "uSync.Migrations\uSync.Migrations.csproj", "{1268A5AE-2ECF-4E11-BF73-676EE8989003}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "uSyncMigrationSite", "uSyncMigrationSite\uSyncMigrationSite.csproj", "{56873F94-D27F-4695-90AE-A2BA7A2DF94B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "uSyncMigrationSite", "uSyncMigrationSite\uSyncMigrationSite.csproj", "{56873F94-D27F-4695-90AE-A2BA7A2DF94B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyMigrations", "MyMigrations\MyMigrations.csproj", "{E8B3C577-70BE-4270-BFB6-DB3C5C3AA01B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{56873F94-D27F-4695-90AE-A2BA7A2DF94B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{56873F94-D27F-4695-90AE-A2BA7A2DF94B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{56873F94-D27F-4695-90AE-A2BA7A2DF94B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E8B3C577-70BE-4270-BFB6-DB3C5C3AA01B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E8B3C577-70BE-4270-BFB6-DB3C5C3AA01B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E8B3C577-70BE-4270-BFB6-DB3C5C3AA01B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E8B3C577-70BE-4270-BFB6-DB3C5C3AA01B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

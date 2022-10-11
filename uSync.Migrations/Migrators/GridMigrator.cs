@@ -5,7 +5,7 @@ using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Migrators;
 
-internal class GridMigrator : SyncMigratorBase
+public class GridMigrator : SyncMigratorBase
 {
     public override string[] Editors => new[] { "Umbraco.Grid" };
 

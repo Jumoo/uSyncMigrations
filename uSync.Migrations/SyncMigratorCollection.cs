@@ -3,7 +3,7 @@ using Umbraco.Extensions;
 
 namespace uSync.Migrations;
 public class SyncMigratorCollectionBuilder
-    : LazyCollectionBuilderBase<SyncMigratorCollectionBuilder,
+    : OrderedCollectionBuilderBase<SyncMigratorCollectionBuilder,
         SyncMigratorCollection, ISyncMigrator>
 {
     protected override SyncMigratorCollectionBuilder This => this;
