@@ -72,7 +72,7 @@ internal class TemplateMigrationHandler : ISyncMigrationHandler
             new XAttribute(uSyncConstants.Xml.Alias, alias),
             new XAttribute(uSyncConstants.Xml.Level, level),
             new XElement("Name", name),
-            new XElement("Parent", master));
+            new XElement("Parent", string.IsNullOrEmpty(master) ? null : master));
 
         return target;
     }
