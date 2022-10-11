@@ -1,7 +1,8 @@
 ﻿(function () {
     'use strict';
 
-    function dashboardController(uSyncMigrationService) {
+    function dashboardController(uSyncMigrationService,
+        notificationsService) {
 
         var vm = this;
         vm.options = {
@@ -13,6 +14,8 @@
 
         vm.working = true;
         vm.converted = false;
+
+        vm.state = 'init';
 
         vm.migrate = migrate;
 
@@ -31,11 +34,18 @@
                 handlers : vm.options.handlers
             }
 
+            vm.state = 'busy';
+
             // do the migration...
             uSyncMigrationService.migrate(options)
                 .then(function (result) {
                     vm.results = result.data;
                     vm.converted = true;
+                    vm.state = 'success';
+                }, function (error) {
+                    vm.state = 'error';
+                    console.log(error)
+                    notificationsService('error', error.data.ExceptionMessage);
                 });
 
         }
