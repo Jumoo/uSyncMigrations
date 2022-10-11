@@ -46,5 +46,5 @@ internal class DropdownMigrator : SyncMigratorBase
     }
 
     public override string GetContentValue(string editorAlias, string value)
-        => JsonConvert.SerializeObject(value.ToDelimitedList());
+        => JsonConvert.SerializeObject(value.ToDelimitedList(), Formatting.Indented);
 }
