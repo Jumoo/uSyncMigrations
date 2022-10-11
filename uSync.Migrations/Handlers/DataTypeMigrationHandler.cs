@@ -8,14 +8,13 @@ using Umbraco.Cms.Core.Models.ContentEditing;
 
 using uSync.Core;
 using uSync.Migrations.Extensions;
-using uSync.Migrations.Migrators.DataTypes;
 using uSync.Migrations.Models;
 using uSync.Migrations.Services;
 
 namespace uSync.Migrations.Handlers;
 internal class DataTypeMigrationHandler : ISyncMigrationHandler
 {
-    private readonly DataTypeMigrationCollection _migrators;
+    private readonly SyncMigratorCollection _migrators;
     private readonly MigrationFileService _migrationFileService;
     private ILogger<DataTypeMigrationHandler> _logger;
 
@@ -24,7 +23,7 @@ internal class DataTypeMigrationHandler : ISyncMigrationHandler
     public DataTypeMigrationHandler(
         MigrationFileService fileService,
         ILogger<DataTypeMigrationHandler> logger,
-        DataTypeMigrationCollection migrators)
+        SyncMigratorCollection migrators)
     {
         _migrators = migrators;
         _migrationFileService = fileService;
@@ -97,23 +96,16 @@ internal class DataTypeMigrationHandler : ISyncMigrationHandler
 
         // change the type of thing as part of a migration.
 
-        var dataTypeInfo = new SyncDataTypeInfo
-        {
-            EditorAlias = editorAlias,
-            DatabaseType = databaseType,
-            Name = name,
-            PreValues = preValues
-        };
-
         // the migration for this type goes here... 
         var migrator = _migrators.GetMigrator(editorAlias);
         if (migrator == null) _logger.LogWarning("No Migrator for {editorAlias} will make it a label", editorAlias);
 
-        var newEditorAlias = migrator?.GetDataType(dataTypeInfo) ?? "Umbraco.Label";
-        var newDatabaseType = migrator?.GetDatabaseType(dataTypeInfo) ?? "STRING";
-        var newConfig = dataTypeInfo.PreValues != null
-            ? migrator?.GetConfigValues(dataTypeInfo) ?? MakeEmptyLabelConfig(dataTypeInfo)
-            : MakeEmptyLabelConfig(dataTypeInfo);
+        var newEditorAlias = migrator?.GetEditorAlias(editorAlias, databaseType) ?? "Umbraco.Label";
+        var newDatabaseType = migrator?.GetDatabaseType(editorAlias, databaseType) ?? "STRING";
+        var newConfig = preValues != null
+            ? migrator?.GetConfigValues(editorAlias, databaseType, preValues) 
+               ?? MakeEmptyLabelConfig(preValues)
+            : MakeEmptyLabelConfig(preValues);
 
 
         // now we write the new xml. 
@@ -162,7 +154,7 @@ internal class DataTypeMigrationHandler : ISyncMigrationHandler
     }
 
 
-    private object MakeEmptyLabelConfig(SyncDataTypeInfo dataTypeInfo)
-        => dataTypeInfo.ConvertPreValuesToJson(false);
+    private object MakeEmptyLabelConfig(IList<PreValue> preValues)
+        => preValues.ConvertPreValuesToJson(false);
 
 }

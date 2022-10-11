@@ -1,17 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
+﻿using System.Xml.Linq;
 
-using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.Strings;
 
 using Umbraco.Extensions;
 
 using uSync.Core;
-using uSync.Migrations.Migrators.Content;
 using uSync.Migrations.Models;
 using uSync.Migrations.Services;
 
@@ -19,20 +12,22 @@ namespace uSync.Migrations.Handlers;
 
 internal class ContentBaseMigrationHandler
 {
-    private readonly ContentPropertyMigrationCollection _contentPropertyMigrators;
+    private readonly SyncMigratorCollection _migrators;
     private readonly MigrationFileService _migrationFileService;
     private readonly IShortStringHelper _shortStringHelper;
 
-    public virtual string ItemType { get; protected set; }
+    public virtual string ItemType { get; private set; }
 
     public ContentBaseMigrationHandler(
         MigrationFileService migrationFileService,
-        ContentPropertyMigrationCollection contentPropertyMigrators,
-        IShortStringHelper shortStringHelper)
+        SyncMigratorCollection contentPropertyMigrators,
+        IShortStringHelper shortStringHelper,
+        string itemType)
     {
         _migrationFileService = migrationFileService;
-        _contentPropertyMigrators = contentPropertyMigrators;
+        _migrators = contentPropertyMigrators;
         _shortStringHelper = shortStringHelper;
+        ItemType = itemType;
     }
 
     public IEnumerable<MigrationMessage> DoMigrateFromDisk(Guid id, string folder,
@@ -142,9 +137,9 @@ internal class ContentBaseMigrationHandler
 
     private string MigrateContentValue(string editorAlias, string value)
     {
-        var migrator = _contentPropertyMigrators.GetMigrator(editorAlias);
+        var migrator = _migrators.GetMigrator(editorAlias);
         if (migrator != null)
-            return migrator.GetMigratedValue(editorAlias, value);
+            return migrator.GetContentValue(editorAlias, value);
 
         // else
         return value;

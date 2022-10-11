@@ -1,4 +1,9 @@
 ﻿namespace uSync.Migrations.Models;
+
+/// <summary>
+///  a migration context, lets us keep a whole list of things 
+///  in memory while we do the migration. 
+/// </summary>
 public class MigrationContext
 {
     private List<string> _blockedTypes = new List<string>();

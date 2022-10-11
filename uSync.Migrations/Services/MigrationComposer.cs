@@ -10,20 +10,14 @@ using Umbraco.Extensions;
 
 using uSync.Migrations.Controllers;
 using uSync.Migrations.Handlers;
-using uSync.Migrations.Migrators;
-using uSync.Migrations.Migrators.Content;
-using uSync.Migrations.Migrators.DataTypes;
 
 namespace uSync.Migrations.Services;
 public class MigrationComposer : IComposer
 {
     public void Compose(IUmbracoBuilder builder)
     {
-        builder.WithCollectionBuilder<DataTypeMigrationCollectionBuilder>()
-            .Add(() => builder.TypeLoader.GetTypes<ISyncDataTypeMigrator>());
-
-        builder.WithCollectionBuilder<ContentPropertyMigrationCollectionBuilder>()
-            .Add(() => builder.TypeLoader.GetTypes<ISyncContentPropertyMigrator>());
+        builder.WithCollectionBuilder<SyncMigratorCollectionBuilder>()
+            .Add(() => builder.TypeLoader.GetTypes<ISyncMigrator>());
 
         builder.Services.AddTransient<MigrationFileService>();
 

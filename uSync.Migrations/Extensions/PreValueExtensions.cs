@@ -1,15 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Lucene.Net.Queries.Function.ValueSources;
-
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 using Umbraco.Cms.Core;
@@ -42,13 +31,13 @@ public static class PreValueExtensions
         }
     }
 
-    public static object MapPreValues(this SyncDataTypeInfo dataTypeInfo, object config)
+    public static object MapPreValues(this object config, IList<PreValue> preValues)
     {
         // generic mapping of aliases to properties ? 
         var properties = config.GetType().GetProperties();
         foreach (var property in properties)
         {
-            var value = dataTypeInfo.PreValues?.FirstOrDefault(x => x.Alias.InvariantEquals(property.Name));
+            var value = preValues?.FirstOrDefault(x => x.Alias.InvariantEquals(property.Name));
             if (value != null)
             {
                 var attempt = ConvertValue(value.Value, property.PropertyType);
@@ -62,11 +51,11 @@ public static class PreValueExtensions
         return config;
     }
 
-    public static object MapPreValues(this SyncDataTypeInfo dataTypeInfo, object config, Dictionary<string ,string> mappings)
+    public static object MapPreValues(this object config, IList<PreValue> preValues, Dictionary<string, string> mappings)
     {
         var properties = config.GetType().GetProperties();
 
-        foreach (var value in dataTypeInfo.PreValues)
+        foreach (var value in preValues)
         {
             if (mappings.ContainsKey(value.Alias))
             {
@@ -86,10 +75,10 @@ public static class PreValueExtensions
         return config;
     }
 
-    public static object ConvertPreValuesToJson(this SyncDataTypeInfo dataTypeInfo, bool uppercase)
+    public static object ConvertPreValuesToJson(this IList<PreValue> preValues, bool uppercase)
     {
         var config = new JObject();
-        foreach (var property in dataTypeInfo.PreValues)
+        foreach (var property in preValues)
         {
             var alias = property.Alias;
             if (uppercase && alias.Length > 1) {
@@ -140,11 +129,11 @@ public static class PreValueExtensions
         }
     }
 
-    public static TResult GetPreValueOrDefault<TResult>(this SyncDataTypeInfo dataTypeInfo, string alias, TResult defaultValue)
+    public static TResult GetPreValueOrDefault<TResult>(this IList<PreValue> preValues, string alias, TResult defaultValue)
     {
-        if (dataTypeInfo?.PreValues == null) return defaultValue;
+        if (preValues == null) return defaultValue;
 
-        var preValue = dataTypeInfo.PreValues.FirstOrDefault(x => x.Alias.InvariantEquals(alias));
+        var preValue = preValues.FirstOrDefault(x => x.Alias.InvariantEquals(alias));
         if (preValue == null) return defaultValue;
 
         var attempt = preValue.Value.TryConvertTo<TResult>();

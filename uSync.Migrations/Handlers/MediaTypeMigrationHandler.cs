@@ -1,5 +1,4 @@
-﻿using uSync.Migrations.Migrators.DataTypes;
-using uSync.Migrations.Models;
+﻿using uSync.Migrations.Models;
 using uSync.Migrations.Services;
 
 namespace uSync.Migrations.Handlers;
@@ -8,13 +7,11 @@ internal class MediaTypeMigrationHandler : ContentTypeBaseMigrationHandler, ISyn
 {
     public MediaTypeMigrationHandler(
         MigrationFileService migrationFileService,
-        DataTypeMigrationCollection dataTypeMigrators) 
-        : base(migrationFileService, dataTypeMigrators)
+        SyncMigratorCollection migrators) 
+        : base(migrationFileService, migrators, "MediaType")
     { }
 
     public int Priority => uSyncMigrations.Priorities.MediaTypes;
-
-    public override string ItemType => "MediaType";
 
     public IEnumerable<MigrationMessage> MigrateFromDisk(Guid migrationId, string sourceFolder, MigrationContext context)
     {

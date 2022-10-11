@@ -1,6 +1,5 @@
 ﻿using Umbraco.Cms.Core.Strings;
 
-using uSync.Migrations.Migrators.Content;
 using uSync.Migrations.Models;
 using uSync.Migrations.Services;
 
@@ -10,19 +9,15 @@ internal class ContentMigrationHandler : ContentBaseMigrationHandler, ISyncMigra
 {
     public ContentMigrationHandler(
         MigrationFileService migrationFileService,
-        ContentPropertyMigrationCollection contentPropertyMigrators,
+        SyncMigratorCollection migrators,
         IShortStringHelper shortStringHelper)
-        : base(migrationFileService, contentPropertyMigrators, shortStringHelper)
+        : base(migrationFileService, migrators, shortStringHelper, "Content")
     { }
 
     public int Priority => uSyncMigrations.Priorities.Content;
 
-    public override string ItemType => "Content";
-
     public IEnumerable<MigrationMessage> MigrateFromDisk(Guid migrationId, string sourceFolder, MigrationContext context)
-    {
-        return DoMigrateFromDisk(migrationId, Path.Combine(sourceFolder, "Content"), context);
-    }
+        => DoMigrateFromDisk(migrationId, Path.Combine(sourceFolder, "Content"), context);
 
     public void PrepMigrations(Guid migrationId, string sourceFolder, MigrationContext context)
     { }

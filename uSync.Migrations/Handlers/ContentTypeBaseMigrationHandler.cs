@@ -1,7 +1,6 @@
 ﻿using System.Xml.Linq;
 
 using uSync.Core;
-using uSync.Migrations.Migrators.DataTypes;
 using uSync.Migrations.Models;
 using uSync.Migrations.Services;
 
@@ -11,14 +10,17 @@ internal class ContentTypeBaseMigrationHandler
     public virtual string ItemType { get; protected set; }
 
     private readonly MigrationFileService _migrationFileService;
-    private readonly DataTypeMigrationCollection _dataTypeMigrators;
+    private readonly SyncMigratorCollection _migrators;
 
     public ContentTypeBaseMigrationHandler(
         MigrationFileService migrationFileService,
-        DataTypeMigrationCollection dataTypeMigrators)
+        SyncMigratorCollection migrators,
+        string itemType)
     {
         _migrationFileService = migrationFileService;
-        _dataTypeMigrators = dataTypeMigrators;
+        _migrators = migrators;
+
+        ItemType = itemType;
     }
 
     public void PrepContext(string sourceFolder, MigrationContext context)
@@ -164,18 +166,19 @@ internal class ContentTypeBaseMigrationHandler
         target.Add(newProperties);
     }
 
+    /// <summary>
+    ///  Get the editor Alias for this property (it might have updated)
+    /// </summary>
+    /// <param name="newProperty"></param>
     private void UpdatePropertyEditor(XElement newProperty)
     {
-        var type = newProperty.Element("Type").ValueOrDefault(string.Empty);
-        if (!string.IsNullOrEmpty(type))
+        var editorAlias = newProperty.Element("Type").ValueOrDefault(string.Empty);
+        if (!string.IsNullOrEmpty(editorAlias))
         {
-            var migrator = _dataTypeMigrators.GetMigrator(type);
+            var migrator = _migrators.GetMigrator(editorAlias);
             if (migrator != null)
             {
-                newProperty.Element("Type").Value = migrator.GetDataType(new SyncDataTypeInfo
-                {
-                    EditorAlias = type,
-                });
+                newProperty.Element("Type").Value = migrator.GetEditorAlias(editorAlias, string.Empty);
             }
         }
     }

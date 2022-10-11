@@ -17,10 +17,10 @@ namespace uSync.Migrations.Handlers;
 internal class TemplateMigrationHandler : ISyncMigrationHandler
 {
     private readonly MigrationFileService _migrationFileService;
-    private ILogger<DataTypeMigrationHandler> _logger;
+    private ILogger<TemplateMigrationHandler> _logger;
 
     public TemplateMigrationHandler(
-        ILogger<DataTypeMigrationHandler> logger,
+        ILogger<TemplateMigrationHandler> logger,
         MigrationFileService migrationFileService)
     {
         _logger = logger;
