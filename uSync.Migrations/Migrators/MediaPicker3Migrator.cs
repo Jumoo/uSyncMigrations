@@ -58,7 +58,7 @@ internal class MediaPicker3Migrator : SyncMigratorBase
             {
                 media.Add(new ConvertedMediaCrop
                 {
-                    Key = Guid.NewGuid(),
+                    Key = udi.Guid.Increment() // a hack but it means the GUID is constant between syncs.
                     MediaKey = udi.Guid,
                     FocalPoint = new ImageCropperValue.ImageCropperFocalPoint
                     {
