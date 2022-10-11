@@ -10,9 +10,10 @@ using Umbraco.Extensions;
 
 using uSync.Migrations.Controllers;
 using uSync.Migrations.Handlers;
+using uSync.Migrations.Services;
 
-namespace uSync.Migrations.Services;
-public class MigrationComposer : IComposer
+namespace uSync.Migrations;
+public class SyncMigrationComposer : IComposer
 {
     public void Compose(IUmbracoBuilder builder)
     {
