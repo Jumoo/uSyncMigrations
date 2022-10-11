@@ -4,11 +4,20 @@ using uSync.Migrations.Models;
 namespace MyMigrations;
 internal class GridToBlockListMigrator : SyncMigratorBase
 {
+    /// <summary>
+    ///  list of datatype editors that this migrator works on
+    /// </summary>
     public override string[] Editors => new[]
     {
         "Umbraco.Grid"
     };
 
+    /// <summary>
+    ///  the migrated editor alias. 
+    /// </summary>
+    /// <remarks>
+    ///  e.g if you are converting Umbraco.Grid to Umbraco.BlockGrid
+    /// </remarks>
     public override string GetEditorAlias(string editorAlias, string dabaseType)
         => "Umbraco.BlockGrid";
 
