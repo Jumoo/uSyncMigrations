@@ -1,4 +1,5 @@
 ﻿<div ng-controller="uSyncMigrationDashboardController as vm">
+
     <umb-box>
         <umb-box-header title-key="usyncmigrate_title"></umb-box-header>
         <umb-box-content>
@@ -9,30 +10,30 @@
     <umb-box ng-if="vm.options.hasPending == true">
         <umb-box-header title="Pending Migrations"></umb-box-header>
         <umb-box-content>
-            There are Umbraco 7 files in your uSync folder, you can migrate these 
-        </umb-box-content>
-        <umb-box-content>
-            <div ng-repeat="handler in vm.options.handlers">
-                <umb-checkbox 
-                    model="handler.include"
-                    value="handler.include">{{handler.name}}</umb-checkbox>
+            <p>Umbraco v7 compatible files have been found in your uSync folder, you can migrate the following:</p>
+            <!-- // TODO: Add check all [LK] -->
+            <div class="ml2 mb3">
+                <umb-checkbox ng-repeat="handler in vm.options.handlers"
+                              model="handler.include"
+                              value="handler.include">
+                    <span ng-bind="handler.name"></span>
+                </umb-checkbox>
             </div>
-        </umb-box-content>
-        <umb-box-content>
             <umb-button action="vm.migrate()"
                         label="Convert Files"
                         button-style="success"
-                        state="vm.state"></umb-button>
+                        state="vm.state">
+            </umb-button>
         </umb-box-content>
     </umb-box>
 
     <umb-box ng-if="vm.converted">
         <umb-box-header title="File Conversion results"></umb-box-header>
         <umb-box-content ng-if="vm.results.success">
-            <p>The files have successfully been migrated to your uSync folder, 
-            you can now run reports, imports to get the files into uSync</p>
-        </umb-box-content>
-        <umb-box-content>
+            <p>
+                The files have successfully been migrated to your uSync folder,
+                you can now run reports, imports to get the files into uSync
+            </p>
             <div class="umb-table">
                 <div class="umb-table-head">
                     <div class="umb-table-row">
@@ -42,7 +43,6 @@
                         <div class="umb-table-cell">Message</div>
                     </div>
                 </div>
-
                 <div class="umb-table-body">
                     <div ng-repeat="m in vm.results.messages"
                          class="umb-table-row">
@@ -57,7 +57,7 @@
                     </div>
                 </div>
             </div>
-
         </umb-box-content>
     </umb-box>
+
 </div>

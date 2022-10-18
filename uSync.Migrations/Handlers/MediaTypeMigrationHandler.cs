@@ -1,47 +1,27 @@
-﻿using System.Xml.Linq;
-
-using Umbraco.Cms.Core.Events;
-
+﻿using Umbraco.Cms.Core.Events;
+using Umbraco.Cms.Core.Models;
+using uSync.Migrations.Composing;
 using uSync.Migrations.Models;
-using uSync.Migrations.Notifications;
 using uSync.Migrations.Services;
 
 namespace uSync.Migrations.Handlers;
 
-internal class MediaTypeMigrationHandler : ContentTypeBaseMigrationHandler, ISyncMigrationHandler
+internal class MediaTypeMigrationHandler : ContentTypeBaseMigrationHandler<MediaType>, ISyncMigrationHandler
 {
     public MediaTypeMigrationHandler(
         IEventAggregator eventAggregator,
-        MigrationFileService migrationFileService,
-        SyncMigratorCollection migrators) 
-        : base(eventAggregator, migrationFileService, migrators, "MediaType")
+        SyncMigrationFileService migrationFileService,
+        SyncPropertyMigratorCollection migrators)
+        : base(eventAggregator, migrationFileService, migrators)
     { }
+
+    public string ItemType => nameof(MediaType);
 
     public int Priority => uSyncMigrations.Priorities.MediaTypes;
 
-    public IEnumerable<MigrationMessage> MigrateFromDisk(Guid migrationId, string sourceFolder, MigrationContext context)
-    {
-        return base.MigrateFromDisk(
-            migrationId, Path.Combine(sourceFolder, "MediaType"), "MediaType", "MediaTypes", context);
-    }
-    public void PrepMigrations(Guid migrationId, string sourceFolder, MigrationContext context)
-    {
-        PrepContext(Path.Combine(sourceFolder, "MediaType"), context);
-    }
+    public void PrepareMigrations(Guid migrationId, string sourceFolder, SyncMigrationContext context)
+        => PrepareContext(Path.Combine(sourceFolder, nameof(MediaType)), context);
 
-    protected override bool FireStartingNotification(XElement source)
-    {
-        var notification = new SyncMediaTypeMigratingNotification(source);
-        _eventAggregator.PublishCancelable(notification);
-        return !notification.Cancel;
-    }
-
-    protected override XElement FireCompletedNotification(XElement target)
-    {
-        // notification before we save anything.
-        var notification = new SyncMediaTypeMigratedNotification(target);
-        _eventAggregator.Publish(notification);
-        return notification.Result;
-    }
-
+    public IEnumerable<MigrationMessage> MigrateFromDisk(Guid migrationId, string sourceFolder, SyncMigrationContext context)
+        => DoMigrateFromDisk(migrationId, Path.Combine(sourceFolder, ItemType), ItemType, "MediaTypes", context);
 }

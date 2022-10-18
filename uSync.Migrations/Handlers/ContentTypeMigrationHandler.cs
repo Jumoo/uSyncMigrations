@@ -1,40 +1,33 @@
-﻿using System.Xml.Linq;
-
-using Umbraco.Cms.Core.Events;
+﻿using Umbraco.Cms.Core.Events;
+using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Services;
-using Umbraco.Cms.Infrastructure.DependencyInjection;
-
+using uSync.Migrations.Composing;
 using uSync.Migrations.Models;
-using uSync.Migrations.Notifications;
 using uSync.Migrations.Services;
 
 namespace uSync.Migrations.Handlers;
 
-internal class ContentTypeMigrationHandler : ContentTypeBaseMigrationHandler, ISyncMigrationHandler
+internal class ContentTypeMigrationHandler : ContentTypeBaseMigrationHandler<ContentType>, ISyncMigrationHandler
 {
     private IFileService _fileService;
 
     public ContentTypeMigrationHandler(
         IEventAggregator eventAggregator,
-        MigrationFileService migrationFileService,
-        SyncMigratorCollection migrators,
+        SyncMigrationFileService migrationFileService,
+        SyncPropertyMigratorCollection migrators,
         IFileService fileService)
-        : base(eventAggregator, migrationFileService, migrators, "ContentType")
+        : base(eventAggregator, migrationFileService, migrators)
     {
         _fileService = fileService;
     }
 
-    public int Priority => 20;
+    public string ItemType => nameof(ContentType);
 
-    public IEnumerable<MigrationMessage> MigrateFromDisk(Guid migrationId, string sourceFolder, MigrationContext context)
-    {
-        return base.MigrateFromDisk(
-            migrationId, Path.Combine(sourceFolder, "DocumentType"), "ContentType", "ContentTypes", context);
-    }
+    public int Priority => uSyncMigrations.Priorities.ContentTypes;
 
-    public void PrepMigrations(Guid migrationId, string sourceFolder, MigrationContext context)
+    public void PrepareMigrations(Guid migrationId, string sourceFolder, SyncMigrationContext context)
     {
-        PrepContext(Path.Combine(sourceFolder, "DocumentType"), context);
+        PrepareContext(Path.Combine(sourceFolder, "DocumentType"), context);
 
         foreach (var template in _fileService.GetTemplates())
         {
@@ -42,18 +35,6 @@ internal class ContentTypeMigrationHandler : ContentTypeBaseMigrationHandler, IS
         }
     }
 
-    protected override bool FireStartingNotification(XElement source)
-    {
-        var notification = new SyncContentTypeMigratingNotification(source);
-        _eventAggregator.PublishCancelable(notification);
-        return !notification.Cancel;
-    }
-
-    protected override XElement FireCompletedNotification(XElement target)
-    {
-        // notification before we save anything.
-        var notification = new SyncContentTypeMigratedNotification(target);
-        _eventAggregator.Publish(notification);
-        return notification.Result;
-    }
+    public IEnumerable<MigrationMessage> MigrateFromDisk(Guid migrationId, string sourceFolder, SyncMigrationContext context)
+        => DoMigrateFromDisk(migrationId, Path.Combine(sourceFolder, "DocumentType"), ItemType, "ContentTypes", context);
 }

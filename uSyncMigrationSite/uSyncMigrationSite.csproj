@@ -6,9 +6,9 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Umbraco.Cms" Version="10.2.0" />
+		<PackageReference Include="Umbraco.Cms" Version="10.2.1" />
 		<PackageReference Include="Umbraco.TheStarterKit" Version="10.0.0" />
-		<PackageReference Include="uSync" Version="10.2.0" />
+		<PackageReference Include="uSync" Version="10.2.1" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -11,7 +11,6 @@
             migrate: migrate
         };
 
-        // 
         function hasPending() {
             return $http.get(serviceRoot + "HasPendingMigration");
         }
@@ -25,7 +24,5 @@
         }
     }
 
-    angular.module('umbraco')
-        .factory('uSyncMigrationService', migrationService);
-
+    angular.module('umbraco').factory('uSyncMigrationService', migrationService);
 })();

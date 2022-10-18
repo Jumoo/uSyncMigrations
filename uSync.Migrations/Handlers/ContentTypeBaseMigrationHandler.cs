@@ -1,67 +1,83 @@
 ﻿using System.Xml.Linq;
-
 using Umbraco.Cms.Core.Events;
-
+using Umbraco.Cms.Core.Models.Entities;
+using Umbraco.Cms.Core.Notifications;
 using uSync.Core;
+using uSync.Migrations.Composing;
 using uSync.Migrations.Models;
+using uSync.Migrations.Notifications;
 using uSync.Migrations.Services;
 
 namespace uSync.Migrations.Handlers;
-internal abstract class ContentTypeBaseMigrationHandler
+
+internal abstract class ContentTypeBaseMigrationHandler<TEntity>
+    where TEntity : IEntity
 {
-    public virtual string ItemType { get; protected set; }
-
-    private readonly MigrationFileService _migrationFileService;
-    private readonly SyncMigratorCollection _migrators;
-
-    protected readonly IEventAggregator _eventAggregator;
+    private readonly IEventAggregator _eventAggregator;
+    private readonly SyncMigrationFileService _migrationFileService;
+    private readonly SyncPropertyMigratorCollection _migrators;
 
     public ContentTypeBaseMigrationHandler(
         IEventAggregator eventAggregator,
-        MigrationFileService migrationFileService,
-        SyncMigratorCollection migrators,
-        string itemType)
+        SyncMigrationFileService migrationFileService,
+        SyncPropertyMigratorCollection migrators)
     {
+        _eventAggregator = eventAggregator;
         _migrationFileService = migrationFileService;
         _migrators = migrators;
-
-        ItemType = itemType;
-        _eventAggregator = eventAggregator;
     }
 
-    public void PrepContext(string sourceFolder, MigrationContext context)
+    public void PrepareContext(string sourceFolder, SyncMigrationContext context)
     {
-        if (!Directory.Exists(sourceFolder)) return;
-
-        foreach(var file in Directory.GetFiles(sourceFolder, "*.config", SearchOption.AllDirectories))
+        if (Directory.Exists(sourceFolder) == false)
         {
+            return;
+        }
 
+        foreach (var file in Directory.GetFiles(sourceFolder, "*.config", SearchOption.AllDirectories))
+        {
             var source = XElement.Load(file);
 
-            var alias = source.Element("Info").Element("Alias").ValueOrDefault(string.Empty);
-            context.AddContentTypeKey(
-                alias, source.Element("Info").Element("Key").ValueOrDefault(Guid.Empty));
+            var alias = source.Element("Info")?.Element("Alias")?.ValueOrDefault(string.Empty);
+
+            context.AddContentTypeKey(alias, source.Element("Info")?.Element("Key")?.ValueOrDefault(Guid.Empty));
+
+            var compositions = source.Element("Info")?.Element("Compositions")?.Elements("Composition")?.Select(x => x.Value) ?? Enumerable.Empty<string>();
+            context.AddContentTypeCompositions(alias, compositions);
 
             var properties = source.Element("GenericProperties")?.Elements("GenericProperty") ?? Enumerable.Empty<XElement>();
 
-            foreach(var property in properties)
+            foreach (var property in properties)
             {
                 context.AddContentProperty(alias,
-                              property.Element("Alias").ValueOrDefault(string.Empty),
-                              property.Element("Type").ValueOrDefault(string.Empty));
+                    property.Element("Alias")?.ValueOrDefault(string.Empty),
+                    property.Element("Type")?.ValueOrDefault(string.Empty));
             }
         }
     }
 
-    public IEnumerable<MigrationMessage> MigrateFromDisk(Guid id, string folder, string baseType, string targetFolder, MigrationContext context)
+    public IEnumerable<MigrationMessage> DoMigrateFromDisk(
+        Guid id,
+        string folder,
+        string itemType,
+        string targetFolder,
+        SyncMigrationContext context)
     {
-        return MigrateFolder(id, folder, baseType, targetFolder, 0, context);
+        return MigrateFolder(id, folder, itemType, targetFolder, 0, context);
     }
 
-    private IEnumerable<MigrationMessage> MigrateFolder(Guid id, string folder, string baseType,
-        string targetFolder, int level, MigrationContext context)
+    private IEnumerable<MigrationMessage> MigrateFolder(
+        Guid id,
+        string folder,
+        string itemType,
+        string targetFolder,
+        int level,
+        SyncMigrationContext context)
     {
-        if (!Directory.Exists(folder)) return Enumerable.Empty<MigrationMessage>();
+        if (Directory.Exists(folder) == false)
+        {
+            return Enumerable.Empty<MigrationMessage>();
+        }
 
         var messages = new List<MigrationMessage>();
 
@@ -71,40 +87,53 @@ internal abstract class ContentTypeBaseMigrationHandler
         {
             var source = XElement.Load(file);
 
-            if (!FireStartingNotification(source)) continue;
+            var migratingNotification = new SyncMigratingNotification<TEntity>(source, context);
 
-            var target = ConvertContentType(source, baseType, level, context);
+            if (_eventAggregator.PublishCancelable(migratingNotification) == true)
+            {
+                continue;
+            }
+
+            var target = ConvertContentType(source, itemType, level, context);
+
             if (target != null)
             {
-                messages.Add(SaveTargetXml(id, target, targetFolder));
+                var migratedNotification = new SyncMigratedNotification<TEntity>(target, context).WithStateFrom(migratingNotification);
+
+                _eventAggregator.Publish(migratedNotification);
+
+                messages.Add(SaveTargetXml(itemType, id, migratedNotification.Xml, targetFolder));
             }
-        
         }
 
         foreach (var childFolder in Directory.GetDirectories(folder))
         {
-            messages.AddRange(MigrateFolder(id, childFolder, baseType, targetFolder, level + 1, context));
+            messages.AddRange(MigrateFolder(id, childFolder, itemType, targetFolder, level + 1, context));
         }
 
         return messages;
     }
-    
-    private MigrationMessage SaveTargetXml(Guid id, XElement xml, string folder)
+
+    private MigrationMessage SaveTargetXml(string itemType, Guid id, XElement xml, string folder)
     {
-        var result = FireCompletedNotification(xml);
-        _migrationFileService.SaveMigrationFile(id, result, folder);
-        return new MigrationMessage(ItemType, xml.GetAlias(), MigrationMessageType.Success);
+        _migrationFileService.SaveMigrationFile(id, xml, folder);
+
+        return new MigrationMessage(itemType, xml.GetAlias(), MigrationMessageType.Success);
     }
 
-    private XElement? ConvertContentType(XElement source, string baseType, int level, MigrationContext context)
+    private XElement? ConvertContentType(
+        XElement source,
+        string itemType,
+        int level,
+        SyncMigrationContext context)
     {
         var info = source.Element("Info");
         var key = info.Element("Key").ValueOrDefault(Guid.Empty);
         var alias = info.Element("Alias").ValueOrDefault(string.Empty);
 
-        if (context.IsBlocked(ItemType, alias)) return null;
+        if (context.IsBlocked(itemType, alias)) return null;
 
-        var target = new XElement(baseType,
+        var target = new XElement(itemType,
             new XAttribute(uSyncConstants.Xml.Key, key),
             new XAttribute(uSyncConstants.Xml.Alias, alias),
             new XAttribute(uSyncConstants.Xml.Level, level));
@@ -122,7 +151,6 @@ internal abstract class ContentTypeBaseMigrationHandler
         UpdateTabs(source, target);
 
         return target;
-
     }
 
     private static void UpdateTabs(XElement source, XElement target)
@@ -142,9 +170,11 @@ internal abstract class ContentTypeBaseMigrationHandler
         }
     }
 
-    private void UpdateProperties(XElement source, XElement target,
+    private void UpdateProperties(
+        XElement source,
+        XElement target,
         string contentTypeAlias,
-        MigrationContext context)
+        SyncMigrationContext context)
     {
         var properties = source.Element("GenericProperties");
 
@@ -155,7 +185,7 @@ internal abstract class ContentTypeBaseMigrationHandler
             {
                 var newProperty = XElement.Parse(property.ToString());
 
-                UpdatePropertyEditor(newProperty);
+                UpdatePropertyEditor(newProperty, context);
 
                 newProperty.Add(new XElement("Variations", "Nothing"));
                 newProperty.Add(new XElement("MandatoryMessage", string.Empty));
@@ -179,16 +209,15 @@ internal abstract class ContentTypeBaseMigrationHandler
     ///  Get the editor Alias for this property (it might have updated)
     /// </summary>
     /// <param name="newProperty"></param>
-    private void UpdatePropertyEditor(XElement newProperty)
+    private void UpdatePropertyEditor(XElement newProperty, SyncMigrationContext context)
     {
         var editorAlias = newProperty.Element("Type").ValueOrDefault(string.Empty);
-        if (!string.IsNullOrEmpty(editorAlias))
+
+        if (string.IsNullOrEmpty(editorAlias) == false &&
+            _migrators.TryGet(editorAlias, out var migrator) == true &&
+            migrator != null)
         {
-            var migrator = _migrators.GetMigrator(editorAlias);
-            if (migrator != null)
-            {
-                newProperty.Element("Type").Value = migrator.GetEditorAlias(editorAlias, string.Empty);
-            }
+            newProperty.Element("Type").Value = migrator.GetEditorAlias(editorAlias, string.Empty, context);
         }
     }
 
@@ -210,9 +239,4 @@ internal abstract class ContentTypeBaseMigrationHandler
         if (sourceStructure != null)
             target.Add(XElement.Parse(sourceStructure.ToString()));
     }
-
-
-    protected abstract bool FireStartingNotification(XElement source);
-
-    protected abstract XElement FireCompletedNotification(XElement target);
 }

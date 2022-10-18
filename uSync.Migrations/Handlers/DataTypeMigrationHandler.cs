@@ -1,68 +1,89 @@
-﻿using System.Xml.Linq;
-
-using Microsoft.Extensions.Logging;
-
+﻿using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-
-using Umbraco.Cms.Core.Models.ContentEditing;
-
+using System.Xml.Linq;
+using Umbraco.Cms.Core.Events;
+using Umbraco.Cms.Core.Models;
+using Umbraco.Cms.Core.Notifications;
+using Umbraco.Cms.Core.PropertyEditors;
 using uSync.Core;
+using uSync.Migrations.Composing;
 using uSync.Migrations.Extensions;
 using uSync.Migrations.Models;
+using uSync.Migrations.Notifications;
+using uSync.Migrations.Serialization;
 using uSync.Migrations.Services;
 
 namespace uSync.Migrations.Handlers;
+
 internal class DataTypeMigrationHandler : ISyncMigrationHandler
 {
-    private readonly SyncMigratorCollection _migrators;
-    private readonly MigrationFileService _migrationFileService;
-    private ILogger<DataTypeMigrationHandler> _logger;
-
-    private JsonSerializerSettings _jsonSerializerSettings;
+    private readonly IEventAggregator _eventAggregator;
+    private readonly SyncPropertyMigratorCollection _migrators;
+    private readonly SyncMigrationFileService _migrationFileService;
+    private readonly ILogger<DataTypeMigrationHandler> _logger;
+    private readonly JsonSerializerSettings _jsonSerializerSettings;
 
     public DataTypeMigrationHandler(
-        MigrationFileService fileService,
+        IEventAggregator eventAggregator,
+        SyncMigrationFileService fileService,
         ILogger<DataTypeMigrationHandler> logger,
-        SyncMigratorCollection migrators)
+        SyncPropertyMigratorCollection migrators)
     {
+        _eventAggregator = eventAggregator;
         _migrators = migrators;
         _migrationFileService = fileService;
         _logger = logger;
 
         _jsonSerializerSettings = new JsonSerializerSettings()
         {
-            ContractResolver = new MigrationsContractResolver()
+            ContractResolver = new SyncMigrationsContractResolver(),
+            Formatting = Formatting.Indented,
         };
     }
 
+    public string ItemType => nameof(DataType);
 
     public int Priority => uSyncMigrations.Priorities.DataTypes;
 
-    public string ItemType => "DataType";
+    public void PrepareMigrations(Guid migrationId, string sourceFolder, SyncMigrationContext context)
+    { }
 
-    public IEnumerable<MigrationMessage> MigrateFromDisk(Guid migrationId, string sourceFolder, MigrationContext context)
+    public IEnumerable<MigrationMessage> MigrateFromDisk(Guid migrationId, string sourceFolder, SyncMigrationContext context)
     {
-        return MigrateFolder(migrationId, Path.Combine(sourceFolder, "DataType"), 0, context);
+        return MigrateFolder(migrationId, Path.Combine(sourceFolder, ItemType), 0, context);
     }
 
-    public void PrepMigrations(Guid migrationId, string sourceFolder, MigrationContext context)
+    private IEnumerable<MigrationMessage> MigrateFolder(Guid id, string folder, int level, SyncMigrationContext context)
     {
-    }
+        if (Directory.Exists(folder) == false)
+        {
+            return Enumerable.Empty<MigrationMessage>();
+        }
 
-    private IEnumerable<MigrationMessage> MigrateFolder(Guid id, string folder, int level, MigrationContext context)
-    {
-        if (!Directory.Exists(folder)) return Enumerable.Empty<MigrationMessage>();
         var files = Directory.GetFiles(folder, "*.config").ToList();
 
         var messages = new List<MigrationMessage>();
 
         foreach (var file in files)
         {
-            var sourceXml = XElement.Load(file);
-            var targetXml = MigrateDataType(sourceXml, level, context);
-            if (targetXml != null)
+            var source = XElement.Load(file);
+
+            var migratingNotification = new SyncMigratingNotification<DataType>(source, context);
+
+            if (_eventAggregator.PublishCancelable(migratingNotification) == true)
             {
-                messages.Add(SaveTargetXml(id, targetXml));
+                continue;
+            }
+
+            var target = MigrateDataType(source, level, context);
+
+            if (target != null)
+            {
+                var migratedNotification = new SyncMigratedNotification<DataType>(target, context).WithStateFrom(migratingNotification);
+
+                _eventAggregator.Publish(migratedNotification);
+
+                messages.Add(SaveTargetXml(id, target));
             }
         }
 
@@ -77,11 +98,11 @@ internal class DataTypeMigrationHandler : ISyncMigrationHandler
     private MigrationMessage SaveTargetXml(Guid id, XElement xml)
     {
         _migrationFileService.SaveMigrationFile(id, xml, "DataTypes");
+
         return new MigrationMessage(ItemType, xml.GetAlias(), MigrationMessageType.Success);
     }
 
-
-    public XElement? MigrateDataType(XElement source, int level, MigrationContext context)
+    public XElement? MigrateDataType(XElement source, int level, SyncMigrationContext context)
     {
         var key = source.Attribute("Key").ValueOrDefault(string.Empty);
         var editorAlias = source.Attribute("Id").ValueOrDefault(string.Empty);
@@ -90,43 +111,48 @@ internal class DataTypeMigrationHandler : ISyncMigrationHandler
         var folder = source.Attribute("Folder").ValueOrDefault(string.Empty);
 
         // this way we can block certain types of thing (e.g list items)
-        if (context.IsBlocked(ItemType, editorAlias)) return null;
+        if (context.IsBlocked(ItemType, editorAlias) == true)
+        {
+            return null;
+        }
 
         var preValues = GetPreValues(source);
 
         // change the type of thing as part of a migration.
 
-        // the migration for this type goes here... 
-        var migrator = _migrators.GetMigrator(editorAlias);
-        if (migrator == null) _logger.LogWarning("No Migrator for {editorAlias} will make it a label", editorAlias);
+        // the migration for this type goes here...
+        var hasMigrator = _migrators.TryGet(editorAlias, out var migrator);
+        if (hasMigrator == false)
+        {
+            _logger.LogWarning("No migrator for {editorAlias} will make it a label.", editorAlias);
+        }
 
-        var newEditorAlias = migrator?.GetEditorAlias(editorAlias, databaseType) ?? "Umbraco.Label";
-        var newDatabaseType = migrator?.GetDatabaseType(editorAlias, databaseType) ?? "STRING";
+        var newEditorAlias = migrator?.GetEditorAlias(editorAlias, databaseType, context) ?? UmbConstants.PropertyEditors.Aliases.Label;
+        var newDatabaseType = migrator?.GetDatabaseType(editorAlias, databaseType, context) ?? ValueTypes.String;
+
         var newConfig = preValues != null
-            ? migrator?.GetConfigValues(editorAlias, databaseType, preValues) 
-               ?? MakeEmptyLabelConfig(preValues)
+            ? migrator?.GetConfigValues(editorAlias, databaseType, preValues, context) ?? MakeEmptyLabelConfig(preValues)
             : MakeEmptyLabelConfig(preValues);
-
 
         // now we write the new xml. 
         var target = new XElement("DataType",
             new XAttribute(uSyncConstants.Xml.Key, key),
             new XAttribute(uSyncConstants.Xml.Alias, name),
             new XAttribute(uSyncConstants.Xml.Level, level),
-            new XElement("Info",
-                new XElement("Name", name),
+            new XElement(uSyncConstants.Xml.Info,
+                new XElement(uSyncConstants.Xml.Name, name),
                 new XElement("EditorAlias", newEditorAlias),
                 new XElement("DatabaseType", newDatabaseType)));
 
-        if (!string.IsNullOrWhiteSpace(folder))
-            target.Element("Info").Add(new XElement("Folder", folder));
-        
+        if (string.IsNullOrWhiteSpace(folder) == false)
+        {
+            target.Element(uSyncConstants.Xml.Info)?.Add(new XElement("Folder", folder));
+        }
 
         if (newConfig != null)
         {
-            var config = new XElement("Config", new XCData(
-                JsonConvert.SerializeObject(newConfig, Formatting.Indented, _jsonSerializerSettings)));
-            target.Add(config);
+            target.Add(new XElement("Config",
+                new XCData(JsonConvert.SerializeObject(newConfig, _jsonSerializerSettings))));
         }
 
         return target;
@@ -139,22 +165,19 @@ internal class DataTypeMigrationHandler : ISyncMigrationHandler
         var preValues = source.Element("PreValues");
         if (preValues == null) return items;
 
-
         foreach (var element in preValues.Elements("PreValue"))
         {
             items.Add(new PreValue
             {
                 Alias = element.Attribute("Alias").ValueOrDefault(string.Empty),
                 SortOrder = element.Attribute("SortOrder").ValueOrDefault(0),
-                Value = element.ValueOrDefault(string.Empty)
+                Value = element.Attribute("Value").ValueOrDefault(string.Empty)
             });
         }
 
         return items;
     }
 
-
-    private object MakeEmptyLabelConfig(IList<PreValue> preValues)
-        => preValues.ConvertPreValuesToJson(false);
-
+    private object? MakeEmptyLabelConfig(IList<PreValue>? preValues)
+        => preValues?.ConvertPreValuesToJson(false);
 }

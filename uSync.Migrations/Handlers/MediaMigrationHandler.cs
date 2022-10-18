@@ -1,24 +1,37 @@
-﻿using Umbraco.Cms.Core.Strings;
-
+﻿using Umbraco.Cms.Core.Events;
+using Umbraco.Cms.Core.Models;
+using Umbraco.Cms.Core.Strings;
+using uSync.Migrations.Composing;
 using uSync.Migrations.Models;
 using uSync.Migrations.Services;
 
 namespace uSync.Migrations.Handlers;
 
-internal class MediaMigrationHandler : ContentBaseMigrationHandler, ISyncMigrationHandler
+internal class MediaMigrationHandler : ContentBaseMigrationHandler<Media>, ISyncMigrationHandler
 {
+    public MediaMigrationHandler(
+        IEventAggregator eventAggregator,
+        SyncMigrationFileService migrationFileService,
+        SyncPropertyMigratorCollection migrators,
+        IShortStringHelper shortStringHelper)
+        : base(eventAggregator, migrationFileService, migrators, shortStringHelper)
+    {
+        _ignoredProperties.UnionWith(new[]
+        {
+            UmbConstants.Conventions.Media.Bytes,
+            UmbConstants.Conventions.Media.Extension,
+            UmbConstants.Conventions.Media.Height,
+            UmbConstants.Conventions.Media.Width,
+        });
+    }
+
+    public string ItemType => nameof(Media);
+
     public int Priority => uSyncMigrations.Priorities.Media;
 
-    public MediaMigrationHandler(
-        MigrationFileService migrationFileService,
-        SyncMigratorCollection migrators,
-        IShortStringHelper shortStringHelper)
-        : base(migrationFileService, migrators, shortStringHelper, "Media")
+    public void PrepareMigrations(Guid migrationId, string sourceFolder, SyncMigrationContext context)
     { }
 
-    public IEnumerable<MigrationMessage> MigrateFromDisk(Guid migrationId, string sourceFolder, MigrationContext context)
-        => DoMigrateFromDisk(migrationId, Path.Combine(sourceFolder, "Media"), context);
-
-    public void PrepMigrations(Guid migrationId, string sourceFolder, MigrationContext context)
-    { }
+    public IEnumerable<MigrationMessage> MigrateFromDisk(Guid migrationId, string sourceFolder, SyncMigrationContext context)
+        => DoMigrateFromDisk(migrationId, Path.Combine(sourceFolder, nameof(Media)), context);
 }

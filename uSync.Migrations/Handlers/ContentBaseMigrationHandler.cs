@@ -1,58 +1,79 @@
 ﻿using System.Xml.Linq;
-
+using Umbraco.Cms.Core.Events;
+using Umbraco.Cms.Core.Models.Entities;
+using Umbraco.Cms.Core.Notifications;
 using Umbraco.Cms.Core.Strings;
-
 using Umbraco.Extensions;
-
 using uSync.Core;
+using uSync.Migrations.Composing;
 using uSync.Migrations.Models;
+using uSync.Migrations.Notifications;
 using uSync.Migrations.Services;
 
 namespace uSync.Migrations.Handlers;
 
-internal class ContentBaseMigrationHandler
+internal class ContentBaseMigrationHandler<TEntity>
+    where TEntity : IEntity
 {
-    private readonly SyncMigratorCollection _migrators;
-    private readonly MigrationFileService _migrationFileService;
+    private readonly IEventAggregator _eventAggregator;
+    private readonly SyncPropertyMigratorCollection _migrators;
+    private readonly SyncMigrationFileService _migrationFileService;
     private readonly IShortStringHelper _shortStringHelper;
 
-    public virtual string ItemType { get; private set; }
+    protected readonly HashSet<string> _ignoredProperties = new(StringComparer.OrdinalIgnoreCase);
 
     public ContentBaseMigrationHandler(
-        MigrationFileService migrationFileService,
-        SyncMigratorCollection contentPropertyMigrators,
-        IShortStringHelper shortStringHelper,
-        string itemType)
+        IEventAggregator eventAggregator,
+        SyncMigrationFileService migrationFileService,
+        SyncPropertyMigratorCollection contentPropertyMigrators,
+        IShortStringHelper shortStringHelper)
     {
+        _eventAggregator = eventAggregator;
         _migrationFileService = migrationFileService;
         _migrators = contentPropertyMigrators;
         _shortStringHelper = shortStringHelper;
-        ItemType = itemType;
     }
 
-    public IEnumerable<MigrationMessage> DoMigrateFromDisk(Guid id, string folder,
-    MigrationContext context)
+    public IEnumerable<MigrationMessage> DoMigrateFromDisk(Guid id, string folder, SyncMigrationContext context)
     {
         // loads all the content names into the context, so we can get them later on.
-        PrepContext(folder, context);
+        PrepareContext(folder, context);
 
         var itemType = Path.GetFileName(folder);
+
         return MigrateFolder(id, itemType, folder, 0, context);
     }
 
-    private IEnumerable<MigrationMessage> MigrateFolder(Guid id, string itemType, string folder, int level, MigrationContext context)
+    private IEnumerable<MigrationMessage> MigrateFolder(Guid id, string itemType, string folder, int level, SyncMigrationContext context)
     {
-        if (!Directory.Exists(folder)) return Enumerable.Empty<MigrationMessage>();
+        if (Directory.Exists(folder) == false)
+        {
+            return Enumerable.Empty<MigrationMessage>();
+        }
 
         var messages = new List<MigrationMessage>();
 
         foreach (var file in Directory.GetFiles(folder, "*.config"))
         {
             var source = XElement.Load(file);
+
+            var migratingNotification = new SyncMigratingNotification<TEntity>(source, context);
+
+            if (_eventAggregator.PublishCancelable(migratingNotification) == true)
+            {
+                continue;
+            }
+
             var target = ConvertContent(itemType, source, level, context);
 
-            messages.Add(SaveTargetXml(id, target));
+            if (target != null)
+            {
+                var migratedNotification = new SyncMigratedNotification<TEntity>(target, context).WithStateFrom(migratingNotification);
 
+                _eventAggregator.Publish(migratedNotification);
+
+                messages.Add(SaveTargetXml(itemType, id, target));
+            }
         }
 
         foreach (var childFolder in Directory.GetDirectories(folder))
@@ -63,22 +84,19 @@ internal class ContentBaseMigrationHandler
         return messages;
     }
 
-    private static string[] _ignoredProperties = new[] {
-        "umbracoWidth", "umbracoHeight", "umbracoBytes", "umbracoExtension"
-    };
-
-    private XElement ConvertContent(string itemType, XElement source, int level, MigrationContext context)
+    private XElement ConvertContent(string itemType, XElement source, int level, SyncMigrationContext context)
     {
         var key = source.Attribute("guid").ValueOrDefault(Guid.Empty);
         var alias = source.Attribute("nodeName").ValueOrDefault(string.Empty);
         var parent = source.Attribute("parentGUID").ValueOrDefault(Guid.Empty);
         var contentType = source.Attribute("nodeTypeAlias").ValueOrDefault(string.Empty);
         var template = source.Attribute("templateAlias").ValueOrDefault(string.Empty);
-        var published = source.Attribute("Published").ValueOrDefault(false);
+        var published = source.Attribute("published").ValueOrDefault(false);
         var createdDate = source.Attribute("updated").ValueOrDefault(DateTime.Now);
         var sortOrder = source.Attribute("sortOrder").ValueOrDefault(0);
 
         var path = context.GetContentPath(parent) + "/" + alias.ToSafeAlias(_shortStringHelper);
+
         context.AddContentPath(key, path);
 
         var target = new XElement(itemType,
@@ -103,22 +121,23 @@ internal class ContentBaseMigrationHandler
             info.Add(new XElement("Published", new XAttribute("Default", published)));
             info.Add(new XElement("Schedule"));
             info.Add(new XElement("Template",
-                        new XAttribute("Key", context.GetTemplateKey(template)),
-                        template));
+                new XAttribute("Key", context.GetTemplateKey(template)),
+                template));
         }
-
 
         var propertiesList = new XElement("Properties");
 
         foreach (var property in source.Elements())
         {
-
-            if (_ignoredProperties.InvariantContains(property.Name.LocalName)) continue;
+            if (_ignoredProperties.Contains(property.Name.LocalName))
+            {
+                continue;
+            }
 
             var editorAlias = context.GetEditorAlias(contentType, property.Name.LocalName);
 
             // with the editorAlias, we can do any migrations of the string types here...
-            var migratedValue = MigrateContentValue(editorAlias, property.Value);
+            var migratedValue = MigrateContentValue(editorAlias, property.Value, context);
 
             var newProperty = new XElement(property.Name.LocalName);
             newProperty.Add(new XElement("Value", new XCData(migratedValue)));
@@ -129,24 +148,24 @@ internal class ContentBaseMigrationHandler
         return target;
     }
 
-    private MigrationMessage SaveTargetXml(Guid id, XElement xml)
+    private MigrationMessage SaveTargetXml(string itemType, Guid id, XElement xml)
     {
         _migrationFileService.SaveMigrationFile(id, xml, xml.Name.LocalName);
-        return new MigrationMessage(this.ItemType, xml.GetAlias(), MigrationMessageType.Success);
+
+        return new MigrationMessage(itemType, xml.GetAlias(), MigrationMessageType.Success);
     }
 
-    private string MigrateContentValue(string editorAlias, string value)
+    private string MigrateContentValue(string editorAlias, string value, SyncMigrationContext context)
     {
-        var migrator = _migrators.GetMigrator(editorAlias);
-        if (migrator != null)
-            return migrator.GetContentValue(editorAlias, value);
+        if (_migrators.TryGet(editorAlias, out var migrator) == true)
+        {
+            return migrator?.GetContentValue(editorAlias, value, context) ?? value;
+        }
 
-        // else
         return value;
     }
 
-
-    private void PrepContext(string folder, MigrationContext context)
+    private void PrepareContext(string folder, SyncMigrationContext context)
     {
         var files = Directory.GetFiles(folder, "*.config", SearchOption.AllDirectories);
         foreach (var file in files)
@@ -155,10 +174,10 @@ internal class ContentBaseMigrationHandler
             var key = source.Attribute("guid").ValueOrDefault(Guid.Empty);
             var alias = source.Attribute("nodeName").ValueOrDefault(string.Empty);
 
-            if (key != Guid.Empty && !string.IsNullOrEmpty(alias))
+            if (key != Guid.Empty && string.IsNullOrWhiteSpace(alias) == false)
+            {
                 context.AddContentKey(key, alias);
-
+            }
         }
     }
-
 }

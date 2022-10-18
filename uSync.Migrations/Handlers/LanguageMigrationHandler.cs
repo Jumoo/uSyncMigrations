@@ -1,37 +1,67 @@
 ﻿using System.Globalization;
 using System.Xml.Linq;
-
+using Umbraco.Cms.Core.Events;
+using Umbraco.Cms.Core.Models;
+using Umbraco.Cms.Core.Notifications;
 using uSync.Core;
 using uSync.Migrations.Models;
+using uSync.Migrations.Notifications;
 using uSync.Migrations.Services;
 
 namespace uSync.Migrations.Handlers;
+
 internal class LanguageMigrationHandler : ISyncMigrationHandler
 {
-    private readonly MigrationFileService _migrationFileService;
+    private readonly IEventAggregator _eventAggregator;
+    private readonly SyncMigrationFileService _migrationFileService;
 
-    public LanguageMigrationHandler(MigrationFileService migrationFileService)
+    public LanguageMigrationHandler(
+        IEventAggregator eventAggregator,
+        SyncMigrationFileService migrationFileService)
     {
+        _eventAggregator = eventAggregator;
         _migrationFileService = migrationFileService;
     }
 
-    public string ItemType => "Language";
+    public string ItemType => nameof(Language);
 
     public int Priority => uSyncMigrations.Priorities.Languages;
 
-    public IEnumerable<MigrationMessage> MigrateFromDisk(Guid migrationId, string sourceFolder, MigrationContext context)
+    public void PrepareMigrations(Guid migrationId, string sourceFolder, SyncMigrationContext context)
+    { }
+
+    public IEnumerable<MigrationMessage> MigrateFromDisk(Guid migrationId, string sourceFolder, SyncMigrationContext context)
     {
         var languageFolder = Path.Combine(sourceFolder, "Languages");
-        if (!Directory.Exists(languageFolder)) return Enumerable.Empty<MigrationMessage>();
+
+        if (Directory.Exists(languageFolder) == false)
+        {
+            return Enumerable.Empty<MigrationMessage>();
+        }
 
         var messages = new List<MigrationMessage>();
 
-        foreach(var file in Directory.GetFiles(languageFolder, "*.config", SearchOption.AllDirectories))
+        foreach (var file in Directory.GetFiles(languageFolder, "*.config", SearchOption.AllDirectories))
         {
-            var sourceXml = XElement.Load(file);
-            var targetXml = MigrateLanguage(sourceXml);
+            var source = XElement.Load(file);
 
-            messages.Add(SaveTargetXml(migrationId, targetXml));
+            var migratingNotification = new SyncMigratingNotification<Language>(source, context);
+
+            if (_eventAggregator.PublishCancelable(migratingNotification) == true)
+            {
+                continue;
+            }
+
+            var target = MigrateLanguage(source);
+
+            if (target != null)
+            {
+                var migratedNotification = new SyncMigratedNotification<Language>(target, context).WithStateFrom(migratingNotification);
+
+                _eventAggregator.Publish(migratedNotification);
+
+                messages.Add(SaveTargetXml(migrationId, target));
+            }
         }
 
         return messages;
@@ -42,7 +72,7 @@ internal class LanguageMigrationHandler : ISyncMigrationHandler
         var alias = source.Attribute("CultureAlias").ValueOrDefault(string.Empty);
 
         var culture = CultureInfo.GetCultureInfo(alias);
-        var key = Int2Guid(culture.LCID); 
+        var key = Int2Guid(culture.LCID);
 
         var target = new XElement("Language",
             new XAttribute(uSyncConstants.Xml.Key, key),
@@ -56,25 +86,23 @@ internal class LanguageMigrationHandler : ISyncMigrationHandler
         return target;
     }
 
-
     private MigrationMessage SaveTargetXml(Guid id, XElement xml)
     {
         _migrationFileService.SaveMigrationFile(id, xml, "Languages");
+
         return new MigrationMessage(ItemType, xml.GetAlias(), MigrationMessageType.Success)
         {
-            Message = "When importing migrated languages you may loose your default language value"
+            Message = "When importing migrated languages you may loose your default language value."
         };
-
     }
 
     private Guid Int2Guid(int value)
     {
-        byte[] bytes = new byte[16];
+        var bytes = new byte[16];
+
         BitConverter.GetBytes(value).CopyTo(bytes, 0);
+
         return new Guid(bytes);
     }
 
-
-    public void PrepMigrations(Guid migrationId, string sourceFolder, MigrationContext context)
-    { }
 }
