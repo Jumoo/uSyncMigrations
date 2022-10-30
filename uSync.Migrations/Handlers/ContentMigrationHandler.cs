@@ -1,24 +1,29 @@
-﻿using Umbraco.Cms.Core.Strings;
-
+﻿using Umbraco.Cms.Core.Events;
+using Umbraco.Cms.Core.Models;
+using Umbraco.Cms.Core.Strings;
+using uSync.Migrations.Composing;
 using uSync.Migrations.Models;
 using uSync.Migrations.Services;
 
 namespace uSync.Migrations.Handlers;
 
-internal class ContentMigrationHandler : ContentBaseMigrationHandler, ISyncMigrationHandler
+internal class ContentMigrationHandler : ContentBaseMigrationHandler<Content>, ISyncMigrationHandler
 {
     public ContentMigrationHandler(
-        MigrationFileService migrationFileService,
-        SyncMigratorCollection migrators,
+        IEventAggregator eventAggregator,
+        SyncMigrationFileService migrationFileService,
+        SyncPropertyMigratorCollection migrators,
         IShortStringHelper shortStringHelper)
-        : base(migrationFileService, migrators, shortStringHelper, "Content")
+        : base(eventAggregator, migrationFileService, migrators, shortStringHelper)
     { }
+
+    public string ItemType => nameof(Content);
 
     public int Priority => uSyncMigrations.Priorities.Content;
 
-    public IEnumerable<MigrationMessage> MigrateFromDisk(Guid migrationId, string sourceFolder, MigrationContext context)
-        => DoMigrateFromDisk(migrationId, Path.Combine(sourceFolder, "Content"), context);
-
-    public void PrepMigrations(Guid migrationId, string sourceFolder, MigrationContext context)
+    public void PrepareMigrations(Guid migrationId, string sourceFolder, SyncMigrationContext context)
     { }
+
+    public IEnumerable<MigrationMessage> MigrateFromDisk(Guid migrationId, string sourceFolder, SyncMigrationContext context)
+        => DoMigrateFromDisk(migrationId, Path.Combine(sourceFolder, nameof(Content)), context);
 }

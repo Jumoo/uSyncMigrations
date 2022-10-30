@@ -31,7 +31,7 @@
         function migrate() {
 
             var options = {
-                handlers : vm.options.handlers
+                handlers: vm.options.handlers
             }
 
             vm.state = 'busy';
@@ -52,6 +52,5 @@
 
     }
 
-    angular.module('umbraco')
-        .controller('uSyncMigrationDashboardController', dashboardController);
+    angular.module('umbraco').controller('uSyncMigrationDashboardController', dashboardController);
 })();

@@ -1,37 +1,64 @@
 ﻿using System.Xml.Linq;
-
 using Microsoft.Extensions.Logging;
-
+using Umbraco.Cms.Core.Events;
+using Umbraco.Cms.Core.Models;
+using Umbraco.Cms.Core.Notifications;
 using uSync.Core;
 using uSync.Migrations.Models;
+using uSync.Migrations.Notifications;
 using uSync.Migrations.Services;
 
 namespace uSync.Migrations.Handlers;
+
 internal class TemplateMigrationHandler : ISyncMigrationHandler
 {
-    private readonly MigrationFileService _migrationFileService;
-    private ILogger<TemplateMigrationHandler> _logger;
+    private readonly IEventAggregator _eventAggregator;
+    private readonly SyncMigrationFileService _migrationFileService;
 
     public TemplateMigrationHandler(
-        ILogger<TemplateMigrationHandler> logger,
-        MigrationFileService migrationFileService)
+        IEventAggregator eventAggregator,
+        SyncMigrationFileService migrationFileService)
     {
-        _logger = logger;
+        _eventAggregator = eventAggregator;
         _migrationFileService = migrationFileService;
     }
 
+    public string ItemType => nameof(Template);
 
     public int Priority => uSyncMigrations.Priorities.Templates;
-    public string ItemType => "Template";
 
-    public IEnumerable<MigrationMessage> MigrateFromDisk(Guid migrationId, string sourceFolder, MigrationContext context)
+    public void PrepareMigrations(Guid migrationId, string sourceFolder, SyncMigrationContext context)
+    {
+        var folder = Path.Combine(sourceFolder, "Template");
+
+        if (Directory.Exists(folder) == false)
+        {
+            return;
+        }
+
+        var files = Directory.GetFiles(folder, "*.config").ToList();
+
+        foreach (var file in files)
+        {
+            var source = XElement.Load(file);
+
+            context.AddTemplateKey(
+                source.Element("Alias").ValueOrDefault(string.Empty),
+                source.Element("Key").ValueOrDefault(Guid.Empty));
+        }
+    }
+
+    public IEnumerable<MigrationMessage> MigrateFromDisk(Guid migrationId, string sourceFolder, SyncMigrationContext context)
     {
         return MigrateFolder(migrationId, Path.Combine(sourceFolder, "Template"), 0, context);
     }
 
-    private IEnumerable<MigrationMessage> MigrateFolder(Guid id, string folder, int level, MigrationContext context)
+    private IEnumerable<MigrationMessage> MigrateFolder(Guid id, string folder, int level, SyncMigrationContext context)
     {
-        if (!Directory.Exists(folder)) return Enumerable.Empty<MigrationMessage>();
+        if (Directory.Exists(folder) == false)
+        {
+            return Enumerable.Empty<MigrationMessage>();
+        }
 
         var files = Directory.GetFiles(folder, "*.config").ToList();
 
@@ -45,19 +72,33 @@ internal class TemplateMigrationHandler : ISyncMigrationHandler
                 source.Element("Alias").ValueOrDefault(string.Empty),
                 source.Element("Key").ValueOrDefault(Guid.Empty));
 
+            var migratingNotification = new SyncMigratingNotification<Template>(source, context);
+
+            if (_eventAggregator.PublishCancelable(migratingNotification) == true)
+            {
+                continue;
+            }
+
             var target = ConvertTemplate(source, level);
 
-            messages.Add(SaveTargetXml(id, target));
+            if (target != null)
+            {
+                var migratedNotification = new SyncMigratedNotification<Template>(target, context).WithStateFrom(migratingNotification);
+
+                _eventAggregator.Publish(migratedNotification);
+
+                messages.Add(SaveTargetXml(id, target));
+            }
         }
 
         var folders = Directory.GetDirectories(folder);
+
         foreach (var childFolder in folders)
         {
             messages.AddRange(MigrateFolder(id, childFolder, level + 1, context));
         }
 
         return messages;
-
     }
 
     private XElement ConvertTemplate(XElement source, int level)
@@ -77,29 +118,10 @@ internal class TemplateMigrationHandler : ISyncMigrationHandler
         return target;
     }
 
-
     private MigrationMessage SaveTargetXml(Guid id, XElement xml)
     {
         _migrationFileService.SaveMigrationFile(id, xml, "Templates");
+
         return new MigrationMessage(ItemType, xml.GetAlias(), MigrationMessageType.Success);
-    }
-
-    public void PrepMigrations(Guid migrationId, string sourceFolder, MigrationContext context)
-    {
-        var folder = Path.Combine(sourceFolder, "Template");
-
-        if (!Directory.Exists(folder)) return;
-
-        var files = Directory.GetFiles(folder, "*.config").ToList();
-        foreach (var file in files)
-        {
-            var source = XElement.Load(file);
-
-            context.AddTemplateKey(
-                source.Element("Alias").ValueOrDefault(string.Empty),
-                source.Element("Key").ValueOrDefault(Guid.Empty));
-        }
-
-       
     }
 }

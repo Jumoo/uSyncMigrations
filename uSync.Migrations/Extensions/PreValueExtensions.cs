@@ -1,12 +1,11 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-
 using Umbraco.Cms.Core;
 using Umbraco.Extensions;
-
 using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Extensions;
+
 public static class PreValueExtensions
 {
     public static void AddIntPreValue(this JObject item, IList<PreValue> preValues, string alias)
@@ -25,7 +24,7 @@ public static class PreValueExtensions
         var value = preValues.FirstOrDefault(x => x.Alias.InvariantEquals(alias));
         if (value != null)
         {
-            var attempt = value.Value.TryConvertTo<Decimal>();
+            var attempt = value.Value.TryConvertTo<decimal>();
             if (attempt.Success)
                 item.Add(alias, attempt.Result);
         }
@@ -33,8 +32,9 @@ public static class PreValueExtensions
 
     public static object MapPreValues(this object config, IList<PreValue> preValues)
     {
-        // generic mapping of aliases to properties ? 
+        // generic mapping of aliases to properties ?
         var properties = config.GetType().GetProperties();
+
         foreach (var property in properties)
         {
             var value = preValues?.FirstOrDefault(x => x.Alias.InvariantEquals(property.Name));
@@ -81,7 +81,8 @@ public static class PreValueExtensions
         foreach (var property in preValues)
         {
             var alias = property.Alias;
-            if (uppercase && alias.Length > 1) {
+            if (uppercase && alias.Length > 1)
+            {
                 alias = alias[0].ToString().ToUpper() + alias.Substring(1);
             }
 
