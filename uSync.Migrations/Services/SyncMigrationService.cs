@@ -1,4 +1,5 @@
-﻿using Umbraco.Extensions;
+﻿using Umbraco.Cms.Core.Models;
+using Umbraco.Extensions;
 using uSync.BackOffice.Configuration;
 using uSync.Migrations.Composing;
 using uSync.Migrations.Handlers;
@@ -88,14 +89,14 @@ public class SyncMigrationService
 
         if (options.BlockListViews)
         {
-            context.AddBlocked("DataType", UmbConstants.PropertyEditors.Aliases.ListView);
+            context.AddBlocked(nameof(DataType), UmbConstants.PropertyEditors.Aliases.ListView);
         }
 
         if (options.BlockCommonTypes)
         {
-            context.AddBlocked("MediaType", UmbConstants.Conventions.MediaTypes.File);
-            context.AddBlocked("MediaType", UmbConstants.Conventions.MediaTypes.Folder);
-            context.AddBlocked("MediaType", UmbConstants.Conventions.MediaTypes.Image);
+            context.AddBlocked(nameof(MediaType), UmbConstants.Conventions.MediaTypes.File);
+            context.AddBlocked(nameof(MediaType), UmbConstants.Conventions.MediaTypes.Folder);
+            context.AddBlocked(nameof(MediaType), UmbConstants.Conventions.MediaTypes.Image);
         }
 
         var allHandlers = GetHandlers(Enumerable.Empty<string>());
