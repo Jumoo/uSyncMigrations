@@ -33,6 +33,9 @@ public class SyncMigrationService
         var migrationId = Guid.NewGuid();
         var sourceRoot = _migrationFileService.GetMigrationSource("data");
 
+        // TODO: Add notifications for `uSyncMigrationStartingNotification` and `uSyncMigrationCompleteNotification`? [LK]
+        // Pass through the context, in case 3rd-party wants to populate/reference it? [LK]
+
         var itemTypes = options.Handlers.Where(x => x.Include == true).Select(x => x.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         var handlers = GetHandlers(itemTypes);
@@ -104,8 +107,6 @@ public class SyncMigrationService
         {
             handler.PrepareMigrations(migrationId, sourceRoot, context);
         }
-
-        // TODO: Maybe have a notification event to let 3rd-party populate the context? [LK]
 
         return context;
     }
