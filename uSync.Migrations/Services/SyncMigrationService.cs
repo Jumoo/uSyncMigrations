@@ -1,4 +1,5 @@
-﻿using Umbraco.Extensions;
+﻿using Umbraco.Cms.Core.Models;
+using Umbraco.Extensions;
 using uSync.BackOffice.Configuration;
 using uSync.Migrations.Composing;
 using uSync.Migrations.Handlers;
@@ -31,13 +32,15 @@ public class SyncMigrationService
     {
         var migrationId = Guid.NewGuid();
         var sourceRoot = _migrationFileService.GetMigrationSource("data");
-        var migrationRoot = Path.Combine(sourceRoot, migrationId.ToString());
-        var migrationContext = PrepareContext(migrationId, sourceRoot, options);
 
-        var itemTypes = options.Handlers.Where(x => x.Include).Select(x => x.Name);
+        // TODO: Add notifications for `uSyncMigrationStartingNotification` and `uSyncMigrationCompleteNotification`? [LK]
+        // Pass through the context, in case 3rd-party wants to populate/reference it? [LK]
+
+        var itemTypes = options.Handlers.Where(x => x.Include == true).Select(x => x.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         var handlers = GetHandlers(itemTypes);
 
+        var migrationContext = PrepareContext(migrationId, sourceRoot, options);
 
         var results = MigrateFromDisk(migrationId, sourceRoot, migrationContext, handlers);
 
@@ -57,12 +60,12 @@ public class SyncMigrationService
         };
     }
 
-    private IOrderedEnumerable<ISyncMigrationHandler> GetHandlers(IEnumerable<string> itemTypes)
+    private IOrderedEnumerable<ISyncMigrationHandler> GetHandlers(HashSet<string>? itemTypes = null)
     {
-        if (itemTypes != null && itemTypes.Count() > 0)
+        if (itemTypes?.Any() == true)
         {
             return _migrationHandlers
-                .Where(x => itemTypes.Contains(x.ItemType))
+                .Where(x => itemTypes.Contains(x.ItemType) == true)
                 .OrderBy(x => x.Priority);
         }
 
@@ -82,30 +85,28 @@ public class SyncMigrationService
         return results;
     }
 
-    private SyncMigrationContext PrepareContext(Guid migrationId, string root, MigrationOptions options)
+    private SyncMigrationContext PrepareContext(Guid migrationId, string sourceRoot, MigrationOptions options)
     {
         var context = new SyncMigrationContext(migrationId);
 
         if (options.BlockListViews)
         {
-            context.AddBlocked("DataType", UmbConstants.PropertyEditors.Aliases.ListView);
+            context.AddBlocked(nameof(DataType), UmbConstants.PropertyEditors.Aliases.ListView);
         }
 
         if (options.BlockCommonTypes)
         {
-            context.AddBlocked("MediaType", UmbConstants.Conventions.MediaTypes.File);
-            context.AddBlocked("MediaType", UmbConstants.Conventions.MediaTypes.Folder);
-            context.AddBlocked("MediaType", UmbConstants.Conventions.MediaTypes.Image);
+            context.AddBlocked(nameof(MediaType), UmbConstants.Conventions.MediaTypes.File);
+            context.AddBlocked(nameof(MediaType), UmbConstants.Conventions.MediaTypes.Folder);
+            context.AddBlocked(nameof(MediaType), UmbConstants.Conventions.MediaTypes.Image);
         }
 
-        var allHandlers = GetHandlers(Enumerable.Empty<string>());
+        var allHandlers = GetHandlers();
 
         foreach (var handler in allHandlers)
         {
-            handler.PrepareMigrations(migrationId, root, context);
+            handler.PrepareMigrations(migrationId, sourceRoot, context);
         }
-
-        // TODO: Maybe have a notification event to let 3rd-party populate the context? [LK]
 
         return context;
     }
