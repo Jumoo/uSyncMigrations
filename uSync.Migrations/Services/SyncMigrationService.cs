@@ -32,7 +32,6 @@ public class SyncMigrationService
     {
         var migrationId = Guid.NewGuid();
         var sourceRoot = _migrationFileService.GetMigrationSource("data");
-        var migrationRoot = Path.Combine(sourceRoot, migrationId.ToString());
 
         var itemTypes = options.Handlers.Where(x => x.Include).Select(x => x.Name);
 
