@@ -33,7 +33,7 @@ public class SyncMigrationService
         var migrationId = Guid.NewGuid();
         var sourceRoot = _migrationFileService.GetMigrationSource("data");
 
-        var itemTypes = options.Handlers.Where(x => x.Include).Select(x => x.Name);
+        var itemTypes = options.Handlers.Where(x => x.Include == true).Select(x => x.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         var handlers = GetHandlers(itemTypes);
 
@@ -57,12 +57,12 @@ public class SyncMigrationService
         };
     }
 
-    private IOrderedEnumerable<ISyncMigrationHandler> GetHandlers(IEnumerable<string> itemTypes)
+    private IOrderedEnumerable<ISyncMigrationHandler> GetHandlers(HashSet<string>? itemTypes = null)
     {
-        if (itemTypes != null && itemTypes.Count() > 0)
+        if (itemTypes?.Any() == true)
         {
             return _migrationHandlers
-                .Where(x => itemTypes.Contains(x.ItemType))
+                .Where(x => itemTypes.Contains(x.ItemType) == true)
                 .OrderBy(x => x.Priority);
         }
 
@@ -82,7 +82,7 @@ public class SyncMigrationService
         return results;
     }
 
-    private SyncMigrationContext PrepareContext(Guid migrationId, string root, MigrationOptions options)
+    private SyncMigrationContext PrepareContext(Guid migrationId, string sourceRoot, MigrationOptions options)
     {
         var context = new SyncMigrationContext();
 
@@ -98,11 +98,11 @@ public class SyncMigrationService
             context.AddBlocked(nameof(MediaType), UmbConstants.Conventions.MediaTypes.Image);
         }
 
-        var allHandlers = GetHandlers(Enumerable.Empty<string>());
+        var allHandlers = GetHandlers();
 
         foreach (var handler in allHandlers)
         {
-            handler.PrepareMigrations(migrationId, root, context);
+            handler.PrepareMigrations(migrationId, sourceRoot, context);
         }
 
         // TODO: Maybe have a notification event to let 3rd-party populate the context? [LK]
