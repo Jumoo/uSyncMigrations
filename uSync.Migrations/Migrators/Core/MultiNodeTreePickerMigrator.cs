@@ -42,21 +42,18 @@ internal class MultiNodeTreePickerMigrator : SyncPropertyMigratorBase
         {
             foreach (var item in items)
             {
-                // Test if the value is already a Guid, if not, test if it's a GuidUdi instead.
-                // If it is a Guid, then `guid` will be assigned and continue on.
-                if (Guid.TryParse(item, out Guid guid) == false && UdiParser.TryParse<GuidUdi>(item, out var udi) == true)
-                {
-                    guid = udi.Guid;
-                }
-
-                if (guid.Equals(Guid.Empty) == false)
+                if (Guid.TryParse(item, out var guid) == true)
                 {
                     // TODO: Eeek! This might possibly be content, media or member! [LK]
                     values.Add(Udi.Create(UmbConstants.UdiEntityType.Document, guid));
                 }
+                else if (UdiParser.TryParse<GuidUdi>(item, out var udi) == true)
+                {
+                    values.Add(udi);
+                }
             }
         }
 
-        return JsonConvert.SerializeObject(values);
+        return string.Join(",", values);
     }
 }
