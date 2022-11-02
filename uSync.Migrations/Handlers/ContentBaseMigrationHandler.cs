@@ -120,9 +120,15 @@ internal class ContentBaseMigrationHandler<TEntity>
 
             info.Add(new XElement("Published", new XAttribute("Default", published)));
             info.Add(new XElement("Schedule"));
-            info.Add(new XElement("Template",
-                new XAttribute("Key", context.GetTemplateKey(template)),
-                template));
+
+            if (string.IsNullOrWhiteSpace(template) == false)
+            {
+                info.Add(new XElement("Template", new XAttribute("Key", context.GetTemplateKey(template)), template));
+            }
+            else
+            {
+                info.Add(new XElement("Template"));
+            }
         }
 
         var propertiesList = new XElement("Properties");
