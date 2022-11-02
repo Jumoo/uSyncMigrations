@@ -13,6 +13,13 @@ public class SyncMigrationContext
     private Dictionary<string, string> _propertyTypes { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     private Dictionary<string, Guid> _templateKeys { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
+    public SyncMigrationContext(Guid migrationId)
+    {
+        MigrationId = migrationId;
+    }
+
+    public Guid MigrationId { get; }
+
     public void AddTemplateKey(string templateAlias, Guid templateKey)
          => _ = _templateKeys.TryAdd(templateAlias, templateKey);
 
