@@ -32,12 +32,12 @@ public class SyncMigrationService
         var migrationId = Guid.NewGuid();
         var sourceRoot = _migrationFileService.GetMigrationSource("data");
         var migrationRoot = Path.Combine(sourceRoot, migrationId.ToString());
+        var migrationContext = PrepareContext(migrationId, sourceRoot, options);
 
         var itemTypes = options.Handlers.Where(x => x.Include).Select(x => x.Name);
 
         var handlers = GetHandlers(itemTypes);
 
-        var migrationContext = PrepareContext(migrationId, sourceRoot, options);
 
         var results = MigrateFromDisk(migrationId, sourceRoot, migrationContext, handlers);
 
@@ -84,7 +84,7 @@ public class SyncMigrationService
 
     private SyncMigrationContext PrepareContext(Guid migrationId, string root, MigrationOptions options)
     {
-        var context = new SyncMigrationContext();
+        var context = new SyncMigrationContext(migrationId);
 
         if (options.BlockListViews)
         {
