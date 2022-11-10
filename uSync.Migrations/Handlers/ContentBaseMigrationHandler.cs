@@ -1,5 +1,7 @@
 ﻿using System.Xml.Linq;
 
+using Examine;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -156,9 +158,12 @@ internal class ContentBaseMigrationHandler<TEntity>
         }
 
         target.Add(propertiesList);
+
+        // check we have language title / and published statuses
+        EnsureLanguageTitles(target);
+
         return target;
     }
-
 
     private XElement ConvertPropertyValue(string itemType, string contentType, XElement property, SyncMigrationContext context)
     {
@@ -206,7 +211,56 @@ internal class ContentBaseMigrationHandler<TEntity>
         }
 
         return null;
+    }
 
+    /// <summary>
+    ///  at the end - if we have added vorto values, we also need
+    ///  to add nodename titles for the languages. 
+    /// </summary>
+    /// <param name="node"></param>
+    private void EnsureLanguageTitles(XElement node)
+    {
+        var propertiesNode = node.Element("Properties");
+        if (propertiesNode == null) return;
+
+        var nodeNameNode = node.Element("Info")?.Element("NodeName");
+        if (nodeNameNode == null) return;
+
+
+
+        var languages = new List<string>();
+
+        foreach(var property in propertiesNode.Elements())
+        {
+            foreach(var value in property.Elements())
+            {
+                var culture = value.Attribute("Culture").ValueOrDefault(string.Empty).ToLower();
+                if (!string.IsNullOrWhiteSpace(culture)
+                    && !languages.Contains(culture))
+                {
+                    languages.Add(culture);
+                }
+            }
+        }
+
+        if (languages.Count > 0)
+        {
+            var defaultName = nodeNameNode.Attribute("Default").ValueOrDefault(string.Empty);
+            var publishedNode = node.Element("Info")?.Element("Published");
+            var publishedValue = publishedNode?.Attribute("Default").ValueOrDefault(false) ?? false;
+
+            foreach (var language in languages)
+            {
+                nodeNameNode.Add(new XElement("Name",
+                    new XAttribute("Culture", language), defaultName));
+
+                if (publishedNode != null)
+                {
+                    publishedNode.Add(new XElement("Published",
+                        new XAttribute("Culture", language), publishedValue));
+                }
+            }
+        }
     }
 
     private MigrationMessage SaveTargetXml(string itemType, Guid id, XElement xml)
