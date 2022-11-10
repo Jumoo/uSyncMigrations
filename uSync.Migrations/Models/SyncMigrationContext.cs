@@ -6,6 +6,7 @@
 public class SyncMigrationContext
 {
     private HashSet<string> _blockedTypes = new(StringComparer.OrdinalIgnoreCase);
+    private Dictionary<Guid, string> _dataTypeDefinitions { get; set; } = new();
     private Dictionary<Guid, string> _contentKeys { get; set; } = new();
     private Dictionary<Guid, string> _contentPaths { get; set; } = new();
     private Dictionary<string, Guid> _contentTypeKeys { get; set; } = new(StringComparer.OrdinalIgnoreCase);
@@ -88,4 +89,12 @@ public class SyncMigrationContext
 
     public void AddBlocked(string itemType, string alias)
         => _ = _blockedTypes.Add($"{itemType}_{alias}");
+
+    public void AddDataTypeDefinition(Guid dtd, string editorAlias)
+        => _ = _dataTypeDefinitions.TryAdd(dtd, editorAlias);
+
+    public string GetDataTypeFromDefinition(Guid guid)
+        => _dataTypeDefinitions?.TryGetValue(guid, out var editorAlias) == true 
+            ? editorAlias 
+            : string.Empty;
 }

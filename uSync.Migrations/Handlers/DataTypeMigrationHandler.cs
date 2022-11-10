@@ -1,10 +1,15 @@
 ﻿using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+
+using Org.BouncyCastle.Crypto.Digests;
+
 using System.Xml.Linq;
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Notifications;
 using Umbraco.Cms.Core.PropertyEditors;
+using Umbraco.Cms.Core.Services;
+
 using uSync.Core;
 using uSync.Migrations.Composing;
 using uSync.Migrations.Extensions;
@@ -22,12 +27,14 @@ internal class DataTypeMigrationHandler : ISyncMigrationHandler
     private readonly SyncMigrationFileService _migrationFileService;
     private readonly ILogger<DataTypeMigrationHandler> _logger;
     private readonly JsonSerializerSettings _jsonSerializerSettings;
+    private readonly IDataTypeService _dataTypeService;
 
     public DataTypeMigrationHandler(
         IEventAggregator eventAggregator,
         SyncMigrationFileService fileService,
         ILogger<DataTypeMigrationHandler> logger,
-        SyncPropertyMigratorCollection migrators)
+        SyncPropertyMigratorCollection migrators,
+        IDataTypeService dataTypeService)
     {
         _eventAggregator = eventAggregator;
         _migrators = migrators;
@@ -39,6 +46,7 @@ internal class DataTypeMigrationHandler : ISyncMigrationHandler
             ContractResolver = new SyncMigrationsContractResolver(),
             Formatting = Formatting.Indented,
         };
+        _dataTypeService = dataTypeService;
     }
 
     public string ItemType => nameof(DataType);
@@ -46,7 +54,26 @@ internal class DataTypeMigrationHandler : ISyncMigrationHandler
     public int Priority => uSyncMigrations.Priorities.DataTypes;
 
     public void PrepareMigrations(Guid migrationId, string sourceFolder, SyncMigrationContext context)
-    { }
+    { 
+        if (Directory.Exists(sourceFolder) == false)
+        {
+            return;
+        }
+
+        foreach(var file in Directory.GetFiles(sourceFolder, "*.config", SearchOption.AllDirectories))
+        {
+            var source = XElement.Load(file);
+            var dtd = source.Attribute("Key").ValueOrDefault(Guid.Empty);
+            var editorAlias = source.Attribute("Id").ValueOrDefault(string.Empty);
+            if (dtd == Guid.Empty || string.IsNullOrEmpty(editorAlias)) continue;
+            context.AddDataTypeDefinition(dtd, editorAlias);
+        }
+
+        foreach(var datatype in _dataTypeService.GetAll())
+        {
+            context.AddDataTypeDefinition(datatype.Key, datatype.EditorAlias);
+        }
+    }
 
     public IEnumerable<MigrationMessage> MigrateFromDisk(Guid migrationId, string sourceFolder, SyncMigrationContext context)
     {

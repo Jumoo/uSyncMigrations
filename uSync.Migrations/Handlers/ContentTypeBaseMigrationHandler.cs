@@ -33,7 +33,7 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity>
         {
             return;
         }
-
+        
         foreach (var file in Directory.GetFiles(sourceFolder, "*.config", SearchOption.AllDirectories))
         {
             var source = XElement.Load(file);

@@ -1,11 +1,19 @@
 ﻿using System.Xml.Linq;
+
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+
+using Polly;
+
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models.Entities;
+using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.Notifications;
 using Umbraco.Cms.Core.Strings;
 using Umbraco.Extensions;
 using uSync.Core;
 using uSync.Migrations.Composing;
+using uSync.Migrations.Extensions;
 using uSync.Migrations.Models;
 using uSync.Migrations.Notifications;
 using uSync.Migrations.Services;
@@ -140,18 +148,65 @@ internal class ContentBaseMigrationHandler<TEntity>
                 continue;
             }
 
-            var editorAlias = context.GetEditorAlias(contentType, property.Name.LocalName);
-
-            // with the editorAlias, we can do any migrations of the string types here...
-            var migratedValue = MigrateContentValue(editorAlias, property.Value, context);
-
-            var newProperty = new XElement(property.Name.LocalName);
-            newProperty.Add(new XElement("Value", new XCData(migratedValue)));
-            propertiesList.Add(newProperty);
+            var newProperty = ConvertPropertyValue(itemType, contentType, property, context);
+            if (newProperty != null)
+            {
+                propertiesList.Add(newProperty);
+            }
         }
 
         target.Add(propertiesList);
         return target;
+    }
+
+
+    private XElement ConvertPropertyValue(string itemType, string contentType, XElement property, SyncMigrationContext context)
+    {
+        var editorAlias = context.GetEditorAlias(contentType, property.Name.LocalName);
+        if (editorAlias.IsVortoEditorAlias() && itemType == "Content")
+        {
+            // vorto we split into many values 
+            var vortoElement = GetVortoValues(property, context);
+            if (vortoElement != null) return vortoElement;
+        }
+
+        // else - single value 
+        var migratedValue = MigrateContentValue(editorAlias, property.Value, context);
+        return new XElement(property.Name.LocalName, 
+                    new XElement("Value", new XCData(migratedValue)));
+
+    }
+    
+    /// <summary>
+    ///  special case, spit a vorto value into multiple cultures, 
+    ///  and return them back as a blob of xml values
+    /// </summary>
+    private XElement? GetVortoValues(XElement property, SyncMigrationContext context)
+    {
+        var attempt = property.Value.ConvertToVortoValue();
+        if (attempt.Success && attempt.Result != null)
+        {
+            var newProperty = new XElement(property.Name.LocalName);
+
+            // get editor alias from dtdguid
+            var vortoEditorAlias = context.GetDataTypeFromDefinition(attempt.Result.DtdGuid);
+            if (vortoEditorAlias != null)
+            {
+                foreach (var language in attempt.Result.Values)
+                {
+                    var migratedValue = MigrateContentValue(vortoEditorAlias, language.Value, context);
+
+                    newProperty.Add(new XElement("Value"),
+                        new XAttribute("Culture", language.Key),
+                        migratedValue);
+                }
+            }
+
+            return newProperty;
+        }
+
+        return null;
+
     }
 
     private MigrationMessage SaveTargetXml(string itemType, Guid id, XElement xml)
