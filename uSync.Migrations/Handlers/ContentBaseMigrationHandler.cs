@@ -196,9 +196,9 @@ internal class ContentBaseMigrationHandler<TEntity>
                 {
                     var migratedValue = MigrateContentValue(vortoEditorAlias, language.Value, context);
 
-                    newProperty.Add(new XElement("Value"),
+                    newProperty.Add(new XElement("Value",
                         new XAttribute("Culture", language.Key),
-                        migratedValue);
+                        new XCData(migratedValue)));
                 }
             }
 
