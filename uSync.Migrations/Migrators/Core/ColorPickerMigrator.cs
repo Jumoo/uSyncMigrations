@@ -22,7 +22,7 @@ public class ColorPickerMigrator : SyncPropertyMigratorBase
         {
             if (prevalue.Alias.InvariantEquals("useLabel"))
             {
-                config.UseLabel = int.Parse(prevalue.Value) == 1;
+                config.UseLabel = string.IsNullOrEmpty(prevalue.Value) ? false : int.Parse(prevalue.Value) == 1;
             }
             else
             {
