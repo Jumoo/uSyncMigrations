@@ -2,7 +2,7 @@
 
 using uSync.Migrations.Models;
 
-namespace uSync.Migrations.Migrators;
+namespace uSync.Migrations.Migrators.Models;
 
 public sealed class SyncMigrationDataTypeProperty : SyncMigrationPropertyBase
 {

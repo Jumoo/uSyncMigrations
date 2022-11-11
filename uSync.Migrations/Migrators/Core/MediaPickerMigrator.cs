@@ -5,19 +5,16 @@ using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Cms.Core.PropertyEditors.ValueConverters;
 using Umbraco.Extensions;
 using uSync.Migrations.Extensions;
+using uSync.Migrations.Migrators.Models;
 using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Migrators;
 
+[SyncMigrator(UmbConstants.PropertyEditors.Aliases.MediaPicker)]
+[SyncMigrator("Umbraco.MediaPicker2")]
+[SyncMigrator(UmbConstants.PropertyEditors.Aliases.MultipleMediaPicker)]
 internal class MediaPickerMigrator : SyncPropertyMigratorBase
 {
-    public override string[] Editors => new[]
-    {
-        UmbConstants.PropertyEditors.Aliases.MediaPicker,
-        "Umbraco.MediaPicker2",
-        UmbConstants.PropertyEditors.Aliases.MultipleMediaPicker,
-    };
-
     public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
         => UmbConstants.PropertyEditors.Aliases.MediaPicker3;
 

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 
 using uSync.Migrations.Migrators;
+using uSync.Migrations.Migrators.Models;
 using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Tests.Migrators;

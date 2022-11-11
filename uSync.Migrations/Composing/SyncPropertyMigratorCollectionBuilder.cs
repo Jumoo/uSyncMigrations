@@ -31,4 +31,15 @@ public class SyncPropertyMigratorCollection
     public bool TryGet(string editorAlias, out ISyncPropertyMigrator? item) => _lookup.TryGetValue(editorAlias, out item);
 
     public ISyncPropertyMigrator? Get(string editorAlias) => _lookup.TryGetValue(editorAlias, out var migrator) == true ? migrator : default;
+
+    public ISyncVariationPropertyMigrator? GetVariantMigrator(string editorAlias)
+    {
+        if (_lookup.TryGetValue(editorAlias, out var migrator)
+            && migrator is ISyncVariationPropertyMigrator variantMigrator)
+        {
+            return variantMigrator;
+        }
+
+        return null;
+    }
 }

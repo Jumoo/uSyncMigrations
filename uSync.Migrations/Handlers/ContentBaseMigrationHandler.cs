@@ -1,12 +1,20 @@
 ﻿using System.Xml.Linq;
+
+using HtmlAgilityPack;
+
+using Microsoft.AspNetCore.Mvc;
+
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models.Entities;
 using Umbraco.Cms.Core.Notifications;
 using Umbraco.Cms.Core.Strings;
 using Umbraco.Extensions;
+
 using uSync.Core;
 using uSync.Migrations.Composing;
+using uSync.Migrations.Extensions;
 using uSync.Migrations.Migrators;
+using uSync.Migrations.Migrators.Models;
 using uSync.Migrations.Models;
 using uSync.Migrations.Notifications;
 using uSync.Migrations.Services;
@@ -37,6 +45,8 @@ internal class ContentBaseMigrationHandler<TEntity>
 
     public IEnumerable<MigrationMessage> DoMigrateFromDisk(Guid id, string folder, SyncMigrationContext context)
     {
+        if (!Directory.Exists(folder)) return Enumerable.Empty<MigrationMessage>();
+
         // loads all the content names into the context, so we can get them later on.
         PrepareContext(folder, context);
 
@@ -141,18 +151,128 @@ internal class ContentBaseMigrationHandler<TEntity>
                 continue;
             }
 
-            var editorAlias = context.GetEditorAlias(contentType, property.Name.LocalName);
-
-            // with the editorAlias, we can do any migrations of the string types here...
-            var migratedValue = MigrateContentValue(editorAlias, property.Value, context);
-
-            var newProperty = new XElement(property.Name.LocalName);
-            newProperty.Add(new XElement("Value", new XCData(migratedValue)));
-            propertiesList.Add(newProperty);
+            var newProperty = ConvertPropertyValue(itemType, contentType, property, context);
+            if (newProperty != null)
+            {
+                propertiesList.Add(newProperty);
+            }
         }
 
         target.Add(propertiesList);
+
+        // check we have language title / and published statuses
+        EnsureLanguageTitles(target);
+
         return target;
+    }
+
+    private XElement ConvertPropertyValue(string itemType, string contentType, XElement property, SyncMigrationContext context)
+    {
+        var editorAlias = context.GetEditorAlias(contentType, property.Name.LocalName)?.OrginalEditorAlias ?? string.Empty;
+
+        // convert the property .
+
+        var migrationProperty = new SyncMigrationContentProperty(editorAlias, property.Value);
+        var migrator = _migrators.GetVariantMigrator(editorAlias);
+        if (migrator != null && itemType == "Content")
+        {
+            // it might be the case that the property needs to be split into variants. 
+            // if this is the case a ISyncVariationPropertyEditor will exist and it can 
+            // split a single value into a collection split by culture
+            var vortoElement = GetVariedValueNode(migrator, property.Name.LocalName, migrationProperty, context);
+            if (vortoElement != null) return vortoElement;
+        }
+
+        // or this value doesn't need to be split by variation
+        // and we can 'just' migrate it on its own.
+        var migratedValue = MigrateContentValue(migrationProperty, context);
+        return new XElement(property.Name.LocalName,
+                    new XElement("Value", new XCData(migratedValue)));
+    }
+
+    /// <summary>
+    ///  special case, spit a vorto value into multiple cultures, 
+    ///  and return them back as a blob of xml values
+    /// </summary>
+    private XElement? GetVariedValueNode(ISyncVariationPropertyMigrator migrator, string propertyName, SyncMigrationContentProperty migrationProperty, SyncMigrationContext context)
+    {
+        // Get varied elements from the migrator.
+        var attempt = migrator.GetVariedElements(migrationProperty, context);
+        if (attempt.Success && attempt.Result != null)
+        {
+            // this returns an object which tells us what datatype to use
+            // and a dictionary of cultuire / values we can migrate. 
+
+            var newProperty = new XElement(propertyName);
+
+            // get editor alias from dtdguid
+            var variantEditorAlias = context.GetDataTypeFromDefinition(attempt.Result.DtdGuid);
+            if (variantEditorAlias != null)
+            {
+                foreach (var variation in attempt.Result.Values)
+                {
+                    var variationProperty = new SyncMigrationContentProperty(variantEditorAlias, variation.Value);
+
+                    var migratedValue = MigrateContentValue(variationProperty, context);
+
+                    newProperty.Add(new XElement("Value",
+                        new XAttribute("Culture", variation.Key),
+                        new XCData(migratedValue)));
+                }
+            }
+
+            return newProperty;
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    ///  at the end - if we have added vorto values, we also need
+    ///  to add nodename titles for the languages. 
+    /// </summary>
+    /// <param name="node"></param>
+    private void EnsureLanguageTitles(XElement node)
+    {
+        var propertiesNode = node.Element("Properties");
+        if (propertiesNode == null) return;
+
+        var nodeNameNode = node.Element("Info")?.Element("NodeName");
+        if (nodeNameNode == null) return;
+
+        var languages = new List<string>();
+
+        foreach (var property in propertiesNode.Elements())
+        {
+            foreach (var value in property.Elements())
+            {
+                var culture = value.Attribute("Culture").ValueOrDefault(string.Empty).ToLower();
+                if (!string.IsNullOrWhiteSpace(culture)
+                    && !languages.Contains(culture))
+                {
+                    languages.Add(culture);
+                }
+            }
+        }
+
+        if (languages.Count > 0)
+        {
+            var defaultName = nodeNameNode.Attribute("Default").ValueOrDefault(string.Empty);
+            var publishedNode = node.Element("Info")?.Element("Published");
+            var publishedValue = publishedNode?.Attribute("Default").ValueOrDefault(false) ?? false;
+
+            foreach (var language in languages)
+            {
+                nodeNameNode.Add(new XElement("Name",
+                    new XAttribute("Culture", language), defaultName));
+
+                if (publishedNode != null)
+                {
+                    publishedNode.Add(new XElement("Published",
+                        new XAttribute("Culture", language), publishedValue));
+                }
+            }
+        }
     }
 
     private MigrationMessage SaveTargetXml(string itemType, Guid id, XElement xml)
@@ -162,14 +282,16 @@ internal class ContentBaseMigrationHandler<TEntity>
         return new MigrationMessage(itemType, xml.GetAlias(), MigrationMessageType.Success);
     }
 
-    private string MigrateContentValue(string editorAlias, string value, SyncMigrationContext context)
+    private string MigrateContentValue(SyncMigrationContentProperty migrationProperty, SyncMigrationContext context)
     {
-        if (_migrators.TryGet(editorAlias, out var migrator) == true)
+        if (string.IsNullOrWhiteSpace(migrationProperty?.EditorAlias)) return migrationProperty.Value;
+
+        if (_migrators.TryGet(migrationProperty?.EditorAlias, out var migrator) == true)
         {
-            return migrator?.GetContentValue(new SyncMigrationContentProperty(editorAlias, value), context) ?? value;
+            return migrator?.GetContentValue(migrationProperty, context) ?? migrationProperty.Value;
         }
 
-        return value;
+        return migrationProperty.Value;
     }
 
     private void PrepareContext(string folder, SyncMigrationContext context)

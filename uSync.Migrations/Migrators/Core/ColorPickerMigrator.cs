@@ -5,7 +5,7 @@ using Newtonsoft.Json.Serialization;
 
 using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Extensions;
-
+using uSync.Migrations.Migrators.Models;
 using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Migrators;
@@ -69,6 +69,7 @@ public class ColorPickerMigrator : SyncPropertyMigratorBase
     public override string GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
     {
         var legacyValue = JsonConvert.DeserializeObject<ColorItemValue>(contentProperty.Value);
+        if (legacyValue == null) return contentProperty.Value;
 
         // TODO - [KJ] this sort order is actuall set in v8+ i am not sure if it is then used ?
         var newValue = new ColourContentValue
