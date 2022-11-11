@@ -5,18 +5,17 @@ using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Migrators;
 
+[SyncMigrator(UmbConstants.PropertyEditors.Aliases.Tags)]
 public class TagMigrator : SyncPropertyMigratorBase
 {
-    public override string[] Editors => new[] { UmbConstants.PropertyEditors.Aliases.Tags };
-
-    public override object GetConfigValues(string editorAlias, string databaseType, IList<PreValue> preValues, SyncMigrationContext context)
+    public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
         var config = new TagConfiguration
         {
             Delimiter = '\u0000'
         };
 
-        foreach (var preValue in preValues)
+        foreach (var preValue in dataTypeProperty.PreValues)
         {
             switch (preValue.Alias)
             {

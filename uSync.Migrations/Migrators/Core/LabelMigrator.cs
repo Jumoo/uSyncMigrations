@@ -4,18 +4,17 @@ using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Migrators;
 
+[SyncMigrator("Umbraco.NoEdit")]
 internal class LabelMigrator : SyncPropertyMigratorBase
 {
-    public override string[] Editors => new[] { "Umbraco.NoEdit" };
-
-    public override string GetEditorAlias(string editorAlias, string databaseType, SyncMigrationContext context)
+    public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
         => UmbConstants.PropertyEditors.Aliases.Label;
 
-    public override object GetConfigValues(string editorAlias, string databaseType, IList<PreValue> preValues, SyncMigrationContext context)
+    public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
         return new LabelConfiguration
         {
-            ValueType = preValues.GetPreValueOrDefault(UmbConstants.PropertyEditors.ConfigurationKeys.DataValueType, ValueTypes.String)
+            ValueType = dataTypeProperty.PreValues.GetPreValueOrDefault(UmbConstants.PropertyEditors.ConfigurationKeys.DataValueType, ValueTypes.String)
         };
     }
 }

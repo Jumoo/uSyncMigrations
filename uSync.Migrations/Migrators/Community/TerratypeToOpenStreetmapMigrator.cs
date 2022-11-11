@@ -4,19 +4,18 @@ using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Migrators;
 
+[SyncMigrator("Terratype")]
 internal class TerratypeToOpenStreetmapMigrator : SyncPropertyMigratorBase
 {
-    public override string[] Editors => new[] { "Terratype" };
-
-    public override string GetEditorAlias(string editorAlias, string databaseType, SyncMigrationContext context)
+    public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
         => "Bergmania.OpenStreetMap";
 
-    public override object GetConfigValues(string editorAlias, string databaseType, IList<PreValue> preValues, SyncMigrationContext context)
+    public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
         var config = new JObject();
 
         config.Add("allowClear", true);
-        config.Add("defaultPosition", GetPosition(preValues.GetPreValueOrDefault("definition", string.Empty)));
+        config.Add("defaultPosition", GetPosition(dataTypeProperty.PreValues.GetPreValueOrDefault("definition", string.Empty)));
         config.Add("showCoordinates", false);
         config.Add("showSearch", false);
         config.Add("tileLayer", "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png");

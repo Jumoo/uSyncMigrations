@@ -18,17 +18,17 @@ internal class MediaPickerMigrator : SyncPropertyMigratorBase
         UmbConstants.PropertyEditors.Aliases.MultipleMediaPicker,
     };
 
-    public override string GetEditorAlias(string editorAlias, string databaseType, SyncMigrationContext context)
+    public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
         => UmbConstants.PropertyEditors.Aliases.MediaPicker3;
 
-    public override object GetConfigValues(string editorAlias, string databaseType, IList<PreValue> preValues, SyncMigrationContext context)
+    public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
         var config = new MediaPicker3Configuration()
         {
             Crops = Array.Empty<MediaPicker3Configuration.CropConfiguration>()
         };
 
-        var imageOnly = preValues.GetPreValueOrDefault("onlyImages", false);
+        var imageOnly = dataTypeProperty.PreValues.GetPreValueOrDefault("onlyImages", false);
         if (imageOnly) config.Filter = UmbConstants.Conventions.MediaTypes.Image;
 
         var mappings = new Dictionary<string, string>
@@ -37,14 +37,14 @@ internal class MediaPickerMigrator : SyncPropertyMigratorBase
             { "startNodeId", nameof(config.StartNodeId) },
         };
 
-        return config.MapPreValues(preValues, mappings);
+        return config.MapPreValues(dataTypeProperty.PreValues, mappings);
     }
 
-    public override string GetContentValue(string editorAlias, string value, SyncMigrationContext context)
+    public override string GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
     {
-        if (string.IsNullOrWhiteSpace(value))
+        if (string.IsNullOrWhiteSpace(contentProperty.Value))
         {
-            return value;
+            return contentProperty.Value;
         }
 
         var defaultCrops = Enumerable.Empty<ImageCropperValue.ImageCropperCrop>();
@@ -52,7 +52,7 @@ internal class MediaPickerMigrator : SyncPropertyMigratorBase
 
         var media = new List<MediaWithCropsDto>();
 
-        var images = value.ToDelimitedList();
+        var images = contentProperty.Value.ToDelimitedList();
 
         foreach (var image in images)
         {
@@ -67,7 +67,7 @@ internal class MediaPickerMigrator : SyncPropertyMigratorBase
             {
                 media.Add(new MediaWithCropsDto
                 {
-                    Key = guid.Combine(value.ToGuid()), // guid.Increment(), // a hack but it means the GUID is constant between syncs.
+                    Key = guid.Combine(contentProperty.Value.ToGuid()), // guid.Increment(), // a hack but it means the GUID is constant between syncs.
                     MediaKey = guid,
                     Crops = defaultCrops,
                     FocalPoint = defaultFocalPoint

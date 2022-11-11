@@ -45,7 +45,7 @@
                 }, function (error) {
                     vm.state = 'error';
                     console.log(error)
-                    notificationsService('error', error.data.ExceptionMessage);
+                    notificationsService.error('error', error.data.ExceptionMessage);
                 });
 
         }

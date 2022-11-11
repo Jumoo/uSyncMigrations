@@ -4,16 +4,15 @@ using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Migrators;
 
+[SyncMigrator("Our.Umbraco.Switcher")]
 internal class SwitcherToTrueFalseMigrator : SyncPropertyMigratorBase
 {
-    public override string[] Editors => new[] { "Our.Umbraco.Switcher" };
-
-    public override string GetEditorAlias(string editorAlias, string databaseType, SyncMigrationContext context)
+    public override string GetEditorAlias(SyncMigrationDataTypeProperty propertyModel, SyncMigrationContext context)
         => UmbConstants.PropertyEditors.Aliases.Boolean;
 
-    public override object GetConfigValues(string editorAlias, string databaseType, IList<PreValue> preValues, SyncMigrationContext context)
+    public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
-        return new TrueFalseConfiguration().MapPreValues(preValues, new Dictionary<string, string>
+        return new TrueFalseConfiguration().MapPreValues(dataTypeProperty.PreValues, new Dictionary<string, string>
         {
             { "hideLabel", nameof(TrueFalseConfiguration.ShowLabels) },
             { "onLabelText", nameof(TrueFalseConfiguration.LabelOn) },

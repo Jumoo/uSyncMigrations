@@ -1,28 +1,32 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+
 using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Extensions;
+
 using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Migrators;
 
+[SyncMigrator("Umbraco.ColorPickerAlias")]
 public class ColorPickerMigrator : SyncPropertyMigratorBase
 {
-    public override string[] Editors => new[] { "Umbraco.ColorPickerAlias" };
-
-    public override string GetEditorAlias(string editorAlias, string databaseType, SyncMigrationContext context)
+    public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
         => UmbConstants.PropertyEditors.Aliases.ColorPicker;
 
-    public override object GetConfigValues(string editorAlias, string databaseType, IList<PreValue> preValues, SyncMigrationContext context)
+    public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
         var config = new ColorPickerConfiguration();
 
         int count = 0;
 
-        foreach (var prevalue in preValues)
+        foreach (var prevalue in dataTypeProperty.PreValues)
         {
             if (prevalue.Alias.InvariantEquals("useLabel"))
             {
-                config.UseLabel = int.Parse(prevalue.Value) == 1;
+                config.UseLabel = string.IsNullOrEmpty(prevalue.Value) ? false : int.Parse(prevalue.Value) == 1;
             }
             else
             {
@@ -31,11 +35,16 @@ public class ColorPickerMigrator : SyncPropertyMigratorBase
                     var currentValue = JsonConvert.DeserializeObject<LegacyColourValue>(prevalue.Value);
                     if (currentValue != null)
                     {
-                        var newValue = currentValue as ColorItemValue;
+                        var newValue = new ColorItemValue
+                        {
+                            Label = currentValue.Label,
+                            Value = currentValue.Value
+                        };
+
 
                         config.Items.Add(new ValueListConfiguration.ValueListItem
                         {
-                            Id = currentValue.SortOrder,
+                            Id = currentValue.SortOrder + 1,
                             Value = JsonConvert.SerializeObject(newValue)
                         });
                     }
@@ -56,6 +65,24 @@ public class ColorPickerMigrator : SyncPropertyMigratorBase
         return config;
     }
 
+
+    public override string GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
+    {
+        var legacyValue = JsonConvert.DeserializeObject<ColorItemValue>(contentProperty.Value);
+
+        // TODO - [KJ] this sort order is actuall set in v8+ i am not sure if it is then used ?
+        var newValue = new ColourContentValue
+        {
+            SortOrder = 1,
+            Id = "1",
+            Label = legacyValue.Label,
+            Value = legacyValue.Value
+        };
+
+        return JsonConvert.SerializeObject(newValue, Formatting.Indented);
+    }
+
+    [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
     private class ColorItemValue
     {
         public string Value { get; set; }
@@ -66,4 +93,15 @@ public class ColorPickerMigrator : SyncPropertyMigratorBase
     {
         public int SortOrder { get; set; }
     }
+ 
+
+    [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
+    private class ColourContentValue
+    {
+        public string Value { get; set; }
+        public string Label { get; set; }
+        public int SortOrder { get; set; }
+        public string Id { get; set; }
+    }
+
 }
