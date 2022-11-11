@@ -3,7 +3,7 @@ using Newtonsoft.Json.Serialization;
 
 namespace uSync.Migrations.Serialization;
 
-internal class SyncMigrationsContractResolver : DefaultContractResolver
+public class SyncMigrationsContractResolver : DefaultContractResolver
 {
     protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
     {

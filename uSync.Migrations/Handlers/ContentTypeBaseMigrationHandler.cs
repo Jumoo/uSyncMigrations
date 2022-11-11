@@ -4,6 +4,7 @@ using Umbraco.Cms.Core.Models.Entities;
 using Umbraco.Cms.Core.Notifications;
 using uSync.Core;
 using uSync.Migrations.Composing;
+using uSync.Migrations.Migrators;
 using uSync.Migrations.Models;
 using uSync.Migrations.Notifications;
 using uSync.Migrations.Services;
@@ -213,11 +214,14 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity>
     {
         var editorAlias = newProperty.Element("Type").ValueOrDefault(string.Empty);
 
+
+        // TODO: [KJ] This is best way - and will fail when we get to more advanced editors like vorto. 
         if (string.IsNullOrEmpty(editorAlias) == false &&
             _migrators.TryGet(editorAlias, out var migrator) == true &&
             migrator != null)
         {
-            newProperty.Element("Type").Value = migrator.GetEditorAlias(editorAlias, string.Empty, context);
+            newProperty.Element("Type").Value = migrator.GetEditorAlias(
+                new SyncMigrationDataTypeProperty(editorAlias, string.Empty, new List<PreValue>()), context);
         }
     }
 

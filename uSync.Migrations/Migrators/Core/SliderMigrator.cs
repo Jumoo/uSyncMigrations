@@ -4,11 +4,10 @@ using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Migrators;
 
+[SyncMigrator(UmbConstants.PropertyEditors.Aliases.Slider)]
 internal class SliderMigrator : SyncPropertyMigratorBase
 {
-    public override string[] Editors => new[] { UmbConstants.PropertyEditors.Aliases.Slider };
-
-    public override object GetConfigValues(string editorAlias, string databaseType, IList<PreValue> preValues, SyncMigrationContext context)
+    public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
         var config = new SliderConfiguration();
 
@@ -23,6 +22,6 @@ internal class SliderMigrator : SyncPropertyMigratorBase
             {"step", nameof(SliderConfiguration.StepIncrements) },
         };
 
-        return config.MapPreValues(preValues, mappings);
+        return config.MapPreValues(dataTypeProperty.PreValues, mappings);
     }
 }

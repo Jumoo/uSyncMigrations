@@ -8,6 +8,7 @@ using Umbraco.Cms.Core.PropertyEditors;
 using uSync.Core;
 using uSync.Migrations.Composing;
 using uSync.Migrations.Extensions;
+using uSync.Migrations.Migrators;
 using uSync.Migrations.Models;
 using uSync.Migrations.Notifications;
 using uSync.Migrations.Serialization;
@@ -127,11 +128,13 @@ internal class DataTypeMigrationHandler : ISyncMigrationHandler
             _logger.LogWarning("No migrator for {editorAlias} will make it a label.", editorAlias);
         }
 
-        var newEditorAlias = migrator?.GetEditorAlias(editorAlias, databaseType, context) ?? UmbConstants.PropertyEditors.Aliases.Label;
-        var newDatabaseType = migrator?.GetDatabaseType(editorAlias, databaseType, context) ?? ValueTypes.String;
+        var dataTypeProperty = new SyncMigrationDataTypeProperty(editorAlias, databaseType, preValues);
+
+        var newEditorAlias = migrator?.GetEditorAlias(dataTypeProperty, context) ?? UmbConstants.PropertyEditors.Aliases.Label;
+        var newDatabaseType = migrator?.GetDatabaseType(dataTypeProperty, context) ?? ValueTypes.String;
 
         var newConfig = preValues != null
-            ? migrator?.GetConfigValues(editorAlias, databaseType, preValues, context) ?? MakeEmptyLabelConfig(preValues)
+            ? migrator?.GetConfigValues(dataTypeProperty, context) ?? MakeEmptyLabelConfig(preValues)
             : MakeEmptyLabelConfig(preValues);
 
         // now we write the new xml. 

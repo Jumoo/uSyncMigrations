@@ -4,18 +4,17 @@ using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Migrators;
 
+[SyncMigrator(UmbConstants.PropertyEditors.Aliases.RadioButtonList)]
 internal class RadioButtonListMigrator : SyncPropertyMigratorBase
 {
-    public override string[] Editors => new[] { UmbConstants.PropertyEditors.Aliases.RadioButtonList };
-
-    public override string GetDatabaseType(string editorAlias, string databaseType, SyncMigrationContext context)
+    public override string GetDatabaseType(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
         => nameof(ValueStorageType.Nvarchar);
 
-    public override object GetConfigValues(string editorAlias, string databaseType, IList<PreValue> preValues, SyncMigrationContext context)
+    public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
         var config = new ValueListConfiguration();
 
-        foreach (var item in preValues)
+        foreach (var item in dataTypeProperty.PreValues)
         {
             config.Items.Add(new ValueListConfiguration.ValueListItem
             {

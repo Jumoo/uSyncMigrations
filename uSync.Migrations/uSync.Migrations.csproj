@@ -12,4 +12,10 @@
 		<PackageReference Include="uSync.Core" Version="10.2.1" />
 		<PackageReference Include="uSync.BackOffice" Version="10.2.1" />
 	</ItemGroup>
+
+	<ItemGroup>
+		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+			<_Parameter1>uSync.Migrations.Tests</_Parameter1>
+		</AssemblyAttribute>
+	</ItemGroup>
 </Project>

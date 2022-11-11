@@ -7,15 +7,11 @@ using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Migrators;
 
+[SyncMigrator(UmbConstants.PropertyEditors.Aliases.MultiNodeTreePicker, IsDefaultAlias = true)]
+[SyncMigrator("Umbraco.MultiNodeTreePicker2")]
 internal class MultiNodeTreePickerMigrator : SyncPropertyMigratorBase
 {
-    public override string[] Editors => new[]
-    {
-        UmbConstants.PropertyEditors.Aliases.MultiNodeTreePicker,
-        "Umbraco.MultiNodeTreePicker2",
-    };
-
-    public override object GetConfigValues(string editorAlias, string databaseType, IList<PreValue> preValues, SyncMigrationContext context)
+    public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
         var config = new MultiNodePickerConfiguration();
 
@@ -29,14 +25,14 @@ internal class MultiNodeTreePickerMigrator : SyncPropertyMigratorBase
             { "startNode", nameof(config.TreeSource) },
         };
 
-        return config.MapPreValues(preValues, mappings);
+        return config.MapPreValues(dataTypeProperty.PreValues, mappings);
     }
 
-    public override string GetContentValue(string editorAlias, string value, SyncMigrationContext context)
+    public override string GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
     {
         var values = new List<Udi>();
 
-        var items = value?.ToDelimitedList();
+        var items = contentProperty.Value?.ToDelimitedList();
 
         if (items?.Any() == true)
         {
