@@ -1,10 +1,13 @@
 ﻿using System.Xml.Linq;
+
+using NUglify;
+
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models.Entities;
 using Umbraco.Cms.Core.Notifications;
+
 using uSync.Core;
 using uSync.Migrations.Composing;
-using uSync.Migrations.Migrators;
 using uSync.Migrations.Models;
 using uSync.Migrations.Notifications;
 using uSync.Migrations.Services;
@@ -39,20 +42,23 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity>
         {
             var source = XElement.Load(file);
 
-            var alias = source.Element("Info")?.Element("Alias")?.ValueOrDefault(string.Empty);
+            var contentTypeAlias = source.Element("Info")?.Element("Alias")?.ValueOrDefault(string.Empty);
 
-            context.AddContentTypeKey(alias, source.Element("Info")?.Element("Key")?.ValueOrDefault(Guid.Empty));
+            context.AddContentTypeKey(contentTypeAlias, source.Element("Info")?.Element("Key")?.ValueOrDefault(Guid.Empty));
 
             var compositions = source.Element("Info")?.Element("Compositions")?.Elements("Composition")?.Select(x => x.Value) ?? Enumerable.Empty<string>();
-            context.AddContentTypeCompositions(alias, compositions);
+            context.AddContentTypeCompositions(contentTypeAlias, compositions);
 
             var properties = source.Element("GenericProperties")?.Elements("GenericProperty") ?? Enumerable.Empty<XElement>();
 
             foreach (var property in properties)
             {
-                context.AddContentProperty(alias,
+                var editorAlias = property.Element("Type").ValueOrDefault(string.Empty);
+                var definition = property.Element("Definition").ValueOrDefault(Guid.Empty);
+
+                context.AddContentProperty(contentTypeAlias,
                     property.Element("Alias")?.ValueOrDefault(string.Empty),
-                    property.Element("Type")?.ValueOrDefault(string.Empty));
+                        editorAlias, context.GetDataTypeFromDefinition(definition));
             }
         }
     }
@@ -129,6 +135,8 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity>
         SyncMigrationContext context)
     {
         var info = source.Element("Info");
+        if (info == null) return null;
+
         var key = info.Element("Key").ValueOrDefault(Guid.Empty);
         var alias = info.Element("Alias").ValueOrDefault(string.Empty);
 
@@ -140,7 +148,7 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity>
             new XAttribute(uSyncConstants.Xml.Level, level));
 
         // update info element. 
-        UpdateInfo(info, target);
+        UpdateInfoSection(info, target);
 
         // structure
         UpdateStructure(source, target);
@@ -150,6 +158,8 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity>
 
         // tabs
         UpdateTabs(source, target);
+
+        CheckVariations(target);
 
         return target;
     }
@@ -186,9 +196,9 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity>
             {
                 var newProperty = XElement.Parse(property.ToString());
 
-                UpdatePropertyEditor(newProperty, context);
+                // update the datatype we are using (this might be new). 
+                UpdatePropertyEditor(contentTypeAlias, newProperty, context);
 
-                newProperty.Add(new XElement("Variations", "Nothing"));
                 newProperty.Add(new XElement("MandatoryMessage", string.Empty));
                 newProperty.Add(new XElement("ValidationRegExpMessage", string.Empty));
                 newProperty.Add(new XElement("LabelOnTop", false));
@@ -210,22 +220,32 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity>
     ///  Get the editor Alias for this property (it might have updated)
     /// </summary>
     /// <param name="newProperty"></param>
-    private void UpdatePropertyEditor(XElement newProperty, SyncMigrationContext context)
+    private void UpdatePropertyEditor(string contentTypeAlias, XElement newProperty, SyncMigrationContext context)
     {
-        var editorAlias = newProperty.Element("Type").ValueOrDefault(string.Empty);
+        var propertyAlias = newProperty.Element("Alias").ValueOrDefault(string.Empty);
 
+        var updatedType = context.GetEditorAlias(contentTypeAlias, propertyAlias)?.UpdatedEditorAlias ?? propertyAlias;
+        newProperty.CreateOrSetElement("Type", updatedType);
 
-        // TODO: [KJ] This is best way - and will fail when we get to more advanced editors like vorto. 
-        if (string.IsNullOrEmpty(editorAlias) == false &&
-            _migrators.TryGet(editorAlias, out var migrator) == true &&
-            migrator != null)
+        var definitionElement = newProperty.Element("Definition");
+        if (definitionElement == null) return;
+        
+        var definition = definitionElement.ValueOrDefault(Guid.Empty);
+        if (definition != Guid.Empty)
         {
-            newProperty.Element("Type").Value = migrator.GetEditorAlias(
-                new SyncMigrationDataTypeProperty(editorAlias, string.Empty, new List<PreValue>()), context);
+            definitionElement.Value = context.GetReplacementDataType(definition).ToString();
+            newProperty.CreateOrSetElement("Variations", context.GetDataTypeVariation(definition));
+        }
+        else
+        {
+            newProperty.CreateOrSetElement("Variations", "Nothing");
         }
     }
 
-    private void UpdateInfo(XElement? info, XElement target)
+    /// <summary>
+    ///  update the info section, with the new things that are in v8+ that have no equivalent in v7
+    /// </summary>
+    private void UpdateInfoSection(XElement? info, XElement target)
     {
         var targetInfo = XElement.Parse(info.ToString());
         targetInfo.Element("Key")?.Remove();
@@ -237,10 +257,36 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity>
         target.Add(targetInfo);
     }
 
+    /// <summary>
+    ///  update the structure (allowed nodes)
+    /// </summary>
     private static void UpdateStructure(XElement source, XElement target)
     {
         var sourceStructure = source.Element("Structure");
         if (sourceStructure != null)
             target.Add(XElement.Parse(sourceStructure.ToString()));
+    }
+
+    private void CheckVariations(XElement target)
+    {
+        if (target.Element("Info") == null) return;
+
+        var contentTypeVariations = "Nothing";
+
+        var properties = target.Element("GenericProperties");
+        if (properties != null)
+        {
+            foreach (var property in properties.Elements("GenericProperty"))
+            {
+                var variations = property.Element("Variations").ValueOrDefault(string.Empty);
+                if (variations != "Nothing")
+                {
+                    contentTypeVariations = variations;
+                    break;
+                }
+            }
+        }
+
+        target.Element("Info").CreateOrSetElement("Variations", contentTypeVariations);
     }
 }

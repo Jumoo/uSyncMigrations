@@ -1,4 +1,4 @@
-﻿namespace uSync.Migrations.Migrators;
+﻿namespace uSync.Migrations.Migrators.Models;
 
 /// <summary>
 ///  content property data passed to a migrator

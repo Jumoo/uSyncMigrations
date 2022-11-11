@@ -1,22 +1,20 @@
 ﻿using System.Xml.Linq;
 
-using Examine;
+using HtmlAgilityPack;
 
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-
-using Polly;
+using Microsoft.AspNetCore.Mvc;
 
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models.Entities;
-using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.Notifications;
 using Umbraco.Cms.Core.Strings;
 using Umbraco.Extensions;
+
 using uSync.Core;
 using uSync.Migrations.Composing;
-using uSync.Migrations.Migrators;
 using uSync.Migrations.Extensions;
+using uSync.Migrations.Migrators;
+using uSync.Migrations.Migrators.Models;
 using uSync.Migrations.Models;
 using uSync.Migrations.Notifications;
 using uSync.Migrations.Services;
@@ -47,6 +45,8 @@ internal class ContentBaseMigrationHandler<TEntity>
 
     public IEnumerable<MigrationMessage> DoMigrateFromDisk(Guid id, string folder, SyncMigrationContext context)
     {
+        if (!Directory.Exists(folder)) return Enumerable.Empty<MigrationMessage>();
+
         // loads all the content names into the context, so we can get them later on.
         PrepareContext(folder, context);
 
@@ -168,42 +168,55 @@ internal class ContentBaseMigrationHandler<TEntity>
 
     private XElement ConvertPropertyValue(string itemType, string contentType, XElement property, SyncMigrationContext context)
     {
-        var editorAlias = context.GetEditorAlias(contentType, property.Name.LocalName);
-        if (editorAlias.IsVortoEditorAlias() && itemType == "Content")
+        var editorAlias = context.GetEditorAlias(contentType, property.Name.LocalName)?.OrginalEditorAlias ?? string.Empty;
+
+        // convert the property .
+
+        var migrationProperty = new SyncMigrationContentProperty(editorAlias, property.Value);
+        var migrator = _migrators.GetVariantMigrator(editorAlias);
+        if (migrator != null && itemType == "Content")
         {
-            // vorto we split into many values 
-            var vortoElement = GetVortoValues(property, context);
+            // it might be the case that the property needs to be split into variants. 
+            // if this is the case a ISyncVariationPropertyEditor will exist and it can 
+            // split a single value into a collection split by culture
+            var vortoElement = GetVariedValueNode(migrator, property.Name.LocalName, migrationProperty, context);
             if (vortoElement != null) return vortoElement;
         }
 
-        // else - single value 
-        var migratedValue = MigrateContentValue(editorAlias, property.Value, context);
-        return new XElement(property.Name.LocalName, 
+        // or this value doesn't need to be split by variation
+        // and we can 'just' migrate it on its own.
+        var migratedValue = MigrateContentValue(migrationProperty, context);
+        return new XElement(property.Name.LocalName,
                     new XElement("Value", new XCData(migratedValue)));
-
     }
-    
+
     /// <summary>
     ///  special case, spit a vorto value into multiple cultures, 
     ///  and return them back as a blob of xml values
     /// </summary>
-    private XElement? GetVortoValues(XElement property, SyncMigrationContext context)
+    private XElement? GetVariedValueNode(ISyncVariationPropertyMigrator migrator, string propertyName, SyncMigrationContentProperty migrationProperty, SyncMigrationContext context)
     {
-        var attempt = property.Value.ConvertToVortoValue();
+        // Get varied elements from the migrator.
+        var attempt = migrator.GetVariedElements(migrationProperty, context);
         if (attempt.Success && attempt.Result != null)
         {
-            var newProperty = new XElement(property.Name.LocalName);
+            // this returns an object which tells us what datatype to use
+            // and a dictionary of cultuire / values we can migrate. 
+
+            var newProperty = new XElement(propertyName);
 
             // get editor alias from dtdguid
-            var vortoEditorAlias = context.GetDataTypeFromDefinition(attempt.Result.DtdGuid);
-            if (vortoEditorAlias != null)
+            var variantEditorAlias = context.GetDataTypeFromDefinition(attempt.Result.DtdGuid);
+            if (variantEditorAlias != null)
             {
-                foreach (var language in attempt.Result.Values)
+                foreach (var variation in attempt.Result.Values)
                 {
-                    var migratedValue = MigrateContentValue(vortoEditorAlias, language.Value, context);
+                    var variationProperty = new SyncMigrationContentProperty(variantEditorAlias, variation.Value);
+
+                    var migratedValue = MigrateContentValue(variationProperty, context);
 
                     newProperty.Add(new XElement("Value",
-                        new XAttribute("Culture", language.Key),
+                        new XAttribute("Culture", variation.Key),
                         new XCData(migratedValue)));
                 }
             }
@@ -227,13 +240,11 @@ internal class ContentBaseMigrationHandler<TEntity>
         var nodeNameNode = node.Element("Info")?.Element("NodeName");
         if (nodeNameNode == null) return;
 
-
-
         var languages = new List<string>();
 
-        foreach(var property in propertiesNode.Elements())
+        foreach (var property in propertiesNode.Elements())
         {
-            foreach(var value in property.Elements())
+            foreach (var value in property.Elements())
             {
                 var culture = value.Attribute("Culture").ValueOrDefault(string.Empty).ToLower();
                 if (!string.IsNullOrWhiteSpace(culture)
@@ -271,14 +282,16 @@ internal class ContentBaseMigrationHandler<TEntity>
         return new MigrationMessage(itemType, xml.GetAlias(), MigrationMessageType.Success);
     }
 
-    private string MigrateContentValue(string editorAlias, string value, SyncMigrationContext context)
+    private string MigrateContentValue(SyncMigrationContentProperty migrationProperty, SyncMigrationContext context)
     {
-        if (_migrators.TryGet(editorAlias, out var migrator) == true)
+        if (string.IsNullOrWhiteSpace(migrationProperty?.EditorAlias)) return migrationProperty.Value;
+
+        if (_migrators.TryGet(migrationProperty?.EditorAlias, out var migrator) == true)
         {
-            return migrator?.GetContentValue(new SyncMigrationContentProperty(editorAlias, value), context) ?? value;
+            return migrator?.GetContentValue(migrationProperty, context) ?? migrationProperty.Value;
         }
 
-        return value;
+        return migrationProperty.Value;
     }
 
     private void PrepareContext(string folder, SyncMigrationContext context)

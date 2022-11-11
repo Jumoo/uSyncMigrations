@@ -12,6 +12,7 @@ using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.WebAssets;
 
 using uSync.Migrations.Migrators;
+using uSync.Migrations.Migrators.Models;
 using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Tests.Migrators;

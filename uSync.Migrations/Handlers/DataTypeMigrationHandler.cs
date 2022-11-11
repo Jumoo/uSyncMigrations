@@ -1,6 +1,9 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using MailKit.Search;
+
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
+using Org.BouncyCastle.Asn1.Cms;
 using Org.BouncyCastle.Crypto.Digests;
 
 using System.Xml.Linq;
@@ -14,6 +17,7 @@ using uSync.Core;
 using uSync.Migrations.Composing;
 using uSync.Migrations.Extensions;
 using uSync.Migrations.Migrators;
+using uSync.Migrations.Migrators.Models;
 using uSync.Migrations.Models;
 using uSync.Migrations.Notifications;
 using uSync.Migrations.Serialization;
@@ -65,15 +69,43 @@ internal class DataTypeMigrationHandler : ISyncMigrationHandler
         {
             var source = XElement.Load(file);
             var dtd = source.Attribute("Key").ValueOrDefault(Guid.Empty);
+            var databaseType = source.Attribute("DatabaseType").ValueOrDefault(string.Empty);
             var editorAlias = source.Attribute("Id").ValueOrDefault(string.Empty);
             if (dtd == Guid.Empty || string.IsNullOrEmpty(editorAlias)) continue;
+
+            //
+            // replacements
+            //
+            if (_migrators.TryGet(editorAlias, out ISyncPropertyMigrator migrator) 
+                && (migrator is not null)
+                && (migrator is ISyncReplacablePropertyMigrator replacablePropertyMigrator))
+            {
+                var replacementInfo = replacablePropertyMigrator.GetReplacementEditorId(
+                    new SyncMigrationDataTypeProperty(editorAlias, databaseType, GetPreValues(source)),
+                    context);
+
+                if (replacementInfo != null)
+                {
+                    context.AddReplacementDataType(dtd, replacementInfo.Key);
+                    context.AddDataTypeDefinition(dtd, replacementInfo.EditorAlias);
+
+                    if (string.IsNullOrWhiteSpace(replacementInfo.Variation) == false)
+                    {
+                        context.AddDataTypeVariation(dtd, replacementInfo.Variation);
+                    }
+                }
+            }
+
+            // add alias, (won't update if replacement was added)
             context.AddDataTypeDefinition(dtd, editorAlias);
+
         }
 
-        foreach(var datatype in _dataTypeService.GetAll())
+        foreach (var datatype in _dataTypeService.GetAll())
         {
             context.AddDataTypeDefinition(datatype.Key, datatype.EditorAlias);
         }
+
     }
 
     public IEnumerable<MigrationMessage> MigrateFromDisk(Guid migrationId, string sourceFolder, SyncMigrationContext context)
@@ -132,7 +164,7 @@ internal class DataTypeMigrationHandler : ISyncMigrationHandler
 
     public XElement? MigrateDataType(XElement source, int level, SyncMigrationContext context)
     {
-        var key = source.Attribute("Key").ValueOrDefault(string.Empty);
+        var key = source.Attribute("Key").ValueOrDefault(Guid.Empty);
         var editorAlias = source.Attribute("Id").ValueOrDefault(string.Empty);
         var name = source.Attribute("Name").ValueOrDefault(string.Empty);
         var databaseType = source.Attribute("DatabaseType").ValueOrDefault(string.Empty);
@@ -141,6 +173,12 @@ internal class DataTypeMigrationHandler : ISyncMigrationHandler
         // this way we can block certain types of thing (e.g list items)
         if (context.IsBlocked(ItemType, editorAlias) == true)
         {
+            return null;
+        }
+
+        if (context.GetReplacementDataType(key) != key)
+        {
+            // this datatype has been replaced 
             return null;
         }
 
@@ -201,7 +239,7 @@ internal class DataTypeMigrationHandler : ISyncMigrationHandler
             {
                 Alias = element.Attribute("Alias").ValueOrDefault(string.Empty),
                 SortOrder = element.Attribute("SortOrder").ValueOrDefault(0),
-                Value = element.Attribute("Value").ValueOrDefault(string.Empty)
+                Value = element.ValueOrDefault(string.Empty)
             });
         }
 

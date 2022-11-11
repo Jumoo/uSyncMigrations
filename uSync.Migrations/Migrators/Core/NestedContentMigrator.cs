@@ -1,6 +1,7 @@
 ﻿using Umbraco.Cms.Core.PropertyEditors;
 
 using uSync.Migrations.Extensions;
+using uSync.Migrations.Migrators.Models;
 using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Migrators;
@@ -14,4 +15,6 @@ internal class NestedContentMigrator : SyncPropertyMigratorBase
 
     public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
         => new NestedContentConfiguration().MapPreValues(dataTypeProperty.PreValues);
+
+    // TODO: [KJ] Nested content GetContentValue (so we can recurse)
 }
