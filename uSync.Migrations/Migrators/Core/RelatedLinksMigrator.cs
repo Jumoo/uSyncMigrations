@@ -9,6 +9,8 @@ using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Migrators;
 
+[SyncMigrator("Umbraco.RelatedLinks")]
+[SyncMigrator("Umbraco.RelatedLinks2")]
 internal class RelatedLinksMigrator : SyncPropertyMigratorBase
 {
     private readonly JsonSerializerSettings _serializerSettings;
@@ -24,32 +26,26 @@ internal class RelatedLinksMigrator : SyncPropertyMigratorBase
         };
     }
 
-    public override string[] Editors => new[]
-    {
-        "Umbraco.RelatedLinks",
-        "Umbraco.RelatedLinks2"
-    };
-
-    public override string GetEditorAlias(string editorAlias, string databaseType, SyncMigrationContext context)
+    public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
         => UmbConstants.PropertyEditors.Aliases.MultiUrlPicker;
 
-    public override object GetConfigValues(string editorAlias, string databaseType, IList<PreValue> preValues, SyncMigrationContext context)
+    public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
         var mappings = new Dictionary<string, string>
         {
             { "max", nameof(MultiUrlPickerConfiguration.MaxNumber) },
         };
 
-        return new MultiUrlPickerConfiguration().MapPreValues(preValues, mappings);
+        return new MultiUrlPickerConfiguration().MapPreValues(dataTypeProperty.PreValues, mappings);
     }
 
-    public override string GetContentValue(string editorAlias, string value, SyncMigrationContext context)
+    public override string GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
     {
         var links = new List<Link>();
 
-        if (string.IsNullOrWhiteSpace(value) == false)
+        if (string.IsNullOrWhiteSpace(contentProperty.Value) == false)
         {
-            var items = JsonConvert.DeserializeObject<List<RelatedLink>>(value);
+            var items = JsonConvert.DeserializeObject<List<RelatedLink>>(contentProperty.Value);
             if (items?.Any() == true)
             {
                 foreach (var item in items)

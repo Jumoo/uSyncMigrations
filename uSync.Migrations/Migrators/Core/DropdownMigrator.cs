@@ -5,23 +5,16 @@ using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Migrators;
 
+[SyncMigrator(UmbConstants.PropertyEditors.Aliases.DropDownListFlexible, IsDefaultAlias = true)]
+[SyncMigrator("Umbraco.DropDown")]
+[SyncMigrator("Umbraco.DropDownMultiple")]
 internal class DropdownMigrator : SyncPropertyMigratorBase
 {
-    public override string[] Editors => new[]
-    {
-        UmbConstants.PropertyEditors.Aliases.DropDownListFlexible,
-        "Umbraco.DropDown",
-        "Umbraco.DropDownMultiple"
-    };
-
-    public override string GetEditorAlias(string editorAlias, string databaseType, SyncMigrationContext context)
-        => UmbConstants.PropertyEditors.Aliases.DropDownListFlexible;
-
-    public override object GetConfigValues(string editorAlias, string databaseType, IList<PreValue> preValues, SyncMigrationContext context)
+    public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
         var config = new DropDownFlexibleConfiguration();
 
-        foreach (var preValue in preValues)
+        foreach (var preValue in dataTypeProperty.PreValues)
         {
             if (preValue.Alias.InvariantEquals("multiple"))
             {
@@ -44,6 +37,6 @@ internal class DropdownMigrator : SyncPropertyMigratorBase
         return config;
     }
 
-    public override string GetContentValue(string editorAlias, string value, SyncMigrationContext context)
-        => JsonConvert.SerializeObject(value.ToDelimitedList(), Formatting.Indented);
+    public override string GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
+        => JsonConvert.SerializeObject(contentProperty.Value.ToDelimitedList(), Formatting.Indented);
 }

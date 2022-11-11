@@ -8,7 +8,7 @@ namespace uSync.Migrations.Extensions;
 
 public static class PreValueExtensions
 {
-    public static void AddIntPreValue(this JObject item, IList<PreValue> preValues, string alias)
+    public static void AddIntPreValue(this JObject item, IEnumerable<PreValue> preValues, string alias)
     {
         var value = preValues.FirstOrDefault(x => x.Alias.InvariantEquals(alias));
         if (value != null)
@@ -19,7 +19,7 @@ public static class PreValueExtensions
         }
     }
 
-    public static void AddDecimalPreValue(this JObject item, IList<PreValue> preValues, string alias)
+    public static void AddDecimalPreValue(this JObject item, IEnumerable<PreValue> preValues, string alias)
     {
         var value = preValues.FirstOrDefault(x => x.Alias.InvariantEquals(alias));
         if (value != null)
@@ -30,8 +30,10 @@ public static class PreValueExtensions
         }
     }
 
-    public static object MapPreValues(this object config, IList<PreValue> preValues)
+    public static object MapPreValues(this object? config, IEnumerable<PreValue> preValues)
     {
+        if (config == null) return null;
+
         // generic mapping of aliases to properties ?
         var properties = config.GetType().GetProperties();
 
@@ -51,7 +53,7 @@ public static class PreValueExtensions
         return config;
     }
 
-    public static object MapPreValues(this object config, IList<PreValue> preValues, Dictionary<string, string> mappings)
+    public static object MapPreValues(this object config, IEnumerable<PreValue> preValues, Dictionary<string, string> mappings)
     {
         var properties = config.GetType().GetProperties();
 
@@ -75,7 +77,7 @@ public static class PreValueExtensions
         return config;
     }
 
-    public static object ConvertPreValuesToJson(this IList<PreValue> preValues, bool uppercase)
+    public static object ConvertPreValuesToJson(this IEnumerable<PreValue> preValues, bool uppercase)
     {
         var config = new JObject();
         foreach (var property in preValues)
@@ -130,7 +132,7 @@ public static class PreValueExtensions
         }
     }
 
-    public static TResult GetPreValueOrDefault<TResult>(this IList<PreValue> preValues, string alias, TResult defaultValue)
+    public static TResult GetPreValueOrDefault<TResult>(this IEnumerable<PreValue> preValues, string alias, TResult defaultValue)
     {
         if (preValues == null) return defaultValue;
 

@@ -6,6 +6,7 @@ using Umbraco.Cms.Core.Strings;
 using Umbraco.Extensions;
 using uSync.Core;
 using uSync.Migrations.Composing;
+using uSync.Migrations.Migrators;
 using uSync.Migrations.Models;
 using uSync.Migrations.Notifications;
 using uSync.Migrations.Services;
@@ -165,7 +166,7 @@ internal class ContentBaseMigrationHandler<TEntity>
     {
         if (_migrators.TryGet(editorAlias, out var migrator) == true)
         {
-            return migrator?.GetContentValue(editorAlias, value, context) ?? value;
+            return migrator?.GetContentValue(new SyncMigrationContentProperty(editorAlias, value), context) ?? value;
         }
 
         return value;

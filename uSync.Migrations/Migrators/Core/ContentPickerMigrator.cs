@@ -4,14 +4,13 @@ using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Migrators;
 
+[SyncMigrator("Umbraco.ContentPickerAlias")]
 public class ContentPicker1Migrator : SyncPropertyMigratorBase
 {
-    public override string[] Editors => new[] { "Umbraco.ContentPickerAlias" };
-
-    public override string GetEditorAlias(string editorAlias, string databaseType, SyncMigrationContext context)
+    public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
         => UmbConstants.PropertyEditors.Aliases.ContentPicker;
 
-    public override object GetConfigValues(string editorAlias, string databaseType, IList<PreValue> preValues, SyncMigrationContext context)
+    public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
         var config = new ContentPickerConfiguration();
 
@@ -21,6 +20,6 @@ public class ContentPicker1Migrator : SyncPropertyMigratorBase
             { "startNodeId", nameof(config.StartNodeId) }
         };
 
-        return config.MapPreValues(preValues, mappings);
+        return config.MapPreValues(dataTypeProperty.PreValues, mappings);
     }
 }
