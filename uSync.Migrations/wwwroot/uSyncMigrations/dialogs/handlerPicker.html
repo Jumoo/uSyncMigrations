@@ -1,0 +1,50 @@
+﻿<div ng-controller="uSyncMigrationHandlerPickerController as vm">
+    <umb-editor-panel>
+        <umb-editor-header name="'Migration handlers'"
+                           description="'Select the types of things to migrate'"
+                           name-locked="true"
+                           description-locked="true"
+                           hide-alias="true"
+                           hide-icon="true"></umb-editor-header>
+
+
+        <umb-editor-container class="form-horizontal">
+
+        <umb-box>
+            <umb-box-header title="Migration handlers"
+                            description="Pick the things you want to migrate">
+            </umb-box-header>
+            <umb-box-content>
+
+                <div class="ml2 mb3">
+                    <umb-checkbox ng-repeat="handler in vm.handlers"
+                                  model="handler.include"
+                                  value="handler.include">
+                        <span ng-bind="handler.name"></span>
+                    </umb-checkbox>
+                </div>
+
+            </umb-box-content>
+        </umb-box>
+        </umb-editor-container>
+        <umb-editor-footer>
+            <umb-editor-footer-content-right>
+
+                <umb-button type="button"
+                            button-style="link"
+                            label-key="general_close"
+                            action="vm.close()"
+                            disabled="vm.working">
+                </umb-button>
+
+                <umb-button type="button"
+                            button-style="success"
+                            label-key="buttons_submit"
+                            action="vm.submit()"
+                            disabled="vm.working">
+                </umb-button>
+
+            </umb-editor-footer-content-right>
+        </umb-editor-footer>
+    </umb-editor-panel>
+</div>

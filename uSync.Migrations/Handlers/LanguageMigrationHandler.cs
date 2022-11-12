@@ -23,6 +23,8 @@ internal class LanguageMigrationHandler : ISyncMigrationHandler
         _migrationFileService = migrationFileService;
     }
 
+    public string Group => uSync.BackOffice.uSyncConstants.Groups.Settings;
+
     public string ItemType => nameof(Language);
 
     public int Priority => uSyncMigrations.Priorities.Languages;

@@ -14,7 +14,9 @@ internal class SyncMigrationsManifestFilter : IManifestFilter
             Scripts = new[]
             {
                 uSyncMigrations.PluginFolder + "/migration.service.js",
-                uSyncMigrations.PluginFolder + "/dashboard.controller.js"
+                uSyncMigrations.PluginFolder + "/dashboard.controller.js",
+                uSyncMigrations.PluginFolder + "/migrate.controller.js",
+                uSyncMigrations.PluginFolder + "/dialogs/handlerPicker.controller.js"
             }
         });
     }

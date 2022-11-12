@@ -24,6 +24,8 @@ namespace uSync.Migrations.Handlers;
 internal class ContentBaseMigrationHandler<TEntity>
     where TEntity : IEntity
 {
+    public string Group => uSync.BackOffice.uSyncConstants.Groups.Content;
+
     private readonly IEventAggregator _eventAggregator;
     private readonly SyncPropertyMigratorCollection _migrators;
     private readonly SyncMigrationFileService _migrationFileService;

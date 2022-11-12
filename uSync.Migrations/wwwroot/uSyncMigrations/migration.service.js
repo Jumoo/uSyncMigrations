@@ -8,7 +8,8 @@
         return {
             hasPending: hasPending,
             getMigrationOptions: getMigrationOptions,
-            migrate: migrate
+            migrate: migrate,
+            getProfiles: getProfiles
         };
 
         function hasPending() {
@@ -21,6 +22,10 @@
 
         function migrate(options) {
             return $http.post(serviceRoot + "Migrate", options);
+        }
+
+        function getProfiles() {
+            return $http.get(serviceRoot + "GetProfiles");
         }
     }
 

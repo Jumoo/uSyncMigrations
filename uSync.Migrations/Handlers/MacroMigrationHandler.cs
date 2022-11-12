@@ -22,6 +22,8 @@ internal class MacroMigrationHandler : ISyncMigrationHandler
         _migrationFileService = migrationFileService;
     }
 
+    public string Group => uSync.BackOffice.uSyncConstants.Groups.Settings;
+
     public string ItemType => nameof(Macro);
 
     public int Priority => uSyncMigrations.Priorities.Macros;

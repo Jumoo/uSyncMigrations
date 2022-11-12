@@ -13,7 +13,7 @@ public class SyncMigrationContext
     /// <summary>
     ///  list of keys to editor aliases used to lookup datatypes in content types !
     /// </summary>
-
+    
     private Dictionary<Guid, string> _dataTypeDefinitions { get; set; } = new();
 
     /// <summary>

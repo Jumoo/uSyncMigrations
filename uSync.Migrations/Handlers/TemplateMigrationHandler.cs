@@ -23,6 +23,8 @@ internal class TemplateMigrationHandler : ISyncMigrationHandler
         _migrationFileService = migrationFileService;
     }
 
+    public string Group => uSync.BackOffice.uSyncConstants.Groups.Settings;
+
     public string ItemType => nameof(Template);
 
     public int Priority => uSyncMigrations.Priorities.Templates;

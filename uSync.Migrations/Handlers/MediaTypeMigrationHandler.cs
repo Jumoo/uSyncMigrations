@@ -15,6 +15,8 @@ internal class MediaTypeMigrationHandler : ContentTypeBaseMigrationHandler<Media
         : base(eventAggregator, migrationFileService, migrators)
     { }
 
+    public string Group => uSync.BackOffice.uSyncConstants.Groups.Settings;
+
     public string ItemType => nameof(MediaType);
 
     public int Priority => uSyncMigrations.Priorities.MediaTypes;

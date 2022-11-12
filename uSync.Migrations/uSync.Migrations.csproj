@@ -6,11 +6,13 @@
 		<StaticWebAssetBasePath>App_Plugins</StaticWebAssetBasePath>
 	</PropertyGroup>
 	<ItemGroup>
+	  <_ContentIncludedByDefault Remove="wwwroot\uSyncMigrations\migrate.html" />
+	</ItemGroup>
+	<ItemGroup>
 		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="10.0.0" />
 		<PackageReference Include="Umbraco.Cms.Web.Website" Version="10.0.0" />
 		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
-		<PackageReference Include="uSync.Core" Version="10.2.1" />
-		<PackageReference Include="uSync.BackOffice" Version="10.2.1" />
+		<PackageReference Include="uSync.BackOffice" Version="10.3.1-build.20221112.7" />
 	</ItemGroup>
 
 	<ItemGroup>

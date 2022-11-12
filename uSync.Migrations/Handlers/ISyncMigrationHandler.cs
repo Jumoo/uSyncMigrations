@@ -4,6 +4,8 @@ namespace uSync.Migrations.Handlers;
 
 public interface ISyncMigrationHandler
 {
+    public string Group { get; }
+
     public string ItemType { get; }
 
     public int Priority { get; }
