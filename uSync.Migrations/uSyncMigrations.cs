@@ -9,6 +9,10 @@ internal static class uSyncMigrations
 
     public const string PluginFolder = "/App_Plugins/uSyncMigrations";
 
+    public const string SourceFolder = "uSync/data";
+
+    public const string MigrationFolder = "uSync/Migrations";
+
     internal static class Priorities
     {
         public const int Templates = 5;

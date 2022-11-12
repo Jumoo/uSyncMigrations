@@ -27,11 +27,16 @@ public class SyncMigrationService
         => _migrationHandlers
             .OrderBy(x => x.Priority)
             .Select(x => x.ItemType);
+   
+    public IEnumerable<ISyncMigrationHandler> GetHandlers()
+        => _migrationHandlers;
+
 
     public MigrationResults MigrateFiles(MigrationOptions options)
     {
         var migrationId = Guid.NewGuid();
-        var sourceRoot = _migrationFileService.GetMigrationSource("data");
+        var sourceRoot = _migrationFileService.GetMigrationFolder(options.Source);
+        var targetRoot = _migrationFileService.GetMigrationFolder(options.Target);
 
         // TODO: Add notifications for `uSyncMigrationStartingNotification` and `uSyncMigrationCompleteNotification`? [LK]
         // Pass through the context, in case 3rd-party wants to populate/reference it? [LK]
@@ -46,10 +51,11 @@ public class SyncMigrationService
 
         var success = results.All(x => x.MessageType == MigrationMessageType.Success);
 
-        if (success == true)
+        if (success == true && results.Count() > 0)
         {
             // if everything works
-            _migrationFileService.CopyMigrationToFolder(migrationId, _usyncConfig.GetRootFolder());
+            _migrationFileService.CopyMigrationToFolder(migrationId, targetRoot);
+            _migrationFileService.RemoveMigration(migrationId);
         }
 
         return new MigrationResults

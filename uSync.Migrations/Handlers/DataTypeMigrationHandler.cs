@@ -54,6 +54,8 @@ internal class DataTypeMigrationHandler : ISyncMigrationHandler
         _dataTypeService = dataTypeService;
     }
 
+    public string Group => uSync.BackOffice.uSyncConstants.Groups.Settings;
+
     public string ItemType => nameof(DataType);
 
     public int Priority => uSyncMigrations.Priorities.DataTypes;
