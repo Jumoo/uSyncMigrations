@@ -1,7 +1,7 @@
 ﻿(function () {
     'use strict';
 
-    function migrateController($scope, $q,
+    function migrateController($scope, $q, $timeout,
         editorService, uSyncHub,
         uSyncMigrationService, uSync8DashboardService,
         notificationsService) {
@@ -33,7 +33,9 @@
             vm.showSetup = false; 
             vm.working = true;
             vm.state = 'busy';
-            vm.progress = 'importing'
+            vm.progress = 'migrating'
+
+            doMigrationMessages();
 
             uSyncMigrationService.migrate(vm.options)
                 .then(function (result) {
@@ -323,6 +325,31 @@
 
             return count;
         }
+
+        var messages = [
+            'rewilding Canada',
+            'squesting carbon footprints',
+            'Chlorinating Car Pools',
+            'Partitioning Social Network',
+            'Prelaminating Drywall Inventory',
+            'Blurring Reality Lines',
+            'Reticulating 3 - Dimensional Splines',
+            'Preparing Captive Simulators',
+            'Capacitating Genetic Modifiers',
+            'Destabilizing Orbital Payloads',
+            'Sequencing Cinematic Specifiers',
+            'Branching Family Trees',
+            'Manipulating Modal Memory'
+            ]
+
+        function doMigrationMessages() {
+            vm.migrationMessage = messages[Math.floor(Math.random() * messages.length)];
+            if (vm.progress == 'migrating') {
+                $timeout(function() { doMigrationMessages(); }, 3000);
+            }
+        }
+
+        
     }
 
     angular.module('umbraco')
