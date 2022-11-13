@@ -52,4 +52,15 @@ public class uSyncMigrationsController : UmbracoAuthorizedApiController
     [HttpGet]
     public MigrationProfileInfo GetProfiles()
         => _profileConfigService.GetProfiles();
+
+    [HttpGet]
+    public string ValidateSource(string source)
+    {
+        var attempt = _migrationService.ValidateMigrationSource(source);
+        if (attempt.Success)
+        {
+            return string.Empty;
+        }
+        return attempt.Exception?.Message ?? attempt.Result ?? "Unknown Error";
+    }
 }

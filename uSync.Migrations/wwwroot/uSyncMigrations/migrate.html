@@ -32,6 +32,11 @@
                                             label="Change"></umb-button>
                             </div>
 
+                            <div ng-if="!vm.sourceValid"
+                                 class="alert alert-danger mt2">
+                                Source Invalid : {{vm.sourceError}}
+                            </div>
+
                         </umb-control-group>
 
 
@@ -77,7 +82,7 @@
                                 label="Do it, Do it now!"
                                 button-style="success btn-large"
                                 icon="icon-smiley"
-                                disabled="vm.working"
+                                disabled="vm.working || vm.sourceValid == false"
                                 state="vm.state">
                     </umb-button>
                     <div>
