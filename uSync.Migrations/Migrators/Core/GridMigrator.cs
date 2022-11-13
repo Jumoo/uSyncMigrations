@@ -1,17 +1,10 @@
-﻿using Newtonsoft.Json;
-
-using Umbraco.Cms.Core.Models;
-using Umbraco.Cms.Core.PropertyEditors;
-
-using uSync.Migrations.Migrators.Models;
-using uSync.Migrations.Models;
-using System.Linq;
+﻿using Umbraco.Cms.Core.PropertyEditors;
 
 namespace uSync.Migrations.Migrators;
 
 [SyncMigrator(UmbConstants.PropertyEditors.Aliases.Grid, typeof(GridConfiguration))]
 public class GridMigrator : SyncPropertyMigratorBase
-{ 
+{
     // TODO: [KJ] This only really matters if there are custom things and they need config.
 
     //public override string GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)

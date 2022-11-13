@@ -1,12 +1,9 @@
-﻿using MailKit.Search;
+﻿using System.Xml.Linq;
 
 using Microsoft.Extensions.Logging;
+
 using Newtonsoft.Json;
 
-using Org.BouncyCastle.Asn1.Cms;
-using Org.BouncyCastle.Crypto.Digests;
-
-using System.Xml.Linq;
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Notifications;
@@ -29,14 +26,14 @@ internal class DataTypeMigrationHandler : ISyncMigrationHandler
 {
     private readonly IEventAggregator _eventAggregator;
     private readonly SyncPropertyMigratorCollection _migrators;
-    private readonly SyncMigrationFileService _migrationFileService;
+    private readonly ISyncMigrationFileService _migrationFileService;
     private readonly ILogger<DataTypeMigrationHandler> _logger;
     private readonly JsonSerializerSettings _jsonSerializerSettings;
     private readonly IDataTypeService _dataTypeService;
 
     public DataTypeMigrationHandler(
         IEventAggregator eventAggregator,
-        SyncMigrationFileService fileService,
+        ISyncMigrationFileService fileService,
         ILogger<DataTypeMigrationHandler> logger,
         SyncPropertyMigratorCollection migrators,
         IDataTypeService dataTypeService)
@@ -61,13 +58,13 @@ internal class DataTypeMigrationHandler : ISyncMigrationHandler
     public int Priority => uSyncMigrations.Priorities.DataTypes;
 
     public void PrepareMigrations(Guid migrationId, string sourceFolder, SyncMigrationContext context)
-    { 
+    {
         if (Directory.Exists(sourceFolder) == false)
         {
             return;
         }
 
-        foreach(var file in Directory.GetFiles(sourceFolder, "*.config", SearchOption.AllDirectories))
+        foreach (var file in Directory.GetFiles(sourceFolder, "*.config", SearchOption.AllDirectories))
         {
             var source = XElement.Load(file);
             var dtd = source.Attribute("Key").ValueOrDefault(Guid.Empty);
@@ -78,7 +75,7 @@ internal class DataTypeMigrationHandler : ISyncMigrationHandler
             //
             // replacements
             //
-            if (_migrators.TryGet(editorAlias, out ISyncPropertyMigrator migrator) 
+            if (_migrators.TryGet(editorAlias, out ISyncPropertyMigrator migrator)
                 && (migrator is not null)
                 && (migrator is ISyncReplacablePropertyMigrator replacablePropertyMigrator))
             {

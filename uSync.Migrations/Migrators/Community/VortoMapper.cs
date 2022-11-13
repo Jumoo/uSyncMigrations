@@ -6,14 +6,13 @@ using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Extensions;
 
-using uSync.Migrations.Extensions;
 using uSync.Migrations.Migrators.Models;
 using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Migrators.Community;
 
 [SyncMigrator("Our.Umbraco.Vorto")]
-public class VortoMapper : SyncPropertyMigratorBase, 
+public class VortoMapper : SyncPropertyMigratorBase,
     ISyncReplacablePropertyMigrator,
     ISyncVariationPropertyMigrator
 {
@@ -69,8 +68,8 @@ public class VortoMapper : SyncPropertyMigratorBase,
 
         // guid is the guid of the wrapped datatype. 
         var attempt = value.Value<string>("guid").TryConvertTo<Guid>();
-        
-        if (attempt) 
+
+        if (attempt)
             return _dataTypeService.GetDataType(attempt.Result);
 
         return null;

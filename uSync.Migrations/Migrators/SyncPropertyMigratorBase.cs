@@ -1,8 +1,5 @@
-﻿using System.Reflection.PortableExecutable;
+﻿using Umbraco.Extensions;
 
-using Umbraco.Extensions;
-
-using uSync.Core.Serialization;
 using uSync.Migrations.Extensions;
 using uSync.Migrations.Migrators.Models;
 using uSync.Migrations.Models;
@@ -11,7 +8,7 @@ namespace uSync.Migrations.Migrators;
 
 public abstract class SyncPropertyMigratorBase : ISyncPropertyMigrator
 {
-    private readonly Type? configurationType; 
+    private readonly Type? configurationType;
 
     protected readonly string _defaultAlias;
 
@@ -58,8 +55,8 @@ public abstract class SyncPropertyMigratorBase : ISyncPropertyMigrator
 
     public virtual object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
-        if (configurationType is not null) 
-        { 
+        if (configurationType is not null)
+        {
             return Activator.CreateInstance(configurationType).MapPreValues(dataTypeProperty.PreValues);
         }
 

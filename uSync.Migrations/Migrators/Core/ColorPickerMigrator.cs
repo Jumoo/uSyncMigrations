@@ -1,10 +1,9 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
-
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
 using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Extensions;
+
 using uSync.Migrations.Migrators.Models;
 using uSync.Migrations.Models;
 
@@ -94,7 +93,7 @@ public class ColorPickerMigrator : SyncPropertyMigratorBase
     {
         public int SortOrder { get; set; }
     }
- 
+
 
     [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
     private class ColourContentValue

@@ -1,9 +1,5 @@
 ﻿using System.Xml.Linq;
 
-using HtmlAgilityPack;
-
-using Microsoft.AspNetCore.Mvc;
-
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models.Entities;
 using Umbraco.Cms.Core.Notifications;
@@ -12,7 +8,6 @@ using Umbraco.Extensions;
 
 using uSync.Core;
 using uSync.Migrations.Composing;
-using uSync.Migrations.Extensions;
 using uSync.Migrations.Migrators;
 using uSync.Migrations.Migrators.Models;
 using uSync.Migrations.Models;
@@ -28,14 +23,14 @@ internal class ContentBaseMigrationHandler<TEntity>
 
     private readonly IEventAggregator _eventAggregator;
     private readonly SyncPropertyMigratorCollection _migrators;
-    private readonly SyncMigrationFileService _migrationFileService;
+    private readonly ISyncMigrationFileService _migrationFileService;
     private readonly IShortStringHelper _shortStringHelper;
 
     protected readonly HashSet<string> _ignoredProperties = new(StringComparer.OrdinalIgnoreCase);
 
     public ContentBaseMigrationHandler(
         IEventAggregator eventAggregator,
-        SyncMigrationFileService migrationFileService,
+        ISyncMigrationFileService migrationFileService,
         SyncPropertyMigratorCollection contentPropertyMigrators,
         IShortStringHelper shortStringHelper)
     {

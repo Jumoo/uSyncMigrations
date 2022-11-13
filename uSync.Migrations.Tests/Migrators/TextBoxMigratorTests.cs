@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using NUnit.Framework;
+﻿using NUnit.Framework;
 
 using uSync.Migrations.Migrators;
 using uSync.Migrations.Migrators.Models;
@@ -50,8 +44,8 @@ internal class TextBoxMigratorTests : MigratiorTestBase
 
     protected override SyncMigrationDataTypeProperty GetMigrationDataTypeProperty()
         => new SyncMigrationDataTypeProperty(UmbEditors.Aliases.TextBox, "Nvarchar",
-            new List<PreValue> 
-            { 
+            new List<PreValue>
+            {
                 new PreValue { SortOrder = 1, Alias = "maxChars", Value = "128" }
             });
 }

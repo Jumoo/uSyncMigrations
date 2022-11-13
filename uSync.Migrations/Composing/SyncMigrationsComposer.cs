@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+
 using Umbraco.Cms.Core.Composing;
 using Umbraco.Cms.Core.DependencyInjection;
 using Umbraco.Cms.Core.Notifications;
@@ -16,11 +17,31 @@ public class SyncMigrationsComposer : IComposer
 {
     public void Compose(IUmbracoBuilder builder)
     {
+        builder.AdduSyncMigrations();
+    }
+}
+
+public static class SyncMigrationsBuilderExtensions
+{
+    /// <summary>
+    ///  Add uSync Migrations to your project
+    /// </summary>
+    /// <remarks>
+    ///  if your startup.cs has an .AddComposers() line then this will be automatically added anyway
+    /// </remarks>
+    public static IUmbracoBuilder AdduSyncMigrations(this IUmbracoBuilder builder)
+    {
+        // stop a double add. 
+        if (builder.Services.Any(x => x.ServiceType == typeof(ISyncMigrationFileService)))
+        {
+            return builder;
+        }
+
         builder
             .WithCollectionBuilder<SyncPropertyMigratorCollectionBuilder>()
                 .Append(builder.TypeLoader.GetTypes<ISyncPropertyMigrator>());
 
-        builder.Services.AddTransient<SyncMigrationFileService>();
+        builder.Services.AddTransient<ISyncMigrationFileService, SyncMigrationFileService>();
 
         builder
             .WithCollectionBuilder<SyncMigrationHandlerCollectionBuilder>()
@@ -30,8 +51,8 @@ public class SyncMigrationsComposer : IComposer
             .WithCollectionBuilder<SyncMigrationProfileCollectionBuilder>()
                 .Add(() => builder.TypeLoader.GetTypes<ISyncMigrationProfile>());
 
-        builder.Services.AddTransient<SyncMigrationService>();
-        builder.Services.AddTransient<SyncMigrationConfigurationService>();
+        builder.Services.AddTransient<ISyncMigrationService, SyncMigrationService>();
+        builder.Services.AddTransient<ISyncMigrationConfigurationService, SyncMigrationConfigurationService>();
 
         builder.AddNotificationHandler<ServerVariablesParsingNotification, SyncMigrationsServerVariablesParsingNotificationHandler>();
 
@@ -39,5 +60,7 @@ public class SyncMigrationsComposer : IComposer
         {
             builder.ManifestFilters().Append<SyncMigrationsManifestFilter>();
         }
+
+        return builder;
     }
 }

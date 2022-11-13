@@ -1,8 +1,9 @@
 ﻿using System.Xml.Linq;
-using Microsoft.Extensions.Logging;
+
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Notifications;
+
 using uSync.Core;
 using uSync.Migrations.Models;
 using uSync.Migrations.Notifications;
@@ -13,11 +14,11 @@ namespace uSync.Migrations.Handlers;
 internal class TemplateMigrationHandler : ISyncMigrationHandler
 {
     private readonly IEventAggregator _eventAggregator;
-    private readonly SyncMigrationFileService _migrationFileService;
+    private readonly ISyncMigrationFileService _migrationFileService;
 
     public TemplateMigrationHandler(
         IEventAggregator eventAggregator,
-        SyncMigrationFileService migrationFileService)
+        ISyncMigrationFileService migrationFileService)
     {
         _eventAggregator = eventAggregator;
         _migrationFileService = migrationFileService;
