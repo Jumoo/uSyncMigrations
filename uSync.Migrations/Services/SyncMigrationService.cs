@@ -2,6 +2,7 @@
 using Umbraco.Extensions;
 using uSync.BackOffice.Configuration;
 using uSync.Migrations.Composing;
+using uSync.Migrations.Configuration.Models;
 using uSync.Migrations.Handlers;
 using uSync.Migrations.Models;
 

@@ -1,35 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace uSync.Migrations.Models;
-
-
-[JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-public class MigrationProfileInfo
-{
-    public List<MigrationProfile> Profiles { get; set; }
-
-    public bool HasCustom { get; set; }
-}
-
-[JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-public class MigratrionProfileConfig
-{
-    public string[] Remove { get; set; }
-    public List<MigrationProfile> Profiles { get; set; }
-}
-
-
-[JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-public class MigrationProfile
-{
-    public string Name { get; set; }
-    public string Icon { get; set; }
-    public string Description { get; set; }
-
-    public MigrationOptions Options { get; set; }
-        = new MigrationOptions();
-}
+namespace uSync.Migrations.Configuration.Models;
 
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
