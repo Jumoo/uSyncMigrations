@@ -1,14 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
-using Newtonsoft.Json;
-
-using Umbraco.Cms.Core.Extensions;
 using Umbraco.Cms.Web.BackOffice.Controllers;
 using Umbraco.Extensions;
 
-using uSync.Migrations.Composing;
 using uSync.Migrations.Configuration;
 using uSync.Migrations.Configuration.Models;
 using uSync.Migrations.Models;
@@ -56,6 +50,6 @@ public class uSyncMigrationsController : UmbracoAuthorizedApiController
     }
 
     [HttpGet]
-    public MigrationProfileInfo GetProfiles() 
+    public MigrationProfileInfo GetProfiles()
         => _profileConfigService.GetProfiles();
 }

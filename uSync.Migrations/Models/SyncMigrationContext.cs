@@ -1,6 +1,4 @@
-﻿using Org.BouncyCastle.Pkcs;
-
-namespace uSync.Migrations.Models;
+﻿namespace uSync.Migrations.Models;
 
 /// <summary>
 ///  A uSync migration context, lets us keep a whole list of things in memory while we do the migration.
@@ -13,7 +11,7 @@ public class SyncMigrationContext
     /// <summary>
     ///  list of keys to editor aliases used to lookup datatypes in content types !
     /// </summary>
-    
+
     private Dictionary<Guid, string> _dataTypeDefinitions { get; set; } = new();
 
     /// <summary>
@@ -24,7 +22,7 @@ public class SyncMigrationContext
     /// <summary>
     ///  datatypes that vary by something (e.g culture)
     /// </summary>
-    private Dictionary<Guid, string> _dataTypeVariations { get;set; } = new();
+    private Dictionary<Guid, string> _dataTypeVariations { get; set; } = new();
 
     private Dictionary<Guid, string> _contentKeys { get; set; } = new();
     private Dictionary<Guid, string> _contentPaths { get; set; } = new();
@@ -78,7 +76,7 @@ public class SyncMigrationContext
             string.IsNullOrWhiteSpace(propertyAlias) == false &&
             string.IsNullOrWhiteSpace(originalAlias) == false &&
             string.IsNullOrWhiteSpace(newAlias) == false &&
-            _propertyTypes.TryAdd($"{contentTypeAlias}_{propertyAlias}", 
+            _propertyTypes.TryAdd($"{contentTypeAlias}_{propertyAlias}",
             new EditorAliasInfo(originalAlias, newAlias));
     }
 
@@ -145,7 +143,7 @@ public class SyncMigrationContext
         => _ = _dataTypeVariations?.TryAdd(guid, variation);
 
     public string GetDataTypeVariation(Guid guid)
-        => _dataTypeVariations?.TryGetValue(guid, out var variation) == true   
+        => _dataTypeVariations?.TryGetValue(guid, out var variation) == true
             ? variation : "Nothing";
 }
 

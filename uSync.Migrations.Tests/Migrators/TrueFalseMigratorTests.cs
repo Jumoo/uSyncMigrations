@@ -40,7 +40,7 @@ internal class TrueFalseMigratorTests : MigratiorTestBase
 }";
 
         Assert.AreEqual(expected, ConvertResultToJsonTestResult(configFile));
-        
+
     }
 
     [TestCase("1", "1")]

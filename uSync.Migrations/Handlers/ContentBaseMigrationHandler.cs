@@ -1,9 +1,5 @@
 ﻿using System.Xml.Linq;
 
-using HtmlAgilityPack;
-
-using Microsoft.AspNetCore.Mvc;
-
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models.Entities;
 using Umbraco.Cms.Core.Notifications;
@@ -12,7 +8,6 @@ using Umbraco.Extensions;
 
 using uSync.Core;
 using uSync.Migrations.Composing;
-using uSync.Migrations.Extensions;
 using uSync.Migrations.Migrators;
 using uSync.Migrations.Migrators.Models;
 using uSync.Migrations.Models;

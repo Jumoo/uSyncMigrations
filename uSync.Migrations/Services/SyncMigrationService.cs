@@ -1,5 +1,6 @@
 ﻿using Umbraco.Cms.Core.Models;
 using Umbraco.Extensions;
+
 using uSync.BackOffice.Configuration;
 using uSync.Migrations.Composing;
 using uSync.Migrations.Configuration.Models;
@@ -28,7 +29,7 @@ public class SyncMigrationService
         => _migrationHandlers
             .OrderBy(x => x.Priority)
             .Select(x => x.ItemType);
-   
+
     public IEnumerable<ISyncMigrationHandler> GetHandlers()
         => _migrationHandlers;
 

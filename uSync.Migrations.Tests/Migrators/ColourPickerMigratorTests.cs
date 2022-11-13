@@ -1,15 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using NPoco;
-
-using NUnit.Framework;
-
-using Umbraco.Cms.Core;
-using Umbraco.Cms.Core.WebAssets;
+﻿using NUnit.Framework;
 
 using uSync.Migrations.Migrators;
 using uSync.Migrations.Migrators.Models;
@@ -84,7 +73,7 @@ public class ColourPickerMigratorTests : MigratiorTestBase
         => EditorAliasAsExpectedbase(UmbConstants.PropertyEditors.Aliases.ColorPicker);
 
     [TestCase(
-@"{""label"":""Blue"",""value"":""0000FF""}", 
+@"{""label"":""Blue"",""value"":""0000FF""}",
 @"{
   ""value"": ""0000FF"",
   ""label"": ""Blue"",

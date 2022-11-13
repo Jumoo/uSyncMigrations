@@ -1,8 +1,6 @@
 ﻿global using UmbConstants = Umbraco.Cms.Core.Constants;
 global using UmbEditors = Umbraco.Cms.Core.Constants.PropertyEditors;
 
-using AutoFixture;
-
 using Newtonsoft.Json;
 
 using NUnit.Framework;

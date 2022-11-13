@@ -1,7 +1,5 @@
 ﻿using System.Xml.Linq;
 
-using NUglify;
-
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models.Entities;
 using Umbraco.Cms.Core.Notifications;
@@ -39,7 +37,7 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity>
         {
             return;
         }
-        
+
         foreach (var file in Directory.GetFiles(sourceFolder, "*.config", SearchOption.AllDirectories))
         {
             var source = XElement.Load(file);
@@ -231,7 +229,7 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity>
 
         var definitionElement = newProperty.Element("Definition");
         if (definitionElement == null) return;
-        
+
         var definition = definitionElement.ValueOrDefault(Guid.Empty);
         if (definition != Guid.Empty)
         {

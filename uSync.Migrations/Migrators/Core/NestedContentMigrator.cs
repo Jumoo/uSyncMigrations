@@ -33,11 +33,11 @@ internal class NestedContentMigrator : SyncPropertyMigratorBase
 
         var rowValues = JsonConvert.DeserializeObject<IList<NestedContentRowValue>>(contentProperty.Value);
 
-        foreach(var row in rowValues)
+        foreach (var row in rowValues)
         {
             // row.ContentTypeAlias
 
-            foreach(var property in row.RawPropertyValues)
+            foreach (var property in row.RawPropertyValues)
             {
                 var editorAlias = context.GetEditorAlias(row.ContentTypeAlias, property.Key);
                 if (editorAlias == null) continue;

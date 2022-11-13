@@ -1,9 +1,13 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using System.Xml.Linq;
+﻿using System.Xml.Linq;
+
+using Microsoft.AspNetCore.Hosting;
+
 using Umbraco.Cms.Core.Extensions;
+
 using uSync.BackOffice;
 using uSync.BackOffice.Services;
 using uSync.Core;
+
 using IHostingEnvironment = Umbraco.Cms.Core.Hosting.IHostingEnvironment;
 
 namespace uSync.Migrations.Services;
@@ -53,7 +57,7 @@ public class SyncMigrationFileService
 
         return path;
     }
-        
+
 
     private string GetMigrationFolder(Guid id)
         => Path.Combine(_migrationRoot, id.ToString());

@@ -1,5 +1,6 @@
 ﻿using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Composing;
+
 using uSync.Migrations.Migrators.Models;
 using uSync.Migrations.Models;
 
@@ -36,7 +37,7 @@ public interface ISyncReplacablePropertyMigrator : ISyncPropertyMigrator
 ///  interface to impliment if your property splits up a single value into varied (e.g cultured) values
 /// </summary>
 
-public  interface ISyncVariationPropertyMigrator
+public interface ISyncVariationPropertyMigrator
 {
     public Attempt<CulturedPropertyValue> GetVariedElements(SyncMigrationContentProperty contentProperty, SyncMigrationContext context);
 }

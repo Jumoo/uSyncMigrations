@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using NUnit.Framework;
+﻿using NUnit.Framework;
 
 using uSync.Migrations.Migrators;
 using uSync.Migrations.Migrators.Models;
@@ -42,8 +36,8 @@ Three")]
         => new SyncMigrationContentProperty(UmbConstants.PropertyEditors.Aliases.CheckBoxList, value);
 
     protected override SyncMigrationDataTypeProperty GetMigrationDataTypeProperty()
-        => new SyncMigrationDataTypeProperty(UmbConstants.PropertyEditors.Aliases.CheckBoxList, 
-            "Nvarchar", 
+        => new SyncMigrationDataTypeProperty(UmbConstants.PropertyEditors.Aliases.CheckBoxList,
+            "Nvarchar",
             new List<PreValue>
             {
                 new PreValue { SortOrder = 1, Alias = "0", Value = "One"},

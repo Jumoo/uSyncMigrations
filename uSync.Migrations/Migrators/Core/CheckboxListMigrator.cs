@@ -1,6 +1,7 @@
 ﻿using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Extensions;
+
 using uSync.Migrations.Migrators.Models;
 using uSync.Migrations.Models;
 
@@ -30,6 +31,6 @@ internal class CheckboxListMigrator : SyncPropertyMigratorBase
 
     public override string GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
         => string.IsNullOrWhiteSpace(contentProperty.Value)
-            ? contentProperty.Value 
+            ? contentProperty.Value
             : string.Join(",\r\n", contentProperty.Value.ToDelimitedList());
 }

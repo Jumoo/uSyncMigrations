@@ -12,13 +12,13 @@ using Umbraco.Extensions;
 
 namespace uSync.Migrations.Controllers;
 
-[Tree(UmbConstants.Applications.Settings, 
+[Tree(UmbConstants.Applications.Settings,
     "uSyncFiles",
     TreeTitle = "uSync Files",
     TreeUse = TreeUse.Dialog)]
 public class uSyncFilesTreeController : TreeController
 {
-    private readonly IFileSystem _fileSystem;  
+    private readonly IFileSystem _fileSystem;
     private readonly IMenuItemCollectionFactory _menuItemCollectionFactory;
 
     public uSyncFilesTreeController(
