@@ -1,8 +1,10 @@
-﻿using uSync.Migrations.Models;
+﻿using Umbraco.Cms.Core.Composing;
+
+using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Handlers;
 
-public interface ISyncMigrationHandler
+public interface ISyncMigrationHandler : IDiscoverable
 {
     public string Group { get; }
 

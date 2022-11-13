@@ -4,11 +4,11 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
-
+	
 	<ItemGroup>
 		<PackageReference Include="Umbraco.Cms" Version="10.2.1" />
 		<PackageReference Include="Umbraco.TheStarterKit" Version="10.0.0" />
-		<PackageReference Include="uSync" Version="10.3.1-build.20221112.7" />
+		<PackageReference Include="uSync" Version="10.3.1-build.20221113.2" />
 	</ItemGroup>
 
 	<ItemGroup>

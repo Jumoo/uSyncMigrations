@@ -1,4 +1,6 @@
 ﻿using Umbraco.Cms.Core.Composing;
+
+using uSync.Migrations.Configuration.Models;
 using uSync.Migrations.Handlers;
 
 namespace uSync.Migrations.Composing;
@@ -16,4 +18,13 @@ public class SyncMigrationHandlerCollection : BuilderCollectionBase<ISyncMigrati
     { }
 
     public IEnumerable<ISyncMigrationHandler> Handlers => this;
+}
+
+public class SyncMigrationProfileCollection : BuilderCollectionBase<ISyncMigrationProfile>
+{
+    public SyncMigrationProfileCollection(Func<IEnumerable<ISyncMigrationProfile>> items)
+        : base(items)
+    { }
+
+    public IEnumerable<ISyncMigrationProfile> Profiles => this;
 }
