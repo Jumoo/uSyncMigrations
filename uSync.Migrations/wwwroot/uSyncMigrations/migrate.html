@@ -10,6 +10,11 @@
 
         <umb-editor-container class="form-horizontal">
 
+            <div class="alert alert-warning flex items-center">
+                <umb-icon icon="icon-bomb" class="large mr3 color-red"></umb-icon>
+                Never do in place migrations on your live data and always have a backup
+            </div>
+
             <!-- init -->
             <div ng-if="vm.progress == 'init'">
                 <umb-box>
