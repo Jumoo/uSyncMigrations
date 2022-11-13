@@ -15,11 +15,11 @@ namespace uSync.Migrations.Handlers;
 internal class LanguageMigrationHandler : ISyncMigrationHandler
 {
     private readonly IEventAggregator _eventAggregator;
-    private readonly SyncMigrationFileService _migrationFileService;
+    private readonly ISyncMigrationFileService _migrationFileService;
 
     public LanguageMigrationHandler(
         IEventAggregator eventAggregator,
-        SyncMigrationFileService migrationFileService)
+        ISyncMigrationFileService migrationFileService)
     {
         _eventAggregator = eventAggregator;
         _migrationFileService = migrationFileService;

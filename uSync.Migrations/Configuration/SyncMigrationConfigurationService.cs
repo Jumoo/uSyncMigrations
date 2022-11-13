@@ -15,16 +15,16 @@ namespace uSync.Migrations.Configuration;
 /// <summary>
 ///  Service for handling reading/craeting config.
 /// </summary>
-public class SyncMigrationConfigurationService
+internal class SyncMigrationConfigurationService : ISyncMigrationConfigurationService
 {
     private readonly ILogger<SyncMigrationConfigurationService> _logger;
     private readonly IHostEnvironment _hostEnvironment;
-    private readonly SyncMigrationService _migrationService;
+    private readonly ISyncMigrationService _migrationService;
     private readonly SyncMigrationProfileCollection _syncMigrationProfiles;
 
     public SyncMigrationConfigurationService(
         IHostEnvironment hostEnvironment,
-        SyncMigrationService migrationService,
+        ISyncMigrationService migrationService,
         SyncMigrationProfileCollection syncMigrationProfiles)
     {
         _hostEnvironment = hostEnvironment;

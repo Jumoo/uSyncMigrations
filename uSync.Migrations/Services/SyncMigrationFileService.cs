@@ -12,7 +12,7 @@ using IHostingEnvironment = Umbraco.Cms.Core.Hosting.IHostingEnvironment;
 
 namespace uSync.Migrations.Services;
 
-public class SyncMigrationFileService
+internal class SyncMigrationFileService : ISyncMigrationFileService
 {
     private readonly IWebHostEnvironment _webHostEnvironment;
     private readonly string _migrationRoot;

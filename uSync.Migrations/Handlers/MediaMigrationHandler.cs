@@ -12,7 +12,7 @@ internal class MediaMigrationHandler : ContentBaseMigrationHandler<Media>, ISync
 {
     public MediaMigrationHandler(
         IEventAggregator eventAggregator,
-        SyncMigrationFileService migrationFileService,
+        ISyncMigrationFileService migrationFileService,
         SyncPropertyMigratorCollection migrators,
         IShortStringHelper shortStringHelper)
         : base(eventAggregator, migrationFileService, migrators, shortStringHelper)

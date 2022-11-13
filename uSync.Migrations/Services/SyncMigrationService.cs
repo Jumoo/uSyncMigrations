@@ -9,14 +9,14 @@ using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Services;
 
-public class SyncMigrationService
+internal class SyncMigrationService : ISyncMigrationService
 {
-    private readonly SyncMigrationFileService _migrationFileService;
+    private readonly ISyncMigrationFileService _migrationFileService;
     private readonly SyncMigrationHandlerCollection _migrationHandlers;
     private readonly uSyncConfigService _usyncConfig;
 
     public SyncMigrationService(
-        SyncMigrationFileService migrationFileService,
+        ISyncMigrationFileService migrationFileService,
         SyncMigrationHandlerCollection migrationHandlers,
         uSyncConfigService usyncConfig)
     {

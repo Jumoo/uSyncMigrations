@@ -32,7 +32,7 @@ public static class SyncMigrationsBuilderExtensions
     public static IUmbracoBuilder AdduSyncMigrations(this IUmbracoBuilder builder)
     {
         // stop a double add. 
-        if (builder.Services.Any(x => x.ServiceType == typeof(SyncMigrationFileService)))
+        if (builder.Services.Any(x => x.ServiceType == typeof(ISyncMigrationFileService)))
         {
             return builder;
         }
@@ -41,7 +41,7 @@ public static class SyncMigrationsBuilderExtensions
             .WithCollectionBuilder<SyncPropertyMigratorCollectionBuilder>()
                 .Append(builder.TypeLoader.GetTypes<ISyncPropertyMigrator>());
 
-        builder.Services.AddTransient<SyncMigrationFileService>();
+        builder.Services.AddTransient<ISyncMigrationFileService, SyncMigrationFileService>();
 
         builder
             .WithCollectionBuilder<SyncMigrationHandlerCollectionBuilder>()
@@ -51,8 +51,8 @@ public static class SyncMigrationsBuilderExtensions
             .WithCollectionBuilder<SyncMigrationProfileCollectionBuilder>()
                 .Add(() => builder.TypeLoader.GetTypes<ISyncMigrationProfile>());
 
-        builder.Services.AddTransient<SyncMigrationService>();
-        builder.Services.AddTransient<SyncMigrationConfigurationService>();
+        builder.Services.AddTransient<ISyncMigrationService, SyncMigrationService>();
+        builder.Services.AddTransient<ISyncMigrationConfigurationService, SyncMigrationConfigurationService>();
 
         builder.AddNotificationHandler<ServerVariablesParsingNotification, SyncMigrationsServerVariablesParsingNotificationHandler>();
 

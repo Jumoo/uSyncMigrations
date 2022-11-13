@@ -23,14 +23,14 @@ internal class ContentBaseMigrationHandler<TEntity>
 
     private readonly IEventAggregator _eventAggregator;
     private readonly SyncPropertyMigratorCollection _migrators;
-    private readonly SyncMigrationFileService _migrationFileService;
+    private readonly ISyncMigrationFileService _migrationFileService;
     private readonly IShortStringHelper _shortStringHelper;
 
     protected readonly HashSet<string> _ignoredProperties = new(StringComparer.OrdinalIgnoreCase);
 
     public ContentBaseMigrationHandler(
         IEventAggregator eventAggregator,
-        SyncMigrationFileService migrationFileService,
+        ISyncMigrationFileService migrationFileService,
         SyncPropertyMigratorCollection contentPropertyMigrators,
         IShortStringHelper shortStringHelper)
     {

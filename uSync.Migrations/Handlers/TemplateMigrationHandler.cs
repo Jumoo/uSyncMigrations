@@ -14,11 +14,11 @@ namespace uSync.Migrations.Handlers;
 internal class TemplateMigrationHandler : ISyncMigrationHandler
 {
     private readonly IEventAggregator _eventAggregator;
-    private readonly SyncMigrationFileService _migrationFileService;
+    private readonly ISyncMigrationFileService _migrationFileService;
 
     public TemplateMigrationHandler(
         IEventAggregator eventAggregator,
-        SyncMigrationFileService migrationFileService)
+        ISyncMigrationFileService migrationFileService)
     {
         _eventAggregator = eventAggregator;
         _migrationFileService = migrationFileService;

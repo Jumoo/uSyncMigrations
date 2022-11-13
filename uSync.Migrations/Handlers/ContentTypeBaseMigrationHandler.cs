@@ -18,12 +18,12 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity>
     public string Group => uSync.BackOffice.uSyncConstants.Groups.Settings;
 
     private readonly IEventAggregator _eventAggregator;
-    private readonly SyncMigrationFileService _migrationFileService;
+    private readonly ISyncMigrationFileService _migrationFileService;
     private readonly SyncPropertyMigratorCollection _migrators;
 
     public ContentTypeBaseMigrationHandler(
         IEventAggregator eventAggregator,
-        SyncMigrationFileService migrationFileService,
+        ISyncMigrationFileService migrationFileService,
         SyncPropertyMigratorCollection migrators)
     {
         _eventAggregator = eventAggregator;

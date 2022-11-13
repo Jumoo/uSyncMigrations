@@ -12,12 +12,12 @@ namespace uSync.Migrations.Controllers;
 
 public class uSyncMigrationsController : UmbracoAuthorizedApiController
 {
-    private readonly SyncMigrationService _migrationService;
-    private readonly SyncMigrationConfigurationService _profileConfigService;
+    private readonly ISyncMigrationService _migrationService;
+    private readonly ISyncMigrationConfigurationService _profileConfigService;
 
     public uSyncMigrationsController(
-        SyncMigrationService migrationService,
-        SyncMigrationConfigurationService profileConfigService)
+        ISyncMigrationService migrationService,
+        ISyncMigrationConfigurationService profileConfigService)
     {
         _migrationService = migrationService;
         _profileConfigService = profileConfigService;

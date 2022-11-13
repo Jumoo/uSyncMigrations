@@ -11,7 +11,7 @@ internal class MediaTypeMigrationHandler : ContentTypeBaseMigrationHandler<Media
 {
     public MediaTypeMigrationHandler(
         IEventAggregator eventAggregator,
-        SyncMigrationFileService migrationFileService,
+        ISyncMigrationFileService migrationFileService,
         SyncPropertyMigratorCollection migrators)
         : base(eventAggregator, migrationFileService, migrators)
     { }

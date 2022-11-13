@@ -26,14 +26,14 @@ internal class DataTypeMigrationHandler : ISyncMigrationHandler
 {
     private readonly IEventAggregator _eventAggregator;
     private readonly SyncPropertyMigratorCollection _migrators;
-    private readonly SyncMigrationFileService _migrationFileService;
+    private readonly ISyncMigrationFileService _migrationFileService;
     private readonly ILogger<DataTypeMigrationHandler> _logger;
     private readonly JsonSerializerSettings _jsonSerializerSettings;
     private readonly IDataTypeService _dataTypeService;
 
     public DataTypeMigrationHandler(
         IEventAggregator eventAggregator,
-        SyncMigrationFileService fileService,
+        ISyncMigrationFileService fileService,
         ILogger<DataTypeMigrationHandler> logger,
         SyncPropertyMigratorCollection migrators,
         IDataTypeService dataTypeService)

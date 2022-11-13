@@ -12,7 +12,7 @@ internal class ContentMigrationHandler : ContentBaseMigrationHandler<Content>, I
 {
     public ContentMigrationHandler(
         IEventAggregator eventAggregator,
-        SyncMigrationFileService migrationFileService,
+        ISyncMigrationFileService migrationFileService,
         SyncPropertyMigratorCollection migrators,
         IShortStringHelper shortStringHelper)
         : base(eventAggregator, migrationFileService, migrators, shortStringHelper)
