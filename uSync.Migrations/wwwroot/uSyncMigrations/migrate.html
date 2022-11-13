@@ -10,6 +10,11 @@
 
         <umb-editor-container class="form-horizontal">
 
+            <div class="alert alert-warning flex items-center">
+                <umb-icon icon="icon-bomb" class="large mr3 color-red"></umb-icon>
+                Never do in place migrations on your live data and always have a backup
+            </div>
+
             <!-- init -->
             <div ng-if="vm.progress == 'init'">
                 <umb-box>
@@ -30,6 +35,11 @@
                                             size="small"
                                             action="vm.pickSource()"
                                             label="Change"></umb-button>
+                            </div>
+
+                            <div ng-if="!vm.sourceValid"
+                                 class="alert alert-danger mt2">
+                                Source Invalid : {{vm.sourceError}}
                             </div>
 
                         </umb-control-group>
@@ -77,7 +87,7 @@
                                 label="Do it, Do it now!"
                                 button-style="success btn-large"
                                 icon="icon-smiley"
-                                disabled="vm.working"
+                                disabled="vm.working || vm.sourceValid == false"
                                 state="vm.state">
                     </umb-button>
                     <div>

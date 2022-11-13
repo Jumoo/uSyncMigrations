@@ -1,4 +1,5 @@
-﻿using Umbraco.Cms.Core.Models;
+﻿using Umbraco.Cms.Core;
+using Umbraco.Cms.Core.Models;
 using Umbraco.Extensions;
 
 using uSync.BackOffice.Configuration;
@@ -33,6 +34,8 @@ internal class SyncMigrationService : ISyncMigrationService
     public IEnumerable<ISyncMigrationHandler> GetHandlers()
         => _migrationHandlers;
 
+    public Attempt<string> ValidateMigrationSource(string source)   
+        => _migrationFileService.ValdateMigrationSource(source);
 
     public MigrationResults MigrateFiles(MigrationOptions options)
     {

@@ -10,6 +10,7 @@
         vm.showSetup = true;
         vm.working = false;
         vm.state = 'init';
+        vm.sourceValid = true;
 
         vm.progress = 'init';
 
@@ -25,6 +26,7 @@
 
         vm.$onInit = function () {
             InitHub();
+            validateSource(vm.options.source);
         };
 
         //
@@ -56,7 +58,18 @@
         function pickSource() {
             pickFolder(function (folder) {
                 vm.options.source = folder;
+                validateSource(vm.options.source);
             });
+        }
+
+        function validateSource(source) {
+
+            uSyncMigrationService.validateSource(vm.options.source)
+                .then(function (result) {
+                    vm.sourceValid = result.data.length == 0;
+                    vm.sourceError = result.data;
+                });
+
         }
 
         function pickTarget() {

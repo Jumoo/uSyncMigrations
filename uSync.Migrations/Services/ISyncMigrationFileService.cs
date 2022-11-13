@@ -1,5 +1,7 @@
 ﻿using System.Xml.Linq;
 
+using Umbraco.Cms.Core;
+
 namespace uSync.Migrations.Services;
 public interface ISyncMigrationFileService
 {
@@ -7,4 +9,5 @@ public interface ISyncMigrationFileService
     string GetMigrationFolder(string folder);
     void RemoveMigration(Guid migrationId);
     void SaveMigrationFile(Guid id, XElement xml, string folder);
+    Attempt<string> ValdateMigrationSource(string folder);
 }
