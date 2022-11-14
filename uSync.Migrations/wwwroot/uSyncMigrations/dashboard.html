@@ -10,10 +10,6 @@
     <umb-load-indicator ng-if="vm.loading"></umb-load-indicator>
     <div ng-if="!vm.loading">
 
-        <div ng-if="!vm.hasCustom" class="color-blue flex justify-center mt2 mb3">
-            You can customize this list with a <strong>&nbsp;"/usync/profiles.json"&nbsp;</strong> file to add your own or remove these default migration profiles.
-        </div>
-
         <div class="usync-group-actions">
             <umb-box ng-repeat="profile in vm.profiles" class="usync-group-box">
                 <umb-box-content>
@@ -42,5 +38,9 @@
                 </umb-box-content>
             </umb-box>
         </div>
+        <div ng-if="!vm.hasCustom" class="color-blue-grey flex justify-center mt2 mb3">
+            You can customize this list with a <strong>&nbsp;"/usync/profiles.json"&nbsp;</strong> file to add your own or remove these default migration profiles.
+        </div>
+
     </div>
 </div>

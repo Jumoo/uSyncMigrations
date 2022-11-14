@@ -94,7 +94,7 @@ internal class LanguageMigrationHandler : ISyncMigrationHandler
     {
         _migrationFileService.SaveMigrationFile(id, xml, "Languages");
 
-        return new MigrationMessage(ItemType, xml.GetAlias(), MigrationMessageType.Success)
+        return new MigrationMessage(ItemType, xml.GetAlias(), MigrationMessageType.Warning)
         {
             Message = "When importing migrated languages you may loose your default language value."
         };

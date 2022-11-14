@@ -44,8 +44,10 @@
                 });
 
                 vm.hasError = vm.counts.Error > 0;
+            }
 
-                console.log(vm.counts);
+            if (vm.counts.Error + vm.counts.Warning == 0) {
+                vm.showAll = true;
             }
         }
     }
