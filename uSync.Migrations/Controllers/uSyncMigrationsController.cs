@@ -63,4 +63,8 @@ public class uSyncMigrationsController : UmbracoAuthorizedApiController
         }
         return attempt.Exception?.Message ?? attempt.Result ?? "Unknown Error";
     }
+
+    [HttpPost]
+    public MigrationResults Validate(MigrationOptions options)
+        => _migrationService.Validate(options);
 }

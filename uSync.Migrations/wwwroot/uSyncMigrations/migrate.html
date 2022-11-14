@@ -37,7 +37,7 @@
                                             label="Change"></umb-button>
                             </div>
 
-                            <div ng-if="!vm.sourceValid"
+                            <div ng-if="!vm.sourceValid && vm.sourceError.length > 0"
                                  class="alert alert-danger mt2">
                                 Source Invalid : {{vm.sourceError}}
                             </div>
@@ -82,6 +82,15 @@
                     </umb-box-content>
                 </umb-box>
 
+                <umb-box>
+                    <umb-box-content>
+                        <usync-migration-results results="vm.validation"
+                                                 action="Validation"
+                                                 is-valid="vm.sourceValid"></usync-migration-results>
+                    </umb-box-content>
+                </umb-box>
+
+
                 <div class="flex justify-center flex-column items-center">
                     <umb-button action="vm.migrate()"
                                 label="Do it, Do it now!"
@@ -112,47 +121,15 @@
                             The files have successfully been migrated to your uSync folder,
                             you can now run reports, imports to get the files into uSync
                         </p>
+                        
+                        ({{vm.results.messages.length}})
                     </umb-box-content>
                 </umb-box>
 
-                <umb-box>
-                    <umb-box-header title="Migration Reuslts"
-                                    ng-click="vm.showResults = !vm.showResults">
-                        <i ng-if="!vm.showResults" class="icon icon-navigation-down"></i>
-                        <i ng-if="vm.showResults" class="icon icon-navigation-up"></i>
-                    </umb-box-header>
-                    <umb-box-content ng-if="!vm.showResults">
-                        <div class="flex justify-between">
-                            <div>{{vm.results.messages.length}} items migrated</div>
-                            <button type="button" class="btn btn-link" ng-click="vm.showResults = !vm.showResults">Show detail...</button>
-                        </div>
-                    </umb-box-content>
-                    <umb-box-content ng-if="vm.showResults">
-                        <div class="umb-table">
-                            <div class="umb-table-head">
-                                <div class="umb-table-row">
-                                    <div class="umb-table-cell"></div>
-                                    <div class="umb-table-cell">Type</div>
-                                    <div class="umb-table-cell">Item</div>
-                                    <div class="umb-table-cell">Message</div>
-                                </div>
-                            </div>
-                            <div class="umb-table-body">
-                                <div ng-repeat="m in vm.results.messages"
-                                     class="umb-table-row">
-                                    <div class="umb-table-cell">
-                                        <i class="icon icon-check color-green" ng-if="m.messageType == 'Success'"></i>
-                                        <i class="icon icon-alert color-orange" ng-if="m.messageType == 'Warning'"></i>
-                                        <i class="icon icon-wrong color-red" ng-if="m.messageType == 'Error'"></i>
-                                    </div>
-                                    <div class="umb-table-cell">{{m.itemType}}</div>
-                                    <div class="umb-table-cell">{{m.itemName}}</div>
-                                    <div class="umb-table-cell">{{m.message}}</div>
-                                </div>
-                            </div>
-                        </div>
-                    </umb-box-content>
-                </umb-box>
+                <usync-migration-results results="vm.results"
+                                         action="Migration"
+                                         is-valid="vm.resultValid"
+                                         show-all="true"></usync-migration-results>
 
 
                 <div class="flex justify-center flex-column items-center">

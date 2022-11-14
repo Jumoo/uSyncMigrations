@@ -12,6 +12,7 @@ using Umbraco.Cms.Core.Services;
 
 using uSync.Core;
 using uSync.Migrations.Composing;
+using uSync.Migrations.Configuration.Models;
 using uSync.Migrations.Extensions;
 using uSync.Migrations.Migrators;
 using uSync.Migrations.Migrators.Models;
@@ -19,10 +20,11 @@ using uSync.Migrations.Models;
 using uSync.Migrations.Notifications;
 using uSync.Migrations.Serialization;
 using uSync.Migrations.Services;
+using uSync.Migrations.Validation;
 
 namespace uSync.Migrations.Handlers;
 
-internal class DataTypeMigrationHandler : ISyncMigrationHandler
+internal class DataTypeMigrationHandler : ISyncMigrationHandler, ISyncMigrationValidator
 {
     private readonly IEventAggregator _eventAggregator;
     private readonly SyncPropertyMigratorCollection _migrators;
@@ -59,12 +61,14 @@ internal class DataTypeMigrationHandler : ISyncMigrationHandler
 
     public void PrepareMigrations(Guid migrationId, string sourceFolder, SyncMigrationContext context)
     {
+        var dataTypeFolder = Path.Combine(sourceFolder, ItemType);
+
         if (Directory.Exists(sourceFolder) == false)
         {
             return;
         }
 
-        foreach (var file in Directory.GetFiles(sourceFolder, "*.config", SearchOption.AllDirectories))
+        foreach (var file in Directory.GetFiles(dataTypeFolder, "*.config", SearchOption.AllDirectories))
         {
             var source = XElement.Load(file);
             var dtd = source.Attribute("Key").ValueOrDefault(Guid.Empty);
@@ -247,4 +251,46 @@ internal class DataTypeMigrationHandler : ISyncMigrationHandler
 
     private object? MakeEmptyLabelConfig(IList<PreValue>? preValues)
         => preValues?.ConvertPreValuesToJson(false);
+
+    public IEnumerable<MigrationMessage> Validate(MigrationOptions options)
+    {
+        var messages = new List<MigrationMessage>();
+
+        var dataTypes = Path.Combine(options.Source, ItemType);
+
+        foreach (var file in Directory.GetFiles(dataTypes, "*.config", SearchOption.AllDirectories))
+        {
+            try
+            {
+                var source = XElement.Load(file);
+                var key = source.Attribute("Key").ValueOrDefault(Guid.Empty);
+                var editorAlias = source.Attribute("Id").ValueOrDefault(string.Empty);
+                var name = source.Attribute("Name").ValueOrDefault(string.Empty);
+                var databaseType = source.Attribute("DatabaseType").ValueOrDefault(string.Empty);
+
+                if (key == Guid.Empty) throw new Exception("Missing Key value");
+                if (string.IsNullOrEmpty(editorAlias)) throw new Exception("Id (EditorAlias) value");
+                if (string.IsNullOrEmpty(name)) throw new Exception("Missing Name value");
+                if (string.IsNullOrEmpty(databaseType)) throw new Exception("Missing database type");
+
+                if (!_migrators.TryGet(editorAlias, out var migrator))
+                {
+                    messages.Add(new MigrationMessage(ItemType, name, MigrationMessageType.Warning)
+                    {
+                        Message = $"there is no migrator for {editorAlias} value will be migrated as an Umbraco.Label"
+                    });
+                }
+            }
+            catch(Exception ex)
+            {
+                messages.Add(new MigrationMessage(ItemType, Path.GetFileName(file), MigrationMessageType.Error)
+                {
+                    Message = $"The Datatype file seems to be corrupt or missing something {ex.Message}"
+                });
+            }
+        }
+
+        return messages; 
+    }
+
 }

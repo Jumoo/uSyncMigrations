@@ -14,16 +14,19 @@ internal class SyncMigrationService : ISyncMigrationService
 {
     private readonly ISyncMigrationFileService _migrationFileService;
     private readonly SyncMigrationHandlerCollection _migrationHandlers;
+    private readonly SyncMigrationValidatorCollection _migrationValidators;
     private readonly uSyncConfigService _usyncConfig;
 
     public SyncMigrationService(
         ISyncMigrationFileService migrationFileService,
         SyncMigrationHandlerCollection migrationHandlers,
-        uSyncConfigService usyncConfig)
+        uSyncConfigService usyncConfig,
+        SyncMigrationValidatorCollection migrationValidators)
     {
         _migrationFileService = migrationFileService;
         _migrationHandlers = migrationHandlers;
         _usyncConfig = usyncConfig;
+        _migrationValidators = migrationValidators;
     }
 
     public IEnumerable<string> HandlerTypes()
@@ -36,6 +39,38 @@ internal class SyncMigrationService : ISyncMigrationService
 
     public Attempt<string> ValidateMigrationSource(string source)   
         => _migrationFileService.ValdateMigrationSource(source);
+
+    /// <summary>
+    ///  validate things before we run through them and do an actuall migration.
+    /// </summary>
+    /// <param name="options"></param>
+    /// <returns></returns>
+    public MigrationResults Validate(MigrationOptions options)
+    {
+        options.Source = _migrationFileService.GetMigrationFolder(options.Source);
+
+        var messages = new List<MigrationMessage>();
+
+        foreach(var validator in _migrationValidators)
+        {
+            try
+            {
+                messages.AddRange(validator.Validate(options));
+            }
+            catch(Exception ex)
+            {
+                // TODO: what do we do if the validator fails ???
+            }
+        }
+
+        return new MigrationResults
+        {
+            Messages = messages,
+            MigrationId = Guid.Empty,
+            Success = !messages.Any(x => x.MessageType == MigrationMessageType.Error)
+        };
+    }
+
 
     public MigrationResults MigrateFiles(MigrationOptions options)
     {

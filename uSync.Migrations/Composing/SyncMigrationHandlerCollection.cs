@@ -19,12 +19,3 @@ public class SyncMigrationHandlerCollection : BuilderCollectionBase<ISyncMigrati
 
     public IEnumerable<ISyncMigrationHandler> Handlers => this;
 }
-
-public class SyncMigrationProfileCollection : BuilderCollectionBase<ISyncMigrationProfile>
-{
-    public SyncMigrationProfileCollection(Func<IEnumerable<ISyncMigrationProfile>> items)
-        : base(items)
-    { }
-
-    public IEnumerable<ISyncMigrationProfile> Profiles => this;
-}
