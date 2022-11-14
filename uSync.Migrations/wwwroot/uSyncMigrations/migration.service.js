@@ -10,7 +10,8 @@
             getMigrationOptions: getMigrationOptions,
             migrate: migrate,
             getProfiles: getProfiles,
-            validateSource: validateSource
+            validateSource: validateSource,
+            validate: validate
         };
 
         function hasPending() {
@@ -31,6 +32,10 @@
 
         function validateSource(source) {
             return $http.get(serviceRoot + "ValidateSource/?source=" + source);
+        }
+
+        function validate(options) {
+            return $http.post(serviceRoot + "Validate", options);
         }
     }
 

@@ -1,0 +1,40 @@
+﻿<div>
+    <umb-box>
+        <umb-box-header title="{{vm.action}} Reuslts"
+                        ng-click="vm.showResults = !vm.showResults">
+            <div class="flex items-center flx-row">
+                <div class="mr2" ng-if="vm.counts.Warning > 0"><i class="icon-alert color-orange"></i> {{vm.counts.Warning}} Warnings</div>
+                <div class="mr2" ng-if="vm.counts.Error > 0"><i class="icon-wrong color-red"></i> {{vm.counts.Error}} Errors</div>
+                
+                <i ng-if="!vm.showResults" class="icon icon-navigation-down"></i>
+                <i ng-if="vm.showResults" class="icon icon-navigation-up"></i>
+            </div>
+        </umb-box-header>
+        <umb-box-content ng-if="vm.showResults">
+            <div class="umb-table">
+                <div class="umb-table-head">
+                    <div class="umb-table-row">
+                        <div class="umb-table-cell"></div>
+                        <div class="umb-table-cell">Type</div>
+                        <div class="umb-table-cell">Item</div>
+                        <div class="umb-table-cell">Message</div>
+                    </div>
+                </div>
+                <div class="umb-table-body">
+                    <div ng-repeat="m in vm.results.messages"
+                         class="umb-table-row"
+                         ng-if="vm.showAll || m.messageType != 'Success'">
+                        <div class="umb-table-cell">
+                            <i class="icon icon-check color-green" ng-if="m.messageType == 'Success'"></i>
+                            <i class="icon icon-alert color-orange" ng-if="m.messageType == 'Warning'"></i>
+                            <i class="icon icon-wrong color-red" ng-if="m.messageType == 'Error'"></i>
+                        </div>
+                        <div class="umb-table-cell">{{m.itemType}}</div>
+                        <div class="umb-table-cell">{{m.itemName}}</div>
+                        <div class="umb-table-cell">{{m.message}}</div>
+                    </div>
+                </div>
+            </div>
+        </umb-box-content>
+    </umb-box>
+</div>

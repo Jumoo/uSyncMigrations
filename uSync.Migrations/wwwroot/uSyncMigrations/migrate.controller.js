@@ -27,6 +27,7 @@
         vm.$onInit = function () {
             InitHub();
             validateSource(vm.options.source);
+            validate(vm.options);
         };
 
         //
@@ -59,17 +60,24 @@
             pickFolder(function (folder) {
                 vm.options.source = folder;
                 validateSource(vm.options.source);
+                validate(vm.options);
             });
         }
 
         function validateSource(source) {
 
-            uSyncMigrationService.validateSource(vm.options.source)
+            uSyncMigrationService.validateSource(source)
                 .then(function (result) {
                     vm.sourceValid = result.data.length == 0;
                     vm.sourceError = result.data;
                 });
+        }
 
+        function validate(options) {
+            uSyncMigrationService.validate(options)
+                .then(function (result) {
+                    vm.validation = result.data;
+                });
         }
 
         function pickTarget() {

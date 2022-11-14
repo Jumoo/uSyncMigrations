@@ -16,7 +16,8 @@ internal class SyncMigrationsManifestFilter : IManifestFilter
                 uSyncMigrations.PluginFolder + "/migration.service.js",
                 uSyncMigrations.PluginFolder + "/dashboard.controller.js",
                 uSyncMigrations.PluginFolder + "/migrate.controller.js",
-                uSyncMigrations.PluginFolder + "/dialogs/handlerPicker.controller.js"
+                uSyncMigrations.PluginFolder + "/dialogs/handlerPicker.controller.js",
+                uSyncMigrations.PluginFolder + "/components/migrationResults.component.js"
             }
         });
     }
