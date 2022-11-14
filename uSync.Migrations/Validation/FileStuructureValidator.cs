@@ -26,6 +26,10 @@ internal class FileStuructureValidator : ISyncMigrationValidator
         {
             message.Message = result.Exception?.Message ?? result.Result ?? "Unknown Error";
         }
+        else
+        {
+            message.Message = "File structure looks like its Umbraco 7 🤷";
+        }
 
         return message.AsEnumerableOfOne();
     }

@@ -89,7 +89,7 @@ internal class SyncMigrationService : ISyncMigrationService
 
         var results = MigrateFromDisk(migrationId, sourceRoot, migrationContext, handlers);
 
-        var success = results.All(x => x.MessageType == MigrationMessageType.Success);
+        var success = results.All(x => x.MessageType != MigrationMessageType.Error);
 
         if (success == true && results.Count() > 0)
         {

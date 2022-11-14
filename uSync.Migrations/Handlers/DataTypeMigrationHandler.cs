@@ -277,7 +277,7 @@ internal class DataTypeMigrationHandler : ISyncMigrationHandler, ISyncMigrationV
                 {
                     messages.Add(new MigrationMessage(ItemType, name, MigrationMessageType.Warning)
                     {
-                        Message = $"there is no migrator for {editorAlias} value will be migrated as an Umbraco.Label"
+                        Message = $"there is no migrator for {editorAlias} value will be untouched but might not import correctly"
                     });
                 }
             }

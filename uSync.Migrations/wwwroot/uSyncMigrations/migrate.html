@@ -10,8 +10,8 @@
 
         <umb-editor-container class="form-horizontal">
 
-            <div class="alert alert-warning flex items-center">
-                <umb-icon icon="icon-bomb" class="large mr3 color-red"></umb-icon>
+            <div class="flex items-center mb3 color-deep-orange justify-center">
+                <umb-icon icon="icon-lab" class="large mr3 color-red"></umb-icon>
                 Never do in place migrations on your live data and always have a backup
             </div>
 
@@ -82,13 +82,9 @@
                     </umb-box-content>
                 </umb-box>
 
-                <umb-box>
-                    <umb-box-content>
-                        <usync-migration-results results="vm.validation"
-                                                 action="Validation"
-                                                 is-valid="vm.sourceValid"></usync-migration-results>
-                    </umb-box-content>
-                </umb-box>
+                <usync-migration-results results="vm.validation"
+                                            action="Validation"
+                                            is-valid="vm.sourceValid"></usync-migration-results>
 
 
                 <div class="flex justify-center flex-column items-center">
