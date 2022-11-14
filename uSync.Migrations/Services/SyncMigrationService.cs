@@ -1,4 +1,6 @@
-﻿using Umbraco.Cms.Core;
+﻿using NUglify.Helpers;
+
+using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Extensions;
 
