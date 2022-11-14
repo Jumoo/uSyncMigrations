@@ -147,12 +147,25 @@ internal class SyncMigrationService : ISyncMigrationService
             context.AddBlocked(nameof(MediaType), UmbConstants.Conventions.MediaTypes.Image);
         }
 
-        var allHandlers = GetHandlers();
+        // items that we block by type and alias 
+        options.BlockedItems?
+            .ForEach(kvp => kvp.Value?
+                .ForEach(value => context.AddBlocked(kvp.Key, value)));
 
-        foreach (var handler in allHandlers)
-        {
-            handler.PrepareMigrations(migrationId, sourceRoot, context);
-        }
+        // properties we ignore globally.
+        options.IgnoredProperties?
+            .ForEach(x => context.AddIgnoredProperty(x));
+
+        // properties we ignore by content type
+        options.IgnoredPropertiesByContentType?
+            .ForEach(kvp =>
+                kvp.Value?.ForEach(value => context.AddIgnoredProperty(kvp.Key, value)));
+
+
+        // let the handlers run through their prep (populate all the lookups)
+        GetHandlers()?
+            .ToList()
+            .ForEach(x => x.PrepareMigrations(migrationId, sourceRoot, context));
 
         return context;
     }

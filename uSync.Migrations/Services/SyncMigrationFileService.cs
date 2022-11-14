@@ -1,7 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Xml.Linq;
-
-using Lucene.Net.Search;
+﻿using System.Xml.Linq;
 
 using Microsoft.AspNetCore.Hosting;
 
@@ -72,7 +69,7 @@ internal class SyncMigrationFileService : ISyncMigrationFileService
 
     static string[] _wellKnownPaths = new[]
     {
-        "DataType", "DocumentType", "Content"
+        "DataType", "DocumentType" //, "Content"
     };
 
     public Attempt<string> ValdateMigrationSource(string folder)

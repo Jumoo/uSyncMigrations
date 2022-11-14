@@ -2,7 +2,7 @@
 
 namespace uSync.Migrations;
 
-internal static class uSyncMigrations
+public static class uSyncMigrations
 {
     public const string AppName = "Migrations";
     public static string AppVersion => typeof(uSyncMigrations).Assembly.GetName().Version?.ToString(3) ?? "10.0.0";

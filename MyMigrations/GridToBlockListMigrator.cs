@@ -4,13 +4,9 @@ using uSync.Migrations.Models;
 
 namespace MyMigrations;
 
+[SyncMigrator(Umbraco.Cms.Core.Constants.PropertyEditors.Aliases.Grid)]
 internal class GridToBlockListMigrator : SyncPropertyMigratorBase
 {
-    /// <summary>
-    ///  list of datatype editors that this migrator works on
-    /// </summary>
-    public override string[] Editors => new[] { Umbraco.Cms.Core.Constants.PropertyEditors.Aliases.Grid };
-
     /// <summary>
     ///  the migrated editor alias.
     /// </summary>
