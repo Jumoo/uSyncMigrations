@@ -7,6 +7,7 @@ using uSync.Migrations.Models;
 namespace uSync.Migrations.Migrators;
 
 [SyncMigrator("Umbraco.ContentPickerAlias")]
+[SyncMigrator("Umbraco.ContentPicker2")]
 public class ContentPicker1Migrator : SyncPropertyMigratorBase
 {
     public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
