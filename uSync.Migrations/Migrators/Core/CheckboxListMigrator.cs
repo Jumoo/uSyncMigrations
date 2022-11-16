@@ -32,5 +32,5 @@ internal class CheckboxListMigrator : SyncPropertyMigratorBase
     public override string GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
         => string.IsNullOrWhiteSpace(contentProperty.Value)
             ? contentProperty.Value
-            : string.Join(",\r\n", contentProperty.Value.ToDelimitedList());
+            : string.Join($",{Environment.NewLine}", contentProperty.Value.ToDelimitedList());
 }

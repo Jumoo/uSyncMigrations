@@ -18,7 +18,7 @@ public class CheckboxListTests : MigratiorTestBase
 
     [Test]
     public override void ConfigValueAsExpected() { }
-
+    
     [TestCase("Two,Three", @"Two,
 Three")]
     public override void ContentValueAsExpeceted(string value, string expected)
