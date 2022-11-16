@@ -81,7 +81,7 @@ jobs:
       working-directory: uSync.Migrations.Tests
       
     - name: Dotnet Pack
-      run: dotnet pack --output ../build.out/
+      run: dotnet pack --output ../build.out/ /p:version=${{ steps.gitversion.outputs.fullSemVer }}
       working-directory: uSync.Migrations
       
     - name: Upload nuget file as build artifact      
