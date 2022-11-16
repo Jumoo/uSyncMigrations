@@ -105,6 +105,10 @@ internal class ContentBaseMigrationHandler<TEntity>
 
         var path = context.GetContentPath(parent) + "/" + alias.ToSafeAlias(_shortStringHelper);
 
+        // content is blocked by path (e.g home/about-us)
+
+        if (context.IsBlocked(itemType, path)) return null;
+
         context.AddContentPath(key, path);
 
         var target = new XElement(itemType,
@@ -144,6 +148,11 @@ internal class ContentBaseMigrationHandler<TEntity>
         foreach (var property in source.Elements())
         {
             if (_ignoredProperties.Contains(property.Name.LocalName))
+            {
+                continue;
+            }
+
+            if (context.IsIgnoredProperty(contentType, property.Name.LocalName))
             {
                 continue;
             }

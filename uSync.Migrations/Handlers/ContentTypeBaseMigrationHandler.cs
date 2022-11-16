@@ -95,7 +95,6 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity>
             var source = XElement.Load(file);
 
             var migratingNotification = new SyncMigratingNotification<TEntity>(source, context);
-
             if (_eventAggregator.PublishCancelable(migratingNotification) == true)
             {
                 continue;
@@ -194,6 +193,13 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity>
         {
             foreach (var property in properties.Elements("GenericProperty"))
             {
+                var name = property.Element("Name").ValueOrDefault(string.Empty);
+
+                if (context.IsIgnoredProperty(contentTypeAlias, name))
+                {
+                    continue;
+                }
+
                 var newProperty = XElement.Parse(property.ToString());
 
                 // update the datatype we are using (this might be new). 

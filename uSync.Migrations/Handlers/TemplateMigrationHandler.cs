@@ -44,10 +44,8 @@ internal class TemplateMigrationHandler : ISyncMigrationHandler
         foreach (var file in files)
         {
             var source = XElement.Load(file);
-
-            context.AddTemplateKey(
-                source.Element("Alias").ValueOrDefault(string.Empty),
-                source.Element("Key").ValueOrDefault(Guid.Empty));
+            var (alias, key) = GetAliasAndKey(source);
+            context.AddTemplateKey(alias, key);
         }
     }
 
@@ -70,32 +68,29 @@ internal class TemplateMigrationHandler : ISyncMigrationHandler
         foreach (var file in files)
         {
             var source = XElement.Load(file);
+            var (alias, key) = GetAliasAndKey(source);
 
-            context.AddTemplateKey(
-                source.Element("Alias").ValueOrDefault(string.Empty),
-                source.Element("Key").ValueOrDefault(Guid.Empty));
+            context.AddTemplateKey(alias, key);
 
             var migratingNotification = new SyncMigratingNotification<Template>(source, context);
-
             if (_eventAggregator.PublishCancelable(migratingNotification) == true)
             {
                 continue;
             }
+
+            if (context.IsBlocked(ItemType, alias)) continue;
 
             var target = ConvertTemplate(source, level);
 
             if (target != null)
             {
                 var migratedNotification = new SyncMigratedNotification<Template>(target, context).WithStateFrom(migratingNotification);
-
                 _eventAggregator.Publish(migratedNotification);
-
                 messages.Add(SaveTargetXml(id, target));
             }
         }
 
         var folders = Directory.GetDirectories(folder);
-
         foreach (var childFolder in folders)
         {
             messages.AddRange(MigrateFolder(id, childFolder, level + 1, context));
@@ -119,6 +114,14 @@ internal class TemplateMigrationHandler : ISyncMigrationHandler
             new XElement("Parent", string.IsNullOrEmpty(master) ? null : master));
 
         return target;
+    }
+
+    private (string alias, Guid key) GetAliasAndKey(XElement source)
+    {
+        return (
+            alias : source.Element("Alias").ValueOrDefault(string.Empty),
+            key : source.Element("Key").ValueOrDefault(Guid.Empty)
+        );
     }
 
     private MigrationMessage SaveTargetXml(Guid id, XElement xml)

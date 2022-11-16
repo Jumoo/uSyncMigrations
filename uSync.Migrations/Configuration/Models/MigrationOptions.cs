@@ -14,15 +14,19 @@ public class MigrationOptions
     public IEnumerable<HandlerOption> Handlers { get; set; }
 
     public bool BlockListViews { get; set; } = true;
-
     public bool BlockCommonTypes { get; set; } = true;
 
     /// <summary>
-    ///  list of property aliases not to import in contenttype/content items
+    ///  items that you want to block by type
     /// </summary>
-    public List<string> BlockedProperties { get; set; }
+    public Dictionary<string, List<string>> BlockedItems { get; set; }
 
+    /// <summary>
+    ///  Blocked properties use (alias of somethign to block.) syntax?. 
+    /// </summary>
+    public List<string> IgnoredProperties { get; set; }
 
+    public Dictionary<string, List<string>> IgnoredPropertiesByContentType { get; set; }
 }
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
@@ -32,3 +36,5 @@ public class HandlerOption
 
     public bool Include { get; set; } = true;
 }
+
+

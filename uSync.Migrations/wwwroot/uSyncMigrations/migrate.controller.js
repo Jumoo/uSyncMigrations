@@ -28,6 +28,7 @@
             InitHub();
             validateSource(vm.options.source);
             validate(vm.options);
+            shuffleMessages(vm.messages);
         };
 
         //
@@ -348,8 +349,8 @@
         }
 
         var messages = [
-            'rewilding Canada',
-            'squesting carbon footprints',
+            'Rewilding Canada',
+            'Squesting carbon footprints',
             'Chlorinating Car Pools',
             'Partitioning Social Network',
             'Prelaminating Drywall Inventory',
@@ -361,12 +362,19 @@
             'Sequencing Cinematic Specifiers',
             'Branching Family Trees',
             'Manipulating Modal Memory'
-            ]
+        ];
+
+        var messageCount = 0;
+
+        function shuffleMessages() {
+            messages = messages.sort(() => (Math.random() > 0.5) ? 1 : -1);
+        }
 
         function doMigrationMessages() {
-            vm.migrationMessage = messages[Math.floor(Math.random() * messages.length)];
+            messageCount = (messageCount + 1) % messages.length;
+            vm.migrationMessage = messages[messageCount];
             if (vm.progress == 'migrating') {
-                $timeout(function() { doMigrationMessages(); }, 3000);
+                $timeout(function () { doMigrationMessages(); }, 2281);
             }
         }
 
