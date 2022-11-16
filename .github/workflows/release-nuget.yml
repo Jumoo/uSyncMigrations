@@ -82,7 +82,7 @@ jobs:
       working-directory: uSync.Migrations
       
     - name: Dotnet Pack
-      run: dotnet pack --configuration Release --output ../build.out/
+      run: dotnet pack --configuration Release --output ../build.out/ /p:version=${{ steps.gitversion.outputs.fullSemVer }}
       working-directory: uSync.Migrations
       
 #    - name: Push to Nuget Repo
