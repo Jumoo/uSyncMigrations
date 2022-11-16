@@ -5,9 +5,13 @@
 		<Nullable>enable</Nullable>
 		<StaticWebAssetBasePath>App_Plugins</StaticWebAssetBasePath>
 	</PropertyGroup>
-	<ItemGroup>
-	  <_ContentIncludedByDefault Remove="wwwroot\uSyncMigrations\migrate.html" />
-	</ItemGroup>
+	
+	<PropertyGroup>
+		<PackageId>uSync.Migrations</PackageId>
+		<Title>uSync Migrations</Title>
+		<Description>Migration tool for Umbraco Runs on 10+ migrates from 7</Description>
+	</PropertyGroup>	
+	
 	<ItemGroup>
 		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="10.0.0" />
 		<PackageReference Include="Umbraco.Cms.Web.Website" Version="10.0.0" />
