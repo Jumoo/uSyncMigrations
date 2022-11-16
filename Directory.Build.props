@@ -12,7 +12,7 @@
 
 		<Copyright>Jumoo @ 2013-2022</Copyright>
 
-		<PackageIcon>usync-logo.png</PackageIcon>
+		<PackageIcon>usync-minty.png</PackageIcon>
 
 		<PackageReleaseNotes>
 	<![CDATA[1.0 - Initial release]]>
@@ -24,6 +24,6 @@
     </PropertyGroup>
 
 	<ItemGroup>
-		<None Include="../assets/usync-minty.png" Pack="true" PackagePath="\" Visible="false" />
+		<None Include="../assets/usync-minty.png" Pack="true" PackagePath="\" Visible="true" />
 	</ItemGroup>
 </Project>
