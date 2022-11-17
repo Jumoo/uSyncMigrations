@@ -21,8 +21,14 @@ dotnet add uSync.Migrations --prerelease
 
 ## Complex data ? 
 
-This release covers core things, and a few edge cases. if you want to
-migrate complex data you need to write a Migrator (implimenting ISyncMigrator class) take a look at the [uSync.Migrations/Migrators](uSync.Migrations/Migrators) folder.
+This release covers core things, vorto and a few community editors. 
+
+if you want to migrate complex data you need to write a Migrator (implimenting ISyncMigrator class) take a look at the [uSync.Migrations/Migrators](uSync.Migrations/Migrators) folder.
+
+
+If you want to see how you can customize the process. take a look at the [MyMigrations](MyMigrations) project in this repo
+
+**And remember: contribute back any editors you think others will benift from**
 
 ## Support ?
 
