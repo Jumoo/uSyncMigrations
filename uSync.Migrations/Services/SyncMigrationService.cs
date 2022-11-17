@@ -166,6 +166,7 @@ internal class SyncMigrationService : ISyncMigrationService
 
         // let the handlers run through their prep (populate all the lookups)
         GetHandlers()?
+            .OrderBy(x => x.Priority)
             .ToList()
             .ForEach(x => x.PrepareMigrations(migrationId, sourceRoot, context));
 
