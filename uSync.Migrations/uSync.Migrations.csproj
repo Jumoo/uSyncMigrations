@@ -16,7 +16,7 @@
 		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="10.0.0" />
 		<PackageReference Include="Umbraco.Cms.Web.Website" Version="10.0.0" />
 		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
-		<PackageReference Include="uSync.BackOffice" Version="10.3.1-build.20221113.2" />
+		<PackageReference Include="uSync.BackOffice" Version="10.3.1-beta001" />
 	</ItemGroup>
 
 	<ItemGroup>
