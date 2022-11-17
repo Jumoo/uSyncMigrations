@@ -8,8 +8,15 @@ Runs on Umbraco 10 (and soon 11!)
 
 ## Getting Started
 
+You need the latest uSync beta 
 ```
-dotnet add uSync.Migrations --prerelease
+dotnet add package uSync --version 10.3.1-beta001
+```
+
+then uSync.Migrations.
+
+```
+dotnet add package uSync.Migrations --prerelease
 ```
 
 0. **Don't do this on a live server!**
