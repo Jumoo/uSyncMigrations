@@ -20,6 +20,9 @@ internal class MediaPickerMigrator : SyncPropertyMigratorBase
     public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
         => UmbConstants.PropertyEditors.Aliases.MediaPicker3;
 
+    public override string GetDatabaseType(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
+        => "Ntext";
+
     public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
         var config = new MediaPicker3Configuration()
@@ -61,7 +64,7 @@ internal class MediaPickerMigrator : SyncPropertyMigratorBase
             {
                 guid = udi.Guid;
             }
-
+         
             if (guid.Equals(Guid.Empty) == false)
             {
                 media.Add(new MediaWithCropsDto

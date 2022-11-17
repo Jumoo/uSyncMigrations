@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using System.Diagnostics;
+
+using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
 using Umbraco.Cms.Core.PropertyEditors;
@@ -67,19 +69,34 @@ public class ColorPickerMigrator : SyncPropertyMigratorBase
 
     public override string GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
     {
-        var legacyValue = JsonConvert.DeserializeObject<ColorItemValue>(contentProperty.Value);
-        if (legacyValue == null) return contentProperty.Value;
-
-        // TODO - [KJ] this sort order is actuall set in v8+ i am not sure if it is then used ?
-        var newValue = new ColourContentValue
+        if (contentProperty.Value.DetectIsJson())
         {
-            SortOrder = 1,
-            Id = "1",
-            Label = legacyValue.Label,
-            Value = legacyValue.Value
-        };
 
-        return JsonConvert.SerializeObject(newValue, Formatting.Indented);
+            var legacyValue = JsonConvert.DeserializeObject<ColorItemValue>(contentProperty.Value);
+            if (legacyValue == null) return contentProperty.Value;
+
+            // TODO - [KJ] this sort order is actuall set in v8+ i am not sure if it is then used ?
+            var newValue = new ColourContentValue
+            {
+                SortOrder = 1,
+                Id = "1",
+                Label = legacyValue.Label,
+                Value = legacyValue.Value
+            };
+            return JsonConvert.SerializeObject(newValue, Formatting.Indented);
+        }
+        else
+        {
+
+            return JsonConvert.SerializeObject(new ColourContentValue
+            {
+                SortOrder = 1,
+                Id = "1",
+                Label = contentProperty.Value,
+                Value = contentProperty.Value
+            }, Formatting.Indented);
+        }
+
     }
 
     [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
