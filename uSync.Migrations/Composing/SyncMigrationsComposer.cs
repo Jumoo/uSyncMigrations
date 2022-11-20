@@ -50,7 +50,7 @@ public static class SyncMigrationsBuilderExtensions
 
         builder
             .WithCollectionBuilder<SyncMigrationProfileCollectionBuilder>()
-                .Add(() => builder.TypeLoader.GetTypes<ISyncMigrationProfile>());
+                .Add(builder.TypeLoader.GetTypes<ISyncMigrationProfile>());
 
         builder
             .WithCollectionBuilder <SyncMigrationValidatorCollectionBuilder>()
