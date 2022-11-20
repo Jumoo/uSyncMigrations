@@ -6,7 +6,7 @@ using uSync.Migrations.Validation;
 namespace uSync.Migrations.Composing;
 
 public class SyncMigrationProfileCollectionBuilder
-    : LazyCollectionBuilderBase<SyncMigrationProfileCollectionBuilder, SyncMigrationProfileCollection, ISyncMigrationProfile>
+    : WeightedCollectionBuilderBase<SyncMigrationProfileCollectionBuilder, SyncMigrationProfileCollection, ISyncMigrationProfile>
 {
     protected override SyncMigrationProfileCollectionBuilder This => this;
 }

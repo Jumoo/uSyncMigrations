@@ -1,9 +1,12 @@
-﻿using uSync.Migrations.Composing;
+﻿using Umbraco.Cms.Core.Composing;
+
+using uSync.Migrations.Composing;
 using uSync.Migrations.Configuration.Models;
 using uSync.Migrations.Extensions;
 
 namespace uSync.Migrations.Configuration.CoreProfiles;
 
+[Weight(110)]
 public class ContentMigrationProfile : ISyncMigrationProfile
 {
     private readonly SyncMigrationHandlerCollection _migrationHandlers;

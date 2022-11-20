@@ -1,5 +1,12 @@
 ﻿<div ng-controller="uSyncMigrationDashboardController as vm">
 
+    <div class="alert alert-warning flex items-center">
+        <div class="mr2">
+            <umb-icon icon="icon-lab"></umb-icon>
+        </div>
+        <div><localize key="usyncmigrate_beta"></localize></div>
+    </div>
+
     <umb-box>
         <umb-box-header title-key="usyncmigrate_title"></umb-box-header>
         <umb-box-content>
@@ -39,8 +46,7 @@
             </umb-box>
         </div>
         <div ng-if="!vm.hasCustom" class="color-blue-grey flex justify-center mt2 mb3">
-            You can customize this list with a <strong>&nbsp;"/usync/profiles.json"&nbsp;</strong> file to add your own or remove these default migration profiles.
+            <localize key="usyncmigrate_customize"></localize>
         </div>
-
     </div>
 </div>
