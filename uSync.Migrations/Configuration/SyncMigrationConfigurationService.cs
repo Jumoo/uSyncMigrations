@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using Umbraco.Cms.Core.Extensions;
 using Umbraco.Extensions;
 
+using uSync.Core;
 using uSync.Migrations.Composing;
 using uSync.Migrations.Configuration.Models;
 using uSync.Migrations.Services;
@@ -50,7 +51,8 @@ internal class SyncMigrationConfigurationService : ISyncMigrationConfigurationSe
 
             if (custom.Remove != null && custom.Remove.Length > 0)
             {
-                info.Profiles = info.Profiles.Where(x => !custom.Remove.InvariantContains(x.Name)).ToList();
+                info.Profiles = info.Profiles.Where(x => !custom.Remove.InvariantContains(x.Name))
+                    .ToList();
             }
 
             if (custom.Profiles != null && custom.Profiles.Count > 0)
@@ -59,6 +61,7 @@ internal class SyncMigrationConfigurationService : ISyncMigrationConfigurationSe
             }
         }
 
+        info.Profiles = info.Profiles.OrderBy(x => x.Order).ToList();
         return info;
     }
 

@@ -6,9 +6,10 @@ using uSync.Migrations.Extensions;
 
 namespace uSync.Migrations.Configuration.CoreProfiles;
 
-[Weight(110)]
 public class ContentMigrationProfile : ISyncMigrationProfile
 {
+    public int Order => 110;
+
     private readonly SyncMigrationHandlerCollection _migrationHandlers;
 
     public ContentMigrationProfile(SyncMigrationHandlerCollection migrationHandlers)

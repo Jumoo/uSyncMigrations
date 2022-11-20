@@ -29,6 +29,8 @@ public class MyMigrationProfile : ISyncMigrationProfile
 
     public string Description => "My Custom migration with changes";
 
+    public int Order => 10;
+
     public MigrationOptions Options => new()
     {
         // write out to the same folder each time.

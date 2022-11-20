@@ -18,6 +18,6 @@ public class SyncMigrationProfileCollection : BuilderCollectionBase<ISyncMigrati
         : base(items)
     { }
 
-    public IEnumerable<ISyncMigrationProfile> Profiles => this;
+    public IEnumerable<ISyncMigrationProfile> Profiles => this.OrderBy(x => x.Order);
 }
 
