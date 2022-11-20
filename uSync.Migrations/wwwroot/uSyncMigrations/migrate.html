@@ -15,6 +15,13 @@
                 Never do in place migrations on your live data and always have a backup
             </div>
 
+            <div ng-if="vm.error.length > 0" class="alert alert-error flex items-center">
+                <umb-icon icon="icon-wrong" class="mr2 large"></umb-icon>
+                <div>
+                    {{vm.error}}
+                </div>
+            </div>
+
             <!-- init -->
             <div ng-if="vm.progress == 'init'">
                 <umb-box>

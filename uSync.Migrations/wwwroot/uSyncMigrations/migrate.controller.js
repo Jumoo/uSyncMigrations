@@ -14,6 +14,8 @@
 
         vm.progress = 'init';
 
+        vm.error = '';
+
         vm.profile = $scope.model.profile;
         vm.options = vm.profile.options;
 
@@ -50,7 +52,7 @@
                 }, function (error) {
                     vm.state = 'error';
                     vm.working = false;
-                    console.log(error);
+                    vm.error = error.data.ExceptionMessage;
                     notificationsService.error('error', error.data.ExceptionMessage);
                 })
         }
@@ -71,6 +73,8 @@
                 .then(function (result) {
                     vm.sourceValid = result.data.length == 0;
                     vm.sourceError = result.data;
+                }, function (error) {
+                    vm.error = error.data.ExceptionMessage;
                 });
         }
 
@@ -78,6 +82,8 @@
             uSyncMigrationService.validate(options)
                 .then(function (result) {
                     vm.validation = result.data;
+                }, function (error) {
+                    vm.error = error.data.ExceptionMessage;
                 });
         }
 
@@ -190,6 +196,7 @@
                 }, function (error) {
                     vm.working = false;
                     vm.state = 'error';
+                    vm.error = error.data.ExceptionMessage;
                     notificationsService.error('Error', error.data.ExceptionMessage ?? error.data.exceptionMessage);
                 });
         }
