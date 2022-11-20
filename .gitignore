@@ -6,6 +6,7 @@
 .vscode/
 
 uSyncMigrationSite/uSync/
+uSyncMigrationSite/Views/
 uSync.BackOffice.Assets/wwwroot/
 uSyncSource.Site/App_Plugins/
 *.zip

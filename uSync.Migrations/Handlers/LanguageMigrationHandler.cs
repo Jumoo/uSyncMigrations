@@ -1,9 +1,11 @@
-﻿using System.Globalization;
+﻿using System.ComponentModel.Design.Serialization;
+using System.Globalization;
 using System.Xml.Linq;
 
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Notifications;
+using Umbraco.Cms.Core.Services;
 
 using uSync.Core;
 using uSync.Migrations.Models;
@@ -16,13 +18,16 @@ internal class LanguageMigrationHandler : ISyncMigrationHandler
 {
     private readonly IEventAggregator _eventAggregator;
     private readonly ISyncMigrationFileService _migrationFileService;
+    private readonly ILocalizationService _localizationService;
 
     public LanguageMigrationHandler(
         IEventAggregator eventAggregator,
-        ISyncMigrationFileService migrationFileService)
+        ISyncMigrationFileService migrationFileService,
+        ILocalizationService localizationService)
     {
         _eventAggregator = eventAggregator;
         _migrationFileService = migrationFileService;
+        _localizationService = localizationService;
     }
 
     public string Group => uSync.BackOffice.uSyncConstants.Groups.Settings;
@@ -73,7 +78,11 @@ internal class LanguageMigrationHandler : ISyncMigrationHandler
 
     private XElement MigrateLanguage(XElement source)
     {
+
         var alias = source.Attribute("CultureAlias").ValueOrDefault(string.Empty);
+
+
+        var existing = _localizationService.GetLanguageByIsoCode(alias);
 
         var culture = CultureInfo.GetCultureInfo(alias);
         var key = Int2Guid(culture.LCID);
@@ -84,8 +93,8 @@ internal class LanguageMigrationHandler : ISyncMigrationHandler
             new XAttribute(uSyncConstants.Xml.Level, 0),
 
             new XElement("IsoCode", alias),
-            new XElement("IsMandatory", false),
-            new XElement("IsDefault", false));
+            new XElement("IsMandatory", existing?.IsMandatory ?? false),
+            new XElement("IsDefault", existing?.IsDefault ?? false));
 
         return target;
     }
