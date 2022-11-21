@@ -6,11 +6,11 @@ using uSync.Migrations.Services;
 
 namespace uSync.Migrations.Validation;
 
-internal class FileStuructureValidator : ISyncMigrationValidator
+internal class FileStructureValidator : ISyncMigrationValidator
 {
     private readonly ISyncMigrationFileService _migrationFileService;
 
-    public FileStuructureValidator(ISyncMigrationFileService migrationFileService)
+    public FileStructureValidator(ISyncMigrationFileService migrationFileService)
     {
         _migrationFileService = migrationFileService;
     }
@@ -28,7 +28,7 @@ internal class FileStuructureValidator : ISyncMigrationValidator
         }
         else
         {
-            message.Message = "File structure looks like its Umbraco 7 🤷";
+            message.Message = "File structure looks like it's Umbraco 7 🤷";
         }
 
         return message.AsEnumerableOfOne();

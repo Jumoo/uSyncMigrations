@@ -23,24 +23,22 @@ dotnet add package uSync.Migrations --prerelease
 
 0. **Don't do this on a live server!**
 1. Install it. 
-2. Put an Old uSync v7 folder somewhere in your shiny new usync Folder
+2. Put an Old uSync v7 folder somewhere in your shiny new uSync Folder
 3. Go to the Migrations tab in uSync. 
 4. Do it .
 5. Import it.
 
 ## Complex data ? 
 
-This release covers core things, vorto and a few community editors. 
+This release covers core things, Vorto and a few community editors. 
 
-if you want to migrate complex data you need to write a Migrator (implimenting ISyncMigrator class) take a look at the [uSync.Migrations/Migrators](uSync.Migrations/Migrators) folder.
+if you want to migrate complex data you need to write a Migrator (implementing `ISyncMigrator` class) take a look at the [uSync.Migrations/Migrators](uSync.Migrations/Migrators) folder.
 
 
 If you want to see how you can customize the process. take a look at the [MyMigrations](MyMigrations) project in this repo
 
-**And remember: contribute back any editors you think others will benift from**
+**And remember: contribute back any editors you think others will benefit from**
 
 ## Support ?
 
 This is a pre-release early access beta migration tool. you can ask, but lets hope other people are watching. 
-
-

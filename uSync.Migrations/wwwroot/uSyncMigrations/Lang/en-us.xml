@@ -6,15 +6,15 @@
 	</creator>
 	<area alias="usyncmigrate">
 
-		<key alias="beta"><![CDATA[<strong>Beta software</strong> This is am early beta release of uSync.Migrations. Things may not function as expected, code may change, etc.]]></key>
+		<key alias="beta"><![CDATA[<strong>Beta software</strong> This is an early beta release of uSync.Migrations. Things may not function as expected, code may change, etc.]]></key>
 		
 		<key alias="title">uSync Migrations</key>
 		<key alias="intro">
-			<![CDATA[<p>uSync.Migrations is a tool to help you migrate your site settings and content from Umbraco 7.x to the latest and greatest versions of umbraco</p>]]>
+			<![CDATA[<p>uSync.Migrations is a tool to help you migrate your site settings and content from Umbraco 7.x to the latest and greatest versions of Umbraco.</p>]]>
 		</key>
 
 		<key alias="customize">
-			<![CDATA[You can customize this list with a you own `ISyncMigrationProfile` or remove add simple configs with a '/usync/profiles.json' file. ]]>
+			<![CDATA[You can customize this list with a you own `ISyncMigrationProfile` or remove and add simple configs with a '/usync/profiles.json' file.]]>
 		</key>
 	</area>
 </language>
