@@ -75,7 +75,7 @@ public class ColorPickerMigrator : SyncPropertyMigratorBase
             var legacyValue = JsonConvert.DeserializeObject<ColorItemValue>(contentProperty.Value);
             if (legacyValue == null) return contentProperty.Value;
 
-            // TODO - [KJ] this sort order is actuall set in v8+ i am not sure if it is then used ?
+            // TODO: [KJ] Sort order is actually set in v8+ i am not sure if it is then used?
             var newValue = new ColourContentValue
             {
                 SortOrder = 1,
