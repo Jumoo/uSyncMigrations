@@ -17,17 +17,19 @@ namespace uSync.Migrations.Configuration;
 /// </summary>
 internal class SyncMigrationConfigurationService : ISyncMigrationConfigurationService
 {
-    private readonly ILogger<SyncMigrationConfigurationService> _logger;
     private readonly IHostEnvironment _hostEnvironment;
+    private readonly ILogger<SyncMigrationConfigurationService> _logger;
     private readonly ISyncMigrationService _migrationService;
     private readonly SyncMigrationProfileCollection _syncMigrationProfiles;
 
     public SyncMigrationConfigurationService(
         IHostEnvironment hostEnvironment,
+        ILogger<SyncMigrationConfigurationService> logger,
         ISyncMigrationService migrationService,
         SyncMigrationProfileCollection syncMigrationProfiles)
     {
         _hostEnvironment = hostEnvironment;
+        _logger = logger;
         _migrationService = migrationService;
         _syncMigrationProfiles = syncMigrationProfiles;
     }
@@ -75,9 +77,9 @@ internal class SyncMigrationConfigurationService : ISyncMigrationConfigurationSe
         {
             var profileFile = _hostEnvironment.MapPathContentRoot("~/uSync/profiles.json");
 
-            if (System.IO.File.Exists(profileFile))
+            if (File.Exists(profileFile))
             {
-                var content = System.IO.File.ReadAllText(profileFile);
+                var content = File.ReadAllText(profileFile);
                 var config = JsonConvert.DeserializeObject<MigratrionProfileConfig>(content);
 
                 if (config != null)

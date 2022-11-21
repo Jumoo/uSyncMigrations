@@ -45,9 +45,7 @@ public class uSyncMigrationsController : UmbracoAuthorizedApiController
 
     [HttpPost]
     public MigrationResults Migrate(MigrationOptions options)
-    {
-        return _migrationService.MigrateFiles(options);
-    }
+        => _migrationService.MigrateFiles(options);
 
     [HttpGet]
     public MigrationProfileInfo GetProfiles()
