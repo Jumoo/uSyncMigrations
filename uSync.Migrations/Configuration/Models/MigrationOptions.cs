@@ -3,17 +3,19 @@ using Newtonsoft.Json.Serialization;
 
 namespace uSync.Migrations.Configuration.Models;
 
-
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class MigrationOptions
 {
     public string Source { get; set; } = "uSync/data";
+
     public string Target { get; set; } = "uSync/migrated";
+
     public string MigrationType { get; set; }
 
     public IEnumerable<HandlerOption> Handlers { get; set; }
 
     public bool BlockListViews { get; set; } = true;
+
     public bool BlockCommonTypes { get; set; } = true;
 
     /// <summary>
@@ -36,5 +38,3 @@ public class HandlerOption
 
     public bool Include { get; set; } = true;
 }
-
-

@@ -73,7 +73,6 @@ internal class SyncMigrationService : ISyncMigrationService
         };
     }
 
-
     public MigrationResults MigrateFiles(MigrationOptions options)
     {
         var migrationId = Guid.NewGuid();

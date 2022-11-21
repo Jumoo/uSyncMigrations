@@ -64,13 +64,10 @@ internal class SyncMigrationConfigurationService : ISyncMigrationConfigurationSe
         return info;
     }
 
-    private MigrationProfileInfo GetCoreInfo()
-        => new MigrationProfileInfo
-        {
-            Profiles = _syncMigrationProfiles.ToList()
-        };
-
-
+    private MigrationProfileInfo GetCoreInfo() => new MigrationProfileInfo
+    {
+        Profiles = _syncMigrationProfiles.ToList()
+    };
 
     private MigratrionProfileConfig? GetLocalProfiles()
     {
@@ -106,7 +103,5 @@ internal class SyncMigrationConfigurationService : ISyncMigrationConfigurationSe
         }
 
         return null;
-
-
     }
 }

@@ -5,8 +5,8 @@
                            name-locked="true"
                            description-locked="true"
                            hide-alias="true"
-                           hide-icon="true"></umb-editor-header>
-
+                           hide-icon="true">
+        </umb-editor-header>
 
         <umb-editor-container class="form-horizontal">
 
@@ -17,17 +17,15 @@
 
             <div ng-if="vm.error.length > 0" class="alert alert-error flex items-center">
                 <umb-icon icon="icon-wrong" class="mr2 large"></umb-icon>
-                <div>
-                    {{vm.error}}
-                </div>
+                <div>{{vm.error}}</div>
             </div>
 
             <!-- init -->
             <div ng-if="vm.progress == 'init'">
                 <umb-box>
                     <umb-box-header title="Setup"
-                                    description="Control your migration"></umb-box-header>
-
+                                    description="Control your migration">
+                    </umb-box-header>
                     <umb-box-content>
 
                         <umb-control-group label="Source"
@@ -41,7 +39,8 @@
                                 <umb-button button-style="action"
                                             size="small"
                                             action="vm.pickSource()"
-                                            label="Change"></umb-button>
+                                            label="Change">
+                                </umb-button>
                             </div>
 
                             <div ng-if="!vm.sourceValid && vm.sourceError.length > 0"
@@ -50,7 +49,6 @@
                             </div>
 
                         </umb-control-group>
-
 
                         <umb-control-group label="Target"
                                            description="Where are you migrating to?">
@@ -63,14 +61,14 @@
                                 <umb-button button-style="action"
                                             size="small"
                                             action="vm.pickTarget()"
-                                            label="Change"></umb-button>
+                                            label="Change">
+                                </umb-button>
                             </div>
 
                         </umb-control-group>
 
                         <umb-control-group label="Items"
                                            description="What things are your migrating?">
-
 
                             <div class="mt2 flex justify-between items-center">
                                 <ul class="inline">
@@ -82,7 +80,8 @@
                                 <umb-button button-style="action"
                                             size="small"
                                             action="vm.pickHandlers()"
-                                            label="Change"></umb-button>
+                                            label="Change">
+                                </umb-button>
                             </div>
                         </umb-control-group>
 
@@ -90,9 +89,9 @@
                 </umb-box>
 
                 <usync-migration-results results="vm.validation"
-                                            action="Validation"
-                                            is-valid="vm.sourceValid"></usync-migration-results>
-
+                                         action="Validation"
+                                         is-valid="vm.sourceValid">
+                </usync-migration-results>
 
                 <div class="flex justify-center flex-column items-center">
                     <umb-button action="vm.migrate()"
@@ -102,9 +101,7 @@
                                 disabled="vm.working || vm.sourceValid == false"
                                 state="vm.state">
                     </umb-button>
-                    <div>
-                        <small><em>(create the migrated uSync files)</em></small>
-                    </div>
+                    <div><small><em>(create the migrated uSync files)</em></small></div>
                 </div>
             </div>
 
@@ -124,7 +121,7 @@
                             The files have successfully been migrated to your uSync folder,
                             you can now run reports, imports to get the files into uSync
                         </p>
-                        
+
                         ({{vm.results.messages.length}})
                     </umb-box-content>
                 </umb-box>
@@ -132,8 +129,8 @@
                 <usync-migration-results results="vm.results"
                                          action="Migration"
                                          is-valid="vm.resultValid"
-                                         show-all="true"></usync-migration-results>
-
+                                         show-all="true">
+                </usync-migration-results>
 
                 <div class="flex justify-center flex-column items-center">
                     <umb-button action="vm.importItems(vm.options.target)"
@@ -170,21 +167,21 @@
                     <usync-report-view actions="vm.actions"
                                        results="vm.results"
                                        hide-action="true"
-                                       hide-link="vm.hideLink"></usync-report-view>
+                                       hide-link="vm.hideLink">
+                    </usync-report-view>
                 </div>
             </div>
 
         </umb-editor-container>
+
         <umb-editor-footer>
             <umb-editor-footer-content-right>
-
                 <umb-button type="button"
                             button-style="link"
                             label-key="general_close"
                             action="vm.close()"
                             disabled="vm.working">
                 </umb-button>
-
             </umb-editor-footer-content-right>
         </umb-editor-footer>
 

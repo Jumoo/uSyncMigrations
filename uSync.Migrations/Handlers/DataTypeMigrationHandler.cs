@@ -281,7 +281,7 @@ internal class DataTypeMigrationHandler : ISyncMigrationHandler, ISyncMigrationV
                     });
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 messages.Add(new MigrationMessage(ItemType, Path.GetFileName(file), MigrationMessageType.Error)
                 {
@@ -290,7 +290,6 @@ internal class DataTypeMigrationHandler : ISyncMigrationHandler, ISyncMigrationV
             }
         }
 
-        return messages; 
+        return messages;
     }
-
 }

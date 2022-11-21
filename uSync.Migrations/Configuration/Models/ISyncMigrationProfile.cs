@@ -11,7 +11,10 @@ public interface ISyncMigrationProfile : IDiscoverable
     int Order { get; }
 
     string Name { get; }
+
     string Icon { get; }
+
     string Description { get; }
+
     MigrationOptions Options { get; }
 }

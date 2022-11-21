@@ -21,7 +21,6 @@ internal class SyncMigrationFileService : ISyncMigrationFileService
     private readonly uSyncService _uSyncService;
     private readonly SyncFileService _syncFileService;
     private readonly uSyncConfigService _uSyncConfig;
-
     private readonly string _uSyncRoot;
 
     public SyncMigrationFileService(
@@ -41,7 +40,6 @@ internal class SyncMigrationFileService : ISyncMigrationFileService
         // gets us the folder above where uSync saves stuff (usually uSync/v9 so this returns uSync); 
         var uSyncPhysicalPath = _webHostEnvironment.MapPathContentRoot(_uSyncConfig.GetRootFolder()).TrimEnd('\\');
         _uSyncRoot = Path.GetDirectoryName(uSyncPhysicalPath) ?? _webHostEnvironment.MapPathContentRoot("uSync");
-
     }
 
     public void SaveMigrationFile(Guid id, XElement xml, string folder)
@@ -75,10 +73,11 @@ internal class SyncMigrationFileService : ISyncMigrationFileService
     public Attempt<string> ValdateMigrationSource(string folder)
     {
         var path = _syncFileService.GetAbsPath(folder);
+
         if (!Directory.Exists(path))
             return Attempt<string>.Fail(new DirectoryNotFoundException($"Root folder '{path}' doesn't exist"));
 
-        foreach(var expectedFolder in _wellKnownPaths)
+        foreach (var expectedFolder in _wellKnownPaths)
         {
             if (!Directory.Exists(Path.Combine(path, expectedFolder)))
                 return Attempt<string>.Fail(new DirectoryNotFoundException($"Missing well known folder '{expectedFolder}'"));
@@ -94,7 +93,7 @@ internal class SyncMigrationFileService : ISyncMigrationFileService
             if (xml.Attribute("DatabaseType") == null)
                 return Attempt<string>.Fail(new Exception("Datatype doesn't look like a v7 datatype"));
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             return Attempt<string>.Fail(new Exception($"Datatype files may be corrupt {ex.Message}"));
         }

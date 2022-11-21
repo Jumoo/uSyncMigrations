@@ -34,14 +34,12 @@ public class SyncMigrationContext
     private Dictionary<string, EditorAliasInfo> _propertyTypes { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     private Dictionary<string, Guid> _templateKeys { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
-
     public SyncMigrationContext(Guid migrationId)
     {
         MigrationId = migrationId;
     }
 
     public Guid MigrationId { get; }
-
 
     /// <summary>
     ///  Add a template key to the context.
@@ -74,7 +72,6 @@ public class SyncMigrationContext
     public Guid GetContentTypeKey(string contentTypeAlias)
         => _contentTypeKeys?.TryGetValue(contentTypeAlias, out var key) == true ? key : Guid.Empty;
 
-
     /// <summary>
     ///  add content type compositions to the context
     /// </summary>
@@ -103,7 +100,7 @@ public class SyncMigrationContext
     /// <remarks>
     ///  allows you to track when the editor alias of a property changes from original to a new value
     /// </remarks>
-   
+
     public void AddContentProperty(string? contentTypeAlias, string? propertyAlias, string? originalAlias, string? newAlias)
     {
         _ = string.IsNullOrWhiteSpace(contentTypeAlias) == false &&
@@ -168,7 +165,6 @@ public class SyncMigrationContext
     public void AddBlocked(string itemType, string alias)
         => _ = _blockedTypes.Add($"{itemType}_{alias}");
 
-
     /// <summary>
     ///  ignore a property on a specific content type. 
     /// </summary>
@@ -185,7 +181,7 @@ public class SyncMigrationContext
     => _ = _ignoredProperties.Add($"{alias}");
 
     public bool IsIgnoredProperty(string contentType, string alias)
-        => _ignoredProperties.Contains($"{contentType}_{alias}") 
+        => _ignoredProperties.Contains($"{contentType}_{alias}")
         || _ignoredProperties.Contains(alias);
 
     /// <summary>
@@ -230,7 +226,6 @@ public class SyncMigrationContext
             ? variation : "Nothing";
 }
 
-
 public class EditorAliasInfo
 {
     public EditorAliasInfo(string orginalEditorAlias, string updatedEditorAlias)
@@ -240,5 +235,6 @@ public class EditorAliasInfo
     }
 
     public string OrginalEditorAlias { get; }
+
     public string UpdatedEditorAlias { get; }
 }

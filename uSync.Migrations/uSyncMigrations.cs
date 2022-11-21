@@ -5,6 +5,7 @@ namespace uSync.Migrations;
 public static class uSyncMigrations
 {
     public const string AppName = "Migrations";
+
     public static string AppVersion => typeof(uSyncMigrations).Assembly.GetName().Version?.ToString(3) ?? "10.0.0";
 
     public const string PluginFolder = "/App_Plugins/uSyncMigrations";

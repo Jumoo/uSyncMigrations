@@ -53,8 +53,8 @@ public static class SyncMigrationsBuilderExtensions
                 .Add(builder.TypeLoader.GetTypes<ISyncMigrationProfile>());
 
         builder
-            .WithCollectionBuilder <SyncMigrationValidatorCollectionBuilder>()
-            .Add(() => builder.TypeLoader.GetTypes<ISyncMigrationValidator>());
+            .WithCollectionBuilder<SyncMigrationValidatorCollectionBuilder>()
+                .Add(() => builder.TypeLoader.GetTypes<ISyncMigrationValidator>());
 
         builder.Services.AddTransient<ISyncMigrationService, SyncMigrationService>();
         builder.Services.AddTransient<ISyncMigrationConfigurationService, SyncMigrationConfigurationService>();

@@ -7,5 +7,6 @@ namespace uSync.Migrations.Configuration.Models;
 public class MigratrionProfileConfig
 {
     public string[] Remove { get; set; }
+
     public List<MigrationProfile> Profiles { get; set; }
 }

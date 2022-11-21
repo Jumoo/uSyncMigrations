@@ -75,7 +75,6 @@ public class VortoMapper : SyncPropertyMigratorBase,
         return null;
     }
 
-
     public Attempt<CulturedPropertyValue> GetVariedElements(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
     {
         try
@@ -90,5 +89,4 @@ public class VortoMapper : SyncPropertyMigratorBase,
             return Attempt<CulturedPropertyValue>.Fail(ex);
         }
     }
-
 }

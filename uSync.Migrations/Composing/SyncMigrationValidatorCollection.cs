@@ -4,13 +4,11 @@ using uSync.Migrations.Validation;
 
 namespace uSync.Migrations.Composing;
 
-//
 public class SyncMigrationValidatorCollectionBuilder
     : LazyCollectionBuilderBase<SyncMigrationValidatorCollectionBuilder, SyncMigrationValidatorCollection, ISyncMigrationValidator>
 {
     protected override SyncMigrationValidatorCollectionBuilder This => this;
 }
-
 
 public class SyncMigrationValidatorCollection : BuilderCollectionBase<ISyncMigrationValidator>
 {
