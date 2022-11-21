@@ -2,6 +2,22 @@
 
 namespace uSync.Migrations.Migrators;
 
+/// <summary>
+///  The grid migrator will need to be fleshed out
+/// </summary>
+/// <remarks>
+///  in all likelyhood you will want to turn grids into blockgrids or lists.
+///  
+///  for that there will need to be a set of existing doctypes on a site that mimic the 
+///  grid configurations you might have,
+///  
+///  what we might do. is add those in prep if they don't exist ? 
+///  e.g a doctype for heading, rich text, quote (block grid adds these as demo types)
+///  
+///  there will likely then also need to be some config, so you can map them, 
+///  
+///  and then in the mapping if you have custom things (like DTGE) it will need a migrator too.
+/// </remarks>
 [SyncMigrator(UmbConstants.PropertyEditors.Aliases.Grid, typeof(GridConfiguration))]
 public class GridMigrator : SyncPropertyMigratorBase
 {
