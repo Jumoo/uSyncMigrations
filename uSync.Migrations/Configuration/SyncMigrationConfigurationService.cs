@@ -6,7 +6,6 @@ using Newtonsoft.Json;
 using Umbraco.Cms.Core.Extensions;
 using Umbraco.Extensions;
 
-using uSync.Core;
 using uSync.Migrations.Composing;
 using uSync.Migrations.Configuration.Models;
 using uSync.Migrations.Services;
