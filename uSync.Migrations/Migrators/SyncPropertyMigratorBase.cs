@@ -10,7 +10,7 @@ public abstract class SyncPropertyMigratorBase : ISyncPropertyMigrator
 {
     private readonly Type? configurationType;
 
-    protected readonly string _defaultAlias;
+    protected readonly string _defaultAlias = string.Empty;
 
     public virtual string[] Editors { get; private set; }
 

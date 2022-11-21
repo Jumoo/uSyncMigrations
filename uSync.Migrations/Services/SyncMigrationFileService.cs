@@ -76,7 +76,9 @@ internal class SyncMigrationFileService : ISyncMigrationFileService
     {
         var path = _syncFileService.GetAbsPath(folder);
         if (!Directory.Exists(path))
+        {
             return Attempt<string>.Fail(new DirectoryNotFoundException($"Root folder '{path}' doesn't exist"));
+        }
 
         foreach(var expectedFolder in _wellKnownPaths)
         {

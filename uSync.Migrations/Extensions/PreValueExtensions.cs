@@ -28,7 +28,9 @@ public static class PreValueExtensions
         {
             var attempt = value.Value.TryConvertTo<decimal>();
             if (attempt.Success)
+            {
                 item.Add(alias, attempt.Result);
+            }
         }
     }
 
