@@ -11,7 +11,7 @@ namespace uSync.Migrations.Migrators;
 [SyncMigrator(UmbConstants.PropertyEditors.Aliases.DropDownListFlexible, IsDefaultAlias = true)]
 [SyncMigrator("Umbraco.DropDown")]
 [SyncMigrator("Umbraco.DropDownMultiple")]
-internal class DropdownMigrator : SyncPropertyMigratorBase
+public class DropdownMigrator : SyncPropertyMigratorBase
 {
     public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {

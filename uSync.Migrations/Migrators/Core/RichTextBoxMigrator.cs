@@ -4,5 +4,5 @@ namespace uSync.Migrations.Migrators;
 
 [SyncMigrator(UmbConstants.PropertyEditors.Aliases.TinyMce, typeof(RichTextConfiguration), IsDefaultAlias = true)]
 [SyncMigrator("Umbraco.TinyMCEv3")]
-internal class RichTextBoxMigrator : SyncPropertyMigratorBase
+public class RichTextBoxMigrator : SyncPropertyMigratorBase
 { }

@@ -14,7 +14,7 @@ namespace uSync.Migrations.Migrators;
 
 [SyncMigrator("Umbraco.RelatedLinks")]
 [SyncMigrator("Umbraco.RelatedLinks2")]
-internal class RelatedLinksMigrator : SyncPropertyMigratorBase
+public class RelatedLinksMigrator : SyncPropertyMigratorBase
 {
     private readonly JsonSerializerSettings _serializerSettings;
 

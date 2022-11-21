@@ -7,7 +7,7 @@ using uSync.Migrations.Models;
 namespace uSync.Migrations.Migrators;
 
 [SyncMigrator("Terratype")]
-internal class TerratypeToOpenStreetmapMigrator : SyncPropertyMigratorBase
+public class TerratypeToOpenStreetmapMigrator : SyncPropertyMigratorBase
 {
     public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
         => "Bergmania.OpenStreetMap";

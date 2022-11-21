@@ -7,7 +7,7 @@ using uSync.Migrations.Models;
 namespace uSync.Migrations.Migrators;
 
 [SyncMigrator("Our.Umbraco.Switcher")]
-internal class SwitcherToTrueFalseMigrator : SyncPropertyMigratorBase
+public class SwitcherToTrueFalseMigrator : SyncPropertyMigratorBase
 {
     public override string GetEditorAlias(SyncMigrationDataTypeProperty propertyModel, SyncMigrationContext context)
         => UmbConstants.PropertyEditors.Aliases.Boolean;

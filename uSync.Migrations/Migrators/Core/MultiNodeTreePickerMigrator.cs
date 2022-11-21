@@ -10,7 +10,7 @@ namespace uSync.Migrations.Migrators;
 
 [SyncMigrator(UmbConstants.PropertyEditors.Aliases.MultiNodeTreePicker, IsDefaultAlias = true)]
 [SyncMigrator("Umbraco.MultiNodeTreePicker2")]
-internal class MultiNodeTreePickerMigrator : SyncPropertyMigratorBase
+public class MultiNodeTreePickerMigrator : SyncPropertyMigratorBase
 {
     public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {

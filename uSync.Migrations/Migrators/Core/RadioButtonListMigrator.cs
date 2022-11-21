@@ -7,7 +7,7 @@ using uSync.Migrations.Models;
 namespace uSync.Migrations.Migrators;
 
 [SyncMigrator(UmbConstants.PropertyEditors.Aliases.RadioButtonList)]
-internal class RadioButtonListMigrator : SyncPropertyMigratorBase
+public class RadioButtonListMigrator : SyncPropertyMigratorBase
 {
     public override string GetDatabaseType(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
         => nameof(ValueStorageType.Nvarchar);
