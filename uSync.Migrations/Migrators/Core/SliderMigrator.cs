@@ -7,7 +7,7 @@ using uSync.Migrations.Models;
 namespace uSync.Migrations.Migrators;
 
 [SyncMigrator(UmbConstants.PropertyEditors.Aliases.Slider)]
-internal class SliderMigrator : SyncPropertyMigratorBase
+public class SliderMigrator : SyncPropertyMigratorBase
 {
     public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {

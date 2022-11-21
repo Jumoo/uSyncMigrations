@@ -8,7 +8,7 @@ using uSync.Migrations.Models;
 namespace uSync.Migrations.Migrators;
 
 [SyncMigrator(UmbConstants.PropertyEditors.Aliases.CheckBoxList)]
-internal class CheckboxListMigrator : SyncPropertyMigratorBase
+public class CheckboxListMigrator : SyncPropertyMigratorBase
 {
     public override string GetDatabaseType(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
         => nameof(ValueStorageType.Nvarchar);

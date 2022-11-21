@@ -2,5 +2,5 @@
 
 [SyncMigrator(UmbConstants.PropertyEditors.Aliases.MemberPicker, IsDefaultAlias = true)]
 [SyncMigrator("Umbraco.MemberPicker2")]
-internal class MemberPickerMigrator : SyncPropertyMigratorBase
+public class MemberPickerMigrator : SyncPropertyMigratorBase
 { }
