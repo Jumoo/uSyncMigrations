@@ -27,7 +27,7 @@ public class ContentMigrationProfile : ISyncMigrationProfile
     {
         Target = $"{uSyncMigrations.MigrationFolder}/{DateTime.Now:yyyyMMdd_HHmmss}",
         Handlers = _migrationHandlers
-                        .Handlers
-                        .Select(x => x.ToHandlerOption(x.Group == BackOffice.uSyncConstants.Groups.Content))
+            .Handlers
+            .Select(x => x.ToHandlerOption(x.Group == BackOffice.uSyncConstants.Groups.Content))
     };
 }

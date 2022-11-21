@@ -25,7 +25,9 @@ internal class DictionaryMigrationHandler : ISyncMigrationHandler
     }
 
     public string Group => uSync.BackOffice.uSyncConstants.Groups.Settings;
+
     public string ItemType => nameof(DictionaryItem);
+
     public int Priority => uSyncMigrations.Priorities.Dictionary;
 
     public void PrepareMigrations(Guid migrationId, string sourceFolder, SyncMigrationContext context)
@@ -35,14 +37,14 @@ internal class DictionaryMigrationHandler : ISyncMigrationHandler
     {
         var dictionaryFolder = Path.Combine(sourceFolder, "DictionaryItem");
 
-        if (Directory.Exists(dictionaryFolder) == false )
+        if (Directory.Exists(dictionaryFolder) == false)
         {
             return Enumerable.Empty<MigrationMessage>();
         }
 
         var messages = new List<MigrationMessage>();
 
-        foreach(var file in Directory.GetFiles(dictionaryFolder, "*.config", SearchOption.AllDirectories))
+        foreach (var file in Directory.GetFiles(dictionaryFolder, "*.config", SearchOption.AllDirectories))
         {
             var source = XElement.Load(file);
             var migratingNotification = new SyncMigratingNotification<DictionaryItem>(source, context);
@@ -54,7 +56,7 @@ internal class DictionaryMigrationHandler : ISyncMigrationHandler
 
             var targets = MigrateDictionary(source, string.Empty, 0).ToList();
 
-            if (targets != null && targets.Count > 0 )
+            if (targets != null && targets.Count > 0)
             {
                 foreach (var target in targets)
                 {
@@ -65,18 +67,17 @@ internal class DictionaryMigrationHandler : ISyncMigrationHandler
             }
         }
 
-        return messages; 
+        return messages;
     }
-
 
     private IEnumerable<XElement> MigrateDictionary(XElement childSource, string parent, int level)
     {
         var key = childSource.Attribute("guid").ValueOrDefault(Guid.Empty);
         var alias = childSource.Attribute("Key").ValueOrDefault(string.Empty);
 
-        if (string.IsNullOrWhiteSpace(alias)) 
-        { 
-            return Enumerable.Empty<XElement>();    
+        if (string.IsNullOrWhiteSpace(alias))
+        {
+            return Enumerable.Empty<XElement>();
         }
 
         if (key == Guid.Empty)
@@ -84,7 +85,7 @@ internal class DictionaryMigrationHandler : ISyncMigrationHandler
             key = alias.ToGuid();
         }
 
-        var newNode = new XElement("Dictionary", 
+        var newNode = new XElement("Dictionary",
             new XAttribute("Key", key),
             new XAttribute("Alias", alias),
             new XAttribute("Level", level));
@@ -99,7 +100,7 @@ internal class DictionaryMigrationHandler : ISyncMigrationHandler
 
         var translations = new XElement("Translations");
 
-        foreach(var value in childSource.Elements("Value"))
+        foreach (var value in childSource.Elements("Value"))
         {
             var language = value.Attribute("LanguageCultureAlias").ValueOrDefault(string.Empty);
 
@@ -116,7 +117,7 @@ internal class DictionaryMigrationHandler : ISyncMigrationHandler
 
         foreach (var child in childSource.Elements("DictionaryItem"))
         {
-            nodes.AddRange(MigrateDictionary(child, alias, level+1));
+            nodes.AddRange(MigrateDictionary(child, alias, level + 1));
         }
 
         return nodes;
@@ -127,6 +128,4 @@ internal class DictionaryMigrationHandler : ISyncMigrationHandler
         _migrationFileService.SaveMigrationFile(id, xml, "Dictionary");
         return new MigrationMessage(ItemType, xml.GetAlias(), MigrationMessageType.Success);
     }
-
-
 }

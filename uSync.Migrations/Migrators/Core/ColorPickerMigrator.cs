@@ -42,7 +42,6 @@ public class ColorPickerMigrator : SyncPropertyMigratorBase
                             Value = currentValue.Value
                         };
 
-
                         config.Items.Add(new ValueListConfiguration.ValueListItem
                         {
                             Id = currentValue.SortOrder + 1,
@@ -66,12 +65,10 @@ public class ColorPickerMigrator : SyncPropertyMigratorBase
         return config;
     }
 
-
     public override string GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
     {
         if (contentProperty.Value.DetectIsJson())
         {
-
             var legacyValue = JsonConvert.DeserializeObject<ColorItemValue>(contentProperty.Value);
             if (legacyValue == null) return contentProperty.Value;
 
@@ -83,11 +80,11 @@ public class ColorPickerMigrator : SyncPropertyMigratorBase
                 Label = legacyValue.Label,
                 Value = legacyValue.Value
             };
+
             return JsonConvert.SerializeObject(newValue, Formatting.Indented);
         }
         else
         {
-
             return JsonConvert.SerializeObject(new ColourContentValue
             {
                 SortOrder = 1,
@@ -96,7 +93,6 @@ public class ColorPickerMigrator : SyncPropertyMigratorBase
                 Value = contentProperty.Value
             }, Formatting.Indented);
         }
-
     }
 
     [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
@@ -111,7 +107,6 @@ public class ColorPickerMigrator : SyncPropertyMigratorBase
         public int SortOrder { get; set; }
     }
 
-
     [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
     private class ColourContentValue
     {
@@ -120,5 +115,4 @@ public class ColorPickerMigrator : SyncPropertyMigratorBase
         public int SortOrder { get; set; }
         public string Id { get; set; }
     }
-
 }

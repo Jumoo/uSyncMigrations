@@ -11,7 +11,6 @@ public class SyncMigrationProfileCollectionBuilder
     protected override SyncMigrationProfileCollectionBuilder This => this;
 }
 
-
 public class SyncMigrationProfileCollection : BuilderCollectionBase<ISyncMigrationProfile>
 {
     public SyncMigrationProfileCollection(Func<IEnumerable<ISyncMigrationProfile>> items)
@@ -20,4 +19,3 @@ public class SyncMigrationProfileCollection : BuilderCollectionBase<ISyncMigrati
 
     public IEnumerable<ISyncMigrationProfile> Profiles => this.OrderBy(x => x.Order);
 }
-

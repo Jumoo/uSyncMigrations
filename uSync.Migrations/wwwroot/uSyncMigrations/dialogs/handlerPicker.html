@@ -5,28 +5,29 @@
                            name-locked="true"
                            description-locked="true"
                            hide-alias="true"
-                           hide-icon="true"></umb-editor-header>
-
+                           hide-icon="true">
+        </umb-editor-header>
 
         <umb-editor-container class="form-horizontal">
 
-        <umb-box>
-            <umb-box-header title="Migration handlers"
-                            description="Pick the things you want to migrate">
-            </umb-box-header>
-            <umb-box-content>
+            <umb-box>
+                <umb-box-header title="Migration handlers"
+                                description="Pick the things you want to migrate">
+                </umb-box-header>
+                <umb-box-content>
 
-                <div class="ml2 mb3">
-                    <umb-checkbox ng-repeat="handler in vm.handlers"
-                                  model="handler.include"
-                                  value="handler.include">
-                        <span ng-bind="handler.name"></span>
-                    </umb-checkbox>
-                </div>
+                    <div class="ml2 mb3">
+                        <umb-checkbox ng-repeat="handler in vm.handlers"
+                                      model="handler.include"
+                                      value="handler.include">
+                            <span ng-bind="handler.name"></span>
+                        </umb-checkbox>
+                    </div>
 
-            </umb-box-content>
-        </umb-box>
+                </umb-box-content>
+            </umb-box>
         </umb-editor-container>
+
         <umb-editor-footer>
             <umb-editor-footer-content-right>
 

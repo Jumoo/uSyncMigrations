@@ -81,5 +81,4 @@ public class uSyncFilesTreeController : TreeController
     }
 
     protected override ActionResult<MenuItemCollection> GetMenuForNode(string id, FormCollection queryStrings) => _menuItemCollectionFactory.Create();
-
 }

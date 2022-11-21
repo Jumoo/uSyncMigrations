@@ -57,10 +57,12 @@ public class uSyncMigrationsController : UmbracoAuthorizedApiController
     public string ValidateSource(string source)
     {
         var attempt = _migrationService.ValidateMigrationSource(source);
+
         if (attempt.Success)
         {
             return string.Empty;
         }
+
         return attempt.Exception?.Message ?? attempt.Result ?? "Unknown Error";
     }
 

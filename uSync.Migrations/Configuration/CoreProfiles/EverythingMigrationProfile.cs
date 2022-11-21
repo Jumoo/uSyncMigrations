@@ -27,8 +27,7 @@ public class EverythingMigrationProfile : ISyncMigrationProfile
     {
         Target = $"{uSyncMigrations.MigrationFolder}/{DateTime.Now:yyyyMMdd_HHmmss}",
         Handlers = _migrationHandlers
-                        .Handlers
-                        .Select(x => x.ToHandlerOption(true))
+            .Handlers
+            .Select(x => x.ToHandlerOption(true)),
     };
-
 }

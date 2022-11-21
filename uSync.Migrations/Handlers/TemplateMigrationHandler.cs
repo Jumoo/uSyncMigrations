@@ -119,8 +119,8 @@ internal class TemplateMigrationHandler : ISyncMigrationHandler
     private (string alias, Guid key) GetAliasAndKey(XElement source)
     {
         return (
-            alias : source.Element("Alias").ValueOrDefault(string.Empty),
-            key : source.Element("Key").ValueOrDefault(Guid.Empty)
+            alias: source.Element("Alias").ValueOrDefault(string.Empty),
+            key: source.Element("Key").ValueOrDefault(Guid.Empty)
         );
     }
 

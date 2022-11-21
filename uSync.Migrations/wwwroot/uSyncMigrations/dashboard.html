@@ -15,6 +15,7 @@
     </umb-box>
 
     <umb-load-indicator ng-if="vm.loading"></umb-load-indicator>
+
     <div ng-if="!vm.loading">
 
         <div class="usync-group-actions">
@@ -39,7 +40,8 @@
                                     action="vm.start(profile)"
                                     label="Migrate"
                                     disabled="vm.working == true"
-                                    state="vm.state"></umb-button>
+                                    state="vm.state">
+                        </umb-button>
                     </div>
 
                 </umb-box-content>
