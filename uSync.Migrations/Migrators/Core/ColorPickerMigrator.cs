@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
 using Umbraco.Cms.Core.PropertyEditors;

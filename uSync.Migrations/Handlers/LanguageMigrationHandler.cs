@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.Design.Serialization;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Xml.Linq;
 
 using Umbraco.Cms.Core.Events;
