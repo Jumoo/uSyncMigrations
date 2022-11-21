@@ -42,7 +42,7 @@ public class NestedContentMigrator : SyncPropertyMigratorBase
                 var editorAlias = context.GetEditorAlias(row.ContentTypeAlias, property.Key);
                 if (editorAlias == null) continue;
 
-                var migrator = _migrators.Value.Get(editorAlias.OrginalEditorAlias);
+                var migrator = _migrators.Value.Get(editorAlias.OriginalEditorAlias);
                 if (migrator != null)
                 {
                     row.RawPropertyValues[property.Key] = migrator.GetContentValue(new SyncMigrationContentProperty(row.ContentTypeAlias, property.Value.ToString()), context);

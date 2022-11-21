@@ -174,7 +174,7 @@ internal class ContentBaseMigrationHandler<TEntity>
 
     private XElement ConvertPropertyValue(string itemType, string contentType, XElement property, SyncMigrationContext context)
     {
-        var editorAlias = context.GetEditorAlias(contentType, property.Name.LocalName)?.OrginalEditorAlias ?? string.Empty;
+        var editorAlias = context.GetEditorAlias(contentType, property.Name.LocalName)?.OriginalEditorAlias ?? string.Empty;
 
         // convert the property .
 
