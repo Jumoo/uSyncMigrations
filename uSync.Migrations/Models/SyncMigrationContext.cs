@@ -230,11 +230,11 @@ public class EditorAliasInfo
 {
     public EditorAliasInfo(string orginalEditorAlias, string updatedEditorAlias)
     {
-        OrginalEditorAlias = orginalEditorAlias;
+        OriginalEditorAlias = orginalEditorAlias;
         UpdatedEditorAlias = updatedEditorAlias;
     }
 
-    public string OrginalEditorAlias { get; }
+    public string OriginalEditorAlias { get; }
 
     public string UpdatedEditorAlias { get; }
 }
