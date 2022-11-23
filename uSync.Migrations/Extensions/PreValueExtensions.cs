@@ -5,7 +5,7 @@ using Umbraco.Cms.Core;
 using Umbraco.Extensions;
 
 using uSync.Migrations.Models;
-using static Lucene.Net.Queries.Function.ValueSources.MultiFunction;
+
 
 namespace uSync.Migrations.Extensions;
 
