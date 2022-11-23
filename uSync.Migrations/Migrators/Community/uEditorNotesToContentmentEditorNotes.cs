@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +11,7 @@ using uSync.Migrations.Models;
 namespace uSync.Migrations.Migrators.Community
 {
     [SyncMigrator("tooorangey.EditorNotes")]
-    public class uEditorNotesToContentmentEditorNotes : SyncPropertyMigratorBase
+    public class uEditorNotesToContentmentEditorNotesMigrator : SyncPropertyMigratorBase
     {
         public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
       => "Umbraco.Community.Contentment.EditorNotes";
