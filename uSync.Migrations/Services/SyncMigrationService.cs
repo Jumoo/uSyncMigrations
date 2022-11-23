@@ -18,17 +18,20 @@ internal class SyncMigrationService : ISyncMigrationService
     private readonly SyncMigrationHandlerCollection _migrationHandlers;
     private readonly SyncMigrationValidatorCollection _migrationValidators;
     private readonly uSyncConfigService _usyncConfig;
+    private readonly SyncPropertyMigratorCollection _migrators;
 
     public SyncMigrationService(
         ISyncMigrationFileService migrationFileService,
         SyncMigrationHandlerCollection migrationHandlers,
         uSyncConfigService usyncConfig,
-        SyncMigrationValidatorCollection migrationValidators)
+        SyncMigrationValidatorCollection migrationValidators,
+        SyncPropertyMigratorCollection migrators)
     {
         _migrationFileService = migrationFileService;
         _migrationHandlers = migrationHandlers;
         _usyncConfig = usyncConfig;
         _migrationValidators = migrationValidators;
+        _migrators = migrators;
     }
 
     public IEnumerable<string> HandlerTypes()
@@ -162,6 +165,10 @@ internal class SyncMigrationService : ISyncMigrationService
             .ForEach(kvp =>
                 kvp.Value?.ForEach(value => context.AddIgnoredProperty(kvp.Key, value)));
 
+        // load the migrators into the context - if they are defined in options
+        // they can be overridden. 
+        var migrators = options.Migrators ?? _migrators.GetDefaultMigrators();
+        migrators.ForEach(x => context.AddMigrator(x));
 
         // let the handlers run through their prep (populate all the lookups)
         GetHandlers()?

@@ -1,10 +1,40 @@
-﻿namespace uSync.Migrations.Models;
+﻿using Umbraco.Cms.Core.Composing;
+
+using uSync.Migrations.Migrators;
+
+namespace uSync.Migrations.Models;
 
 /// <summary>
 ///  A uSync migration context, lets us keep a whole list of things in memory while we do the migration.
 /// </summary>
 public class SyncMigrationContext
 {
+    private Dictionary<string, ISyncPropertyMigrator> _migrators { get; set; }
+
+    public ISyncPropertyMigrator? TryGetMigrator(string? editorAlias)
+        => string.IsNullOrEmpty(editorAlias) 
+            ? null 
+            : _migrators.TryGetValue(editorAlias, out var migrator) == true ? migrator : null;
+
+    public void AddMigrator(ISyncPropertyMigrator migrator)
+    {
+        foreach(var editor in migrator.Editors)
+        {
+            _migrators.TryAdd(editor, migrator);
+        }
+    }
+
+    public ISyncVariationPropertyMigrator? TryGetVariantMigrator(string editorAlias)
+    {
+        if (_migrators.TryGetValue(editorAlias, out var migrator) 
+            && migrator is ISyncVariationPropertyMigrator variationPropertyMigrator)
+        {
+            return variationPropertyMigrator;
+        }
+
+        return null;
+    }
+
     private HashSet<string> _blockedTypes = new(StringComparer.OrdinalIgnoreCase);
 
     private HashSet<string> _ignoredProperties = new(StringComparer.OrdinalIgnoreCase);

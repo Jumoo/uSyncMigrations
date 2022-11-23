@@ -29,6 +29,11 @@ public class SyncPropertyMigratorCollection
         }
     }
 
+    // TODO: [KJ] - Someway of working out what a default migrator is, so we can return only unique migrators by default.
+    public IList<ISyncPropertyMigrator> GetDefaultMigrators()
+        => _lookup.Values.ToList();
+
+
     public bool TryGet(string editorAlias, out ISyncPropertyMigrator? item) => _lookup.TryGetValue(editorAlias, out item);
 
     public ISyncPropertyMigrator? Get(string editorAlias) => _lookup.TryGetValue(editorAlias, out var migrator) == true ? migrator : default;

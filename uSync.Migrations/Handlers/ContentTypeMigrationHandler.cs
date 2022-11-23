@@ -15,9 +15,8 @@ internal class ContentTypeMigrationHandler : ContentTypeBaseMigrationHandler<Con
     public ContentTypeMigrationHandler(
         IEventAggregator eventAggregator,
         ISyncMigrationFileService migrationFileService,
-        SyncPropertyMigratorCollection migrators,
         IFileService fileService)
-        : base(eventAggregator, migrationFileService, migrators)
+        : base(eventAggregator, migrationFileService)
     {
         _fileService = fileService;
     }

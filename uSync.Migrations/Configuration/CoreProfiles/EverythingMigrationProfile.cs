@@ -9,10 +9,14 @@ public class EverythingMigrationProfile : ISyncMigrationProfile
     public int Order => 120;
 
     private readonly SyncMigrationHandlerCollection _migrationHandlers;
+    private readonly SyncPropertyMigratorCollection _migrators;
 
-    public EverythingMigrationProfile(SyncMigrationHandlerCollection migrationHandlers)
+    public EverythingMigrationProfile(
+        SyncMigrationHandlerCollection migrationHandlers,
+        SyncPropertyMigratorCollection migrators)
     {
         _migrationHandlers = migrationHandlers;
+        _migrators = migrators;
     }
 
     public string Name => "Everything";
@@ -24,8 +28,7 @@ public class EverythingMigrationProfile : ISyncMigrationProfile
     public MigrationOptions Options => new MigrationOptions
     {
         Target = $"{uSyncMigrations.MigrationFolder}/{DateTime.Now:yyyyMMdd_HHmmss}",
-        Handlers = _migrationHandlers
-            .Handlers
-            .Select(x => x.ToHandlerOption(true)),
+        Migrators = _migrators.GetDefaultMigrators(),
+        Handlers = _migrationHandlers.SelectGroup("")
     };
 }
