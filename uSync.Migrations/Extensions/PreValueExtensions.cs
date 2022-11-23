@@ -80,7 +80,26 @@ public static class PreValueExtensions
 
         return config;
     }
+    public static JObject MapPreValues(this JObject config, IEnumerable<PreValue> preValues, Dictionary<string, string> mappings)
+    {
+        // loop through the prevalues - see if there is a 'mapping' 
+        // and if so add to the JObject under the new mapping name or ignore if there is no mapping
+        foreach (var value in preValues)
+        {
+            if (mappings.ContainsKey(value.Alias))
+            {
+                var propertyName = mappings[value.Alias];
+                // now heres the thing with it not being a 'typed' thing we don't know how to cleverly convert if this is a complex editor
+                 var attempt = ConvertValue(value.Value, typeof(string));
+                if (attempt.Success)
+                {
+                    config.Add(propertyName, attempt.Result?.ToString());
+                }                
+            }
+        }
 
+        return config;
+    }
     public static object ConvertPreValuesToJson(this IEnumerable<PreValue> preValues, bool uppercase)
     {
         var config = new JObject();
