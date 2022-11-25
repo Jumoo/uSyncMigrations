@@ -1,6 +1,7 @@
 ﻿using System.Xml.Linq;
 
 using Umbraco.Cms.Core.Events;
+using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Models.Entities;
 using Umbraco.Cms.Core.Notifications;
 using Umbraco.Cms.Core.Strings;
@@ -27,6 +28,7 @@ internal class ContentBaseMigrationHandler<TEntity>
     private readonly IShortStringHelper _shortStringHelper;
 
     protected readonly HashSet<string> _ignoredProperties = new(StringComparer.OrdinalIgnoreCase);
+    protected readonly Dictionary<string, string> _mediaTypeAliasForFileExtension = new(StringComparer.OrdinalIgnoreCase);
 
     public ContentBaseMigrationHandler(
         IEventAggregator eventAggregator,
@@ -111,6 +113,15 @@ internal class ContentBaseMigrationHandler<TEntity>
 
         context.AddContentPath(key, path);
 
+        if (itemType == nameof(Media) && _mediaTypeAliasForFileExtension.Count > 0)
+        {
+            var fileExtension = source.Element(UmbConstants.Conventions.Media.Extension)?.ValueOrDefault(string.Empty) ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(fileExtension) == false && _mediaTypeAliasForFileExtension.TryGetValue(fileExtension, out var newMediaTypeAlias) == true)
+            {
+                contentType = newMediaTypeAlias;
+            }
+        }
+
         var target = new XElement(itemType,
 
             new XAttribute("Key", key),
@@ -126,7 +137,7 @@ internal class ContentBaseMigrationHandler<TEntity>
                 new XElement("NodeName", new XAttribute("Default", alias)),
                 new XElement("SortOrder", sortOrder)));
 
-        if (itemType == "Content")
+        if (itemType == nameof(Content))
         {
             var info = target.Element("Info");
 

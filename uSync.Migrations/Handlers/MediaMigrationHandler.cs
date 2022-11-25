@@ -24,6 +24,21 @@ internal class MediaMigrationHandler : ContentBaseMigrationHandler<Media>, ISync
             UmbConstants.Conventions.Media.Height,
             UmbConstants.Conventions.Media.Width,
         });
+
+        _mediaTypeAliasForFileExtension.Union(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "docx", UmbConstants.Conventions.MediaTypes.ArticleAlias },
+            { "doc", UmbConstants.Conventions.MediaTypes.ArticleAlias },
+            { "pdf", UmbConstants.Conventions.MediaTypes.ArticleAlias },
+            { "mp3", UmbConstants.Conventions.MediaTypes.AudioAlias },
+            { "weba", UmbConstants.Conventions.MediaTypes.AudioAlias },
+            { "oga", UmbConstants.Conventions.MediaTypes.AudioAlias },
+            { "opus", UmbConstants.Conventions.MediaTypes.AudioAlias },
+            { "svg", UmbConstants.Conventions.MediaTypes.VectorGraphicsAlias },
+            { "mp4", UmbConstants.Conventions.MediaTypes.VideoAlias },
+            { "ogv", UmbConstants.Conventions.MediaTypes.VideoAlias },
+            { "webm", UmbConstants.Conventions.MediaTypes.VideoAlias },
+        });
     }
 
     public string ItemType => nameof(Media);
