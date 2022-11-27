@@ -28,6 +28,7 @@ public class SyncMigrationContext
     private Dictionary<Guid, string> _contentKeys { get; set; } = new();
     private Dictionary<Guid, string> _contentPaths { get; set; } = new();
 
+    private Dictionary<Guid, string> _contentTypeAliases { get; set; } = new();
     private Dictionary<string, Guid> _contentTypeKeys { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     private Dictionary<string, HashSet<string>> _contentTypeCompositions { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
@@ -63,8 +64,12 @@ public class SyncMigrationContext
     {
         _ = string.IsNullOrWhiteSpace(contentTypeAlias) == false &&
             contentTypeKey.HasValue == true &&
+            _contentTypeAliases.TryAdd(contentTypeKey.Value, contentTypeAlias) &&
             _contentTypeKeys.TryAdd(contentTypeAlias, contentTypeKey.Value);
     }
+
+    public string GetContentTypeAlias(Guid contentTypeKey)
+        => _contentTypeAliases?.TryGetValue(contentTypeKey, out var alias) == true ? alias : string.Empty;
 
     /// <summary>
     ///  get the key for a given content type alias from the context.
