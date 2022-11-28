@@ -307,11 +307,20 @@ internal class ContentBaseMigrationHandler<TEntity>
         {
             var source = XElement.Load(file);
             var key = source.Attribute("guid").ValueOrDefault(Guid.Empty);
-            var alias = source.Attribute("nodeName").ValueOrDefault(string.Empty);
-
-            if (key != Guid.Empty && string.IsNullOrWhiteSpace(alias) == false)
+            if (key != Guid.Empty)
             {
-                context.AddContentKey(key, alias);
+                var id = source.Attribute("id").ValueOrDefault(0);
+                var alias = source.Attribute("nodeName").ValueOrDefault(string.Empty);
+
+                if (id > 0)
+                {
+                    context.AddKey(id, key);
+                }
+
+                if (string.IsNullOrWhiteSpace(alias) == false)
+                {
+                    context.AddContentKey(key, alias);
+                }
             }
         }
     }

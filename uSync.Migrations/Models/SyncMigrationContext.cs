@@ -34,6 +34,8 @@ public class SyncMigrationContext
     private Dictionary<string, EditorAliasInfo> _propertyTypes { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     private Dictionary<string, Guid> _templateKeys { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
+    private Dictionary<int, Guid> _idKeyMap { get; set; } = new();
+
     public SyncMigrationContext(Guid migrationId)
     {
         MigrationId = migrationId;
@@ -224,6 +226,18 @@ public class SyncMigrationContext
     public string GetDataTypeVariation(Guid guid)
         => _dataTypeVariations?.TryGetValue(guid, out var variation) == true
             ? variation : "Nothing";
+
+    /// <summary>
+    /// Adds the `int` ID (from the v7 CMS) with the corresponding `Guid` key.
+    /// </summary>
+    public void AddKey(int id, Guid key)
+        => _idKeyMap.TryAdd(id, key);
+
+    /// <summary>
+    /// Retrieves the `Guid` key from the `int` ID reference (from the v7 CMS).
+    /// </summary>
+    public Guid GetKey(int id)
+        => _idKeyMap?.TryGetValue(id, out var key) == true ? key : Guid.Empty;
 }
 
 public class EditorAliasInfo
