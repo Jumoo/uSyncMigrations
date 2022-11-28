@@ -6,6 +6,7 @@ using Umbraco.Extensions;
 
 using uSync.Migrations.Models;
 
+
 namespace uSync.Migrations.Extensions;
 
 public static class PreValueExtensions
@@ -79,14 +80,39 @@ public static class PreValueExtensions
         }
 
         return config;
-    }
-
+    }    
     public static object ConvertPreValuesToJson(this IEnumerable<PreValue> preValues, bool uppercase)
     {
+        return preValues.ConvertPreValuesToJson(uppercase, null);
+    }
+    public static object ConvertPreValuesToJson(this IEnumerable<PreValue> preValues, bool uppercase, Dictionary<string, string> mappings)
+    {
         var config = new JObject();
-        foreach (var property in preValues)
+        bool hasMappings = mappings != null && mappings.Any();
+        foreach (var preValue in preValues)
         {
-            var alias = property.Alias;
+            var alias = preValue.Alias;
+            // look for mappings
+            if (hasMappings)
+            {
+                // then we need to ignore any properties that aren't in the mappings
+                if (mappings.ContainsKey(alias))
+                {
+                    var newMappedAlias = mappings[alias];
+                    if (String.IsNullOrWhiteSpace(newMappedAlias))
+                    {
+                        // no value has been supplied for this property, skip it
+                        continue;
+                    }
+                    alias = newMappedAlias;
+                }
+                else
+                {
+                    //no mapping for this property, skip it
+                    continue;
+                }
+            }
+            
             if (uppercase && alias.Length > 1)
             {
                 alias = alias[0].ToString().ToUpper() + alias.Substring(1);
@@ -94,15 +120,15 @@ public static class PreValueExtensions
 
             try
             {
-                if (property.Value != null)
+                if (preValue.Value != null)
                 {
-                    if (property.Value.DetectIsJson())
+                    if (preValue.Value.DetectIsJson())
                     {
-                        config.Add(alias, JToken.Parse(property.Value));
+                        config.Add(alias, JToken.Parse(preValue.Value));
                     }
                     else
                     {
-                        config.Add(alias, new JValue(property.Value));
+                        config.Add(alias, new JValue(preValue.Value));
                     }
                 }
 
@@ -115,7 +141,6 @@ public static class PreValueExtensions
 
         return config;
     }
-
     private static Attempt<object?> ConvertValue(string value, Type type)
     {
         if (value.DetectIsJson())
