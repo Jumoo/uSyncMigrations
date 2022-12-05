@@ -1,10 +1,5 @@
 using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Umbraco.Cms.Core.PropertyEditors;
+
 using uSync.Migrations.Extensions;
 using uSync.Migrations.Migrators.Models;
 using uSync.Migrations.Models;
@@ -12,6 +7,7 @@ using uSync.Migrations.Models;
 namespace uSync.Migrations.Migrators.Community
 {
     [SyncMigrator("tooorangey.EditorNotes")]
+    [SyncDefaultMigrator]
     public class uEditorNotesTouEditorNotesMigrator : SyncPropertyMigratorBase
     {
         //alias is the same
