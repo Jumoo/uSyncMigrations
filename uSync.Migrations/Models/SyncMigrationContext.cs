@@ -7,7 +7,7 @@ namespace uSync.Migrations.Models;
 /// <summary>
 ///  A uSync migration context, lets us keep a whole list of things in memory while we do the migration.
 /// </summary>
-public class SyncMigrationContext
+public class SyncMigrationContext : IDisposable
 {
     private Dictionary<string, ISyncPropertyMigrator> _migrators { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
@@ -275,6 +275,8 @@ public class SyncMigrationContext
     public Guid GetKey(int id)
         => _idKeyMap?.TryGetValue(id, out var key) == true ? key : Guid.Empty;
 
+    public void Dispose()
+    { }
 }
 
 public class EditorAliasInfo
