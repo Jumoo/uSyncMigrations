@@ -13,12 +13,8 @@ namespace uSync.Migrations.Migrators;
 [SyncMigrator("Our.Umbraco.NestedContent")]
 public class NestedContentMigrator : SyncPropertyMigratorBase
 {
-    Lazy<SyncPropertyMigratorCollection> _migrators;
-
-    public NestedContentMigrator(Lazy<SyncPropertyMigratorCollection> migrators)
-    {
-        _migrators = migrators;
-    }
+    public NestedContentMigrator()
+    { }
 
     public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
         => UmbConstants.PropertyEditors.Aliases.NestedContent;
@@ -41,8 +37,8 @@ public class NestedContentMigrator : SyncPropertyMigratorBase
             {
                 var editorAlias = context.GetEditorAlias(row.ContentTypeAlias, property.Key);
                 if (editorAlias == null) continue;
-
-                var migrator = _migrators.Value.Get(editorAlias.OriginalEditorAlias);
+                
+                var migrator = context.TryGetMigrator(editorAlias.OriginalEditorAlias);
                 if (migrator != null)
                 {
                     row.RawPropertyValues[property.Key] = migrator.GetContentValue(new SyncMigrationContentProperty(row.ContentTypeAlias, property.Value.ToString()), context);

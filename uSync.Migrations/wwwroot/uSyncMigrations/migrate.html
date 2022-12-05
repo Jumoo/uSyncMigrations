@@ -98,7 +98,7 @@
                                 label="Do it, Do it now!"
                                 button-style="success btn-large"
                                 icon="icon-smiley"
-                                disabled="vm.working || vm.sourceValid == false"
+                                disabled="vm.working || vm.sourceValid == false || vm.validation.success == false"
                                 state="vm.state">
                     </umb-button>
                     <div><small><em>(create the migrated uSync files)</em></small></div>

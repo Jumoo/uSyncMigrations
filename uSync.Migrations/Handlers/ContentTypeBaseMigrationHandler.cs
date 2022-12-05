@@ -19,16 +19,13 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity>
 
     private readonly IEventAggregator _eventAggregator;
     private readonly ISyncMigrationFileService _migrationFileService;
-    private readonly SyncPropertyMigratorCollection _migrators;
 
     public ContentTypeBaseMigrationHandler(
         IEventAggregator eventAggregator,
-        ISyncMigrationFileService migrationFileService,
-        SyncPropertyMigratorCollection migrators)
+        ISyncMigrationFileService migrationFileService)
     {
         _eventAggregator = eventAggregator;
         _migrationFileService = migrationFileService;
-        _migrators = migrators;
     }
 
     public void PrepareContext(string sourceFolder, SyncMigrationContext context)

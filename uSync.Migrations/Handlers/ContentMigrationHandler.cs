@@ -13,9 +13,8 @@ internal class ContentMigrationHandler : ContentBaseMigrationHandler<Content>, I
     public ContentMigrationHandler(
         IEventAggregator eventAggregator,
         ISyncMigrationFileService migrationFileService,
-        SyncPropertyMigratorCollection migrators,
         IShortStringHelper shortStringHelper)
-        : base(eventAggregator, migrationFileService, migrators, shortStringHelper)
+        : base(eventAggregator, migrationFileService, shortStringHelper)
     { }
 
     public string ItemType => nameof(Content);

@@ -18,17 +18,20 @@ internal class SyncMigrationService : ISyncMigrationService
     private readonly SyncMigrationHandlerCollection _migrationHandlers;
     private readonly SyncMigrationValidatorCollection _migrationValidators;
     private readonly uSyncConfigService _usyncConfig;
+    private readonly SyncPropertyMigratorCollection _migrators;
 
     public SyncMigrationService(
         ISyncMigrationFileService migrationFileService,
         SyncMigrationHandlerCollection migrationHandlers,
         uSyncConfigService usyncConfig,
-        SyncMigrationValidatorCollection migrationValidators)
+        SyncMigrationValidatorCollection migrationValidators,
+        SyncPropertyMigratorCollection migrators)
     {
         _migrationFileService = migrationFileService;
         _migrationHandlers = migrationHandlers;
         _usyncConfig = usyncConfig;
         _migrationValidators = migrationValidators;
+        _migrators = migrators;
     }
 
     public IEnumerable<string> HandlerTypes()
@@ -162,6 +165,7 @@ internal class SyncMigrationService : ISyncMigrationService
             .ForEach(kvp =>
                 kvp.Value?.ForEach(value => context.AddIgnoredProperty(kvp.Key, value)));
 
+        AddMigrators(context, options.PreferedMigrators);
 
         // let the handlers run through their prep (populate all the lookups)
         GetHandlers()?
@@ -170,5 +174,14 @@ internal class SyncMigrationService : ISyncMigrationService
             .ForEach(x => x.PrepareMigrations(migrationId, sourceRoot, context));
 
         return context;
+    }
+
+    private void AddMigrators(SyncMigrationContext context, IDictionary<string,string> preferedMigrators)
+    {
+        var preferedList = _migrators.GetPreferedMigratorList(preferedMigrators);
+        foreach(var item in preferedList)
+        {
+            context.AddPropertyMigration(item.EditorAlias, item.Migrator);
+        }
     }
 }

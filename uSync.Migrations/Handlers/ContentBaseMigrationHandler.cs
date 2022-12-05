@@ -23,7 +23,6 @@ internal class ContentBaseMigrationHandler<TEntity>
     public string Group => uSync.BackOffice.uSyncConstants.Groups.Content;
 
     private readonly IEventAggregator _eventAggregator;
-    private readonly SyncPropertyMigratorCollection _migrators;
     private readonly ISyncMigrationFileService _migrationFileService;
     private readonly IShortStringHelper _shortStringHelper;
 
@@ -33,12 +32,10 @@ internal class ContentBaseMigrationHandler<TEntity>
     public ContentBaseMigrationHandler(
         IEventAggregator eventAggregator,
         ISyncMigrationFileService migrationFileService,
-        SyncPropertyMigratorCollection contentPropertyMigrators,
         IShortStringHelper shortStringHelper)
     {
         _eventAggregator = eventAggregator;
         _migrationFileService = migrationFileService;
-        _migrators = contentPropertyMigrators;
         _shortStringHelper = shortStringHelper;
     }
 
@@ -190,7 +187,7 @@ internal class ContentBaseMigrationHandler<TEntity>
         // convert the property .
 
         var migrationProperty = new SyncMigrationContentProperty(editorAlias, property.Value);
-        var migrator = _migrators.GetVariantMigrator(editorAlias);
+        var migrator = context.TryGetVariantMigrator(editorAlias);
         if (migrator != null && itemType == "Content")
         {
             // it might be the case that the property needs to be split into variants. 
@@ -301,9 +298,12 @@ internal class ContentBaseMigrationHandler<TEntity>
 
     private string MigrateContentValue(SyncMigrationContentProperty migrationProperty, SyncMigrationContext context)
     {
+        if (migrationProperty == null) return string.Empty;
+
         if (string.IsNullOrWhiteSpace(migrationProperty?.EditorAlias)) return migrationProperty.Value;
 
-        if (_migrators.TryGet(migrationProperty?.EditorAlias, out var migrator) == true)
+        var migrator = context.TryGetMigrator(migrationProperty?.EditorAlias);
+        if (migrator != null)
         {
             return migrator?.GetContentValue(migrationProperty, context) ?? migrationProperty.Value;
         }

@@ -1,6 +1,8 @@
 ﻿using Umbraco.Cms.Core.Composing;
+using Umbraco.Extensions;
 
 using uSync.Migrations.Migrators;
+using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Composing;
 
@@ -13,34 +15,56 @@ public class SyncPropertyMigratorCollectionBuilder
 public class SyncPropertyMigratorCollection
     : BuilderCollectionBase<ISyncPropertyMigrator>
 {
-    private readonly Dictionary<string, ISyncPropertyMigrator> _lookup;
-
     public SyncPropertyMigratorCollection(Func<IEnumerable<ISyncPropertyMigrator>> items)
         : base(items)
-    {
-        _lookup = new Dictionary<string, ISyncPropertyMigrator>(StringComparer.OrdinalIgnoreCase);
+    { }
 
-        foreach (var item in this)
+    public IList<MigratorEditorPair> GetPreferedMigratorList(IDictionary<string, string> preferedMigrators)
+    {
+        var migrators = this.ToList();
+        var defaultMigrators = GetDefaults();
+
+        var editors = new List<MigratorEditorPair>();
+        foreach (var migrator in migrators)
         {
-            foreach (var alias in item.Editors)
+            foreach (var editor in migrator.Editors)
             {
-                _ = _lookup.TryAdd(alias, item);
+                if (preferedMigrators != null && preferedMigrators.ContainsKey(editor))
+                {
+                    var syncMigrator = migrators.FirstOrDefault(x => x.GetType().Name == preferedMigrators[editor]) ?? migrator;
+                    editors.Add(new MigratorEditorPair(editor, syncMigrator));
+                }
+                else
+                {
+                    if (defaultMigrators.ContainsKey(editor))
+                    {
+                        // there is a default for this one, so its the only one we add.
+                        editors.Add(new MigratorEditorPair(editor, defaultMigrators[editor]));
+                    }
+                    else
+                    {
+                        // we just add what ever this is 
+                        editors.Add(new MigratorEditorPair(editor, migrator));
+                    }
+                }
             }
         }
+
+        // remove duplicates (we might add prefered or default multiple times).
+        return editors.DistinctBy(x => $"{x.EditorAlias}_{x.Migrator.GetType().Name}").ToList();
     }
 
-    public bool TryGet(string editorAlias, out ISyncPropertyMigrator? item) => _lookup.TryGetValue(editorAlias, out item);
-
-    public ISyncPropertyMigrator? Get(string editorAlias) => _lookup.TryGetValue(editorAlias, out var migrator) == true ? migrator : default;
-
-    public ISyncVariationPropertyMigrator? GetVariantMigrator(string editorAlias)
+    private IDictionary<string, ISyncPropertyMigrator> GetDefaults()
     {
-        if (_lookup.TryGetValue(editorAlias, out var migrator)
-            && migrator is ISyncVariationPropertyMigrator variantMigrator)
+        var defaults = new Dictionary<string, ISyncPropertyMigrator>(StringComparer.OrdinalIgnoreCase);
+        foreach (var item in this.Where(x => x.GetType().GetCustomAttribute<SyncDefaultMigratorAttribute>(false) != null))
         {
-            return variantMigrator;
+            foreach (var editor in item.Editors)
+            {
+                defaults[editor] = item;
+            }
         }
-
-        return null;
+        return defaults;
     }
+
 }

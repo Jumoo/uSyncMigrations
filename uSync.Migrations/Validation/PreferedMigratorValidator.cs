@@ -1,0 +1,62 @@
+﻿using Umbraco.Extensions;
+
+using uSync.Migrations.Composing;
+using uSync.Migrations.Configuration.Models;
+using uSync.Migrations.Models;
+
+namespace uSync.Migrations.Validation;
+
+internal class PreferedMigratorValidator : ISyncMigrationValidator
+{
+    private readonly SyncPropertyMigratorCollection _migrators;
+
+    public PreferedMigratorValidator(SyncPropertyMigratorCollection migrators)
+    {
+        _migrators = migrators;
+    }
+
+    public IEnumerable<MigrationMessage> Validate(MigrationOptions options)
+    {
+        var results = new List<MigrationMessage>();
+
+        var preferedList = _migrators.GetPreferedMigratorList(options.PreferedMigrators);
+        foreach(var missing in preferedList.Where(x => x.Migrator == null))
+        {
+            results.Add(new MigrationMessage("Migrator", "Missing", MigrationMessageType.Error)
+            {
+                Message = $"There is no migrator assigned for type {missing.EditorAlias}"
+            });
+        }
+
+        var duplicates = preferedList
+            .DistinctBy(x => $"{x.EditorAlias}_{x.Migrator}")
+            .GroupBy(x => x.EditorAlias).Where(x => x.Count() > 1);
+
+        if (duplicates.Any())
+        {
+
+            foreach (var duplicate in duplicates) {
+
+                results.Add(new MigrationMessage("Migrator", "Duplicate", MigrationMessageType.Error)
+                {
+                    Message = $"there are two or more migrators configured for " +
+                        $"{duplicate.FirstOrDefault()?.EditorAlias ?? ""} " +
+                        $"[{string.Join(",", duplicate.Select(x => x.Migrator.GetType().Name))}]"
+                });
+            }
+        }
+        else
+        {
+        }
+
+        if (results.Count == 0)
+        {
+            return new MigrationMessage("Migrators", "Migrators OK", MigrationMessageType.Success)
+                .AsEnumerableOfOne();
+        }
+        else
+        {
+            return results;
+        }
+    }
+}

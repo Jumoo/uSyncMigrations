@@ -13,9 +13,8 @@ internal class MediaMigrationHandler : ContentBaseMigrationHandler<Media>, ISync
     public MediaMigrationHandler(
         IEventAggregator eventAggregator,
         ISyncMigrationFileService migrationFileService,
-        SyncPropertyMigratorCollection migrators,
         IShortStringHelper shortStringHelper)
-        : base(eventAggregator, migrationFileService, migrators, shortStringHelper)
+        : base(eventAggregator, migrationFileService, shortStringHelper)
     {
         _ignoredProperties.UnionWith(new[]
         {
