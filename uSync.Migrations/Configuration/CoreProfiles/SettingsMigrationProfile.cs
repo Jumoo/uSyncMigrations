@@ -28,7 +28,6 @@ public class SettingsMigrationProfile : ISyncMigrationProfile
     public MigrationOptions Options => new MigrationOptions
     {
         Target = $"{uSyncMigrations.MigrationFolder}/{DateTime.Now:yyyyMMdd_HHmmss}",
-        Migrators = _migrators.GetDefaultMigrators(),
         Handlers = _migrationHandlers.SelectGroup(BackOffice.uSyncConstants.Groups.Settings)
     };
 }

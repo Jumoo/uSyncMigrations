@@ -1,8 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-using uSync.Migrations.Migrators;
-
 namespace uSync.Migrations.Configuration.Models;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
@@ -16,7 +14,7 @@ public class MigrationOptions
 
     public IList<HandlerOption> Handlers { get; set; }
 
-    public IList<ISyncPropertyMigrator> Migrators { get; set; }
+    public IDictionary<string, string> PreferedMigrators { get; set; }
 
     public bool BlockListViews { get; set; } = true;
 

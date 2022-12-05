@@ -39,7 +39,14 @@ public class MyMigrationProfile : ISyncMigrationProfile
         // load all the handlers just enable the content ones.
         Handlers = _migrationHandlers
                         .Handlers
-                        .Select(x => x.ToHandlerOption(x.Group == uSync.BackOffice.uSyncConstants.Groups.Content)),
+                        .Select(x => x.ToHandlerOption(x.Group == uSync.BackOffice.uSyncConstants.Groups.Content))
+                        .ToList(),
+
+        // for this migrator we want to use our special grid migrator.
+        PreferedMigrators = new Dictionary<string, string>()
+        {
+            { Umbraco.Cms.Core.Constants.PropertyEditors.Aliases.Grid, typeof(GridToBlockListMigrator).Name }
+        },
 
         // eveything beneath is optional... 
 

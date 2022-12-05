@@ -165,10 +165,7 @@ internal class SyncMigrationService : ISyncMigrationService
             .ForEach(kvp =>
                 kvp.Value?.ForEach(value => context.AddIgnoredProperty(kvp.Key, value)));
 
-        // load the migrators into the context - if they are defined in options
-        // they can be overridden. 
-        var migrators = options.Migrators ?? _migrators.GetDefaultMigrators();
-        migrators.ForEach(x => context.AddMigrator(x));
+        AddMigrators(context, options.PreferedMigrators);
 
         // let the handlers run through their prep (populate all the lookups)
         GetHandlers()?
@@ -177,5 +174,14 @@ internal class SyncMigrationService : ISyncMigrationService
             .ForEach(x => x.PrepareMigrations(migrationId, sourceRoot, context));
 
         return context;
+    }
+
+    private void AddMigrators(SyncMigrationContext context, IDictionary<string,string> preferedMigrators)
+    {
+        var preferedList = _migrators.GetPreferedMigratorList(preferedMigrators);
+        foreach(var item in preferedList)
+        {
+            context.AddPropertyMigration(item.EditorAlias, item.Migrator);
+        }
     }
 }

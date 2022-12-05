@@ -32,4 +32,4 @@ public class SyncMigratorAttribute : Attribute
 ///  multiple migrators for a type, but only picking one in a 'normal' migration.
 /// </remarks>
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
-internal class SyncDefaultMigratorAttribute : Attribute { }
+public class SyncDefaultMigratorAttribute : Attribute { }

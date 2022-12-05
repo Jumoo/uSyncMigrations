@@ -32,12 +32,14 @@ internal class DataTypeMigrationHandler : ISyncMigrationHandler, ISyncMigrationV
     private readonly ILogger<DataTypeMigrationHandler> _logger;
     private readonly JsonSerializerSettings _jsonSerializerSettings;
     private readonly IDataTypeService _dataTypeService;
+    private readonly SyncPropertyMigratorCollection _migrators;
 
     public DataTypeMigrationHandler(
         IEventAggregator eventAggregator,
         ISyncMigrationFileService fileService,
         ILogger<DataTypeMigrationHandler> logger,
-        IDataTypeService dataTypeService)
+        IDataTypeService dataTypeService,
+        SyncPropertyMigratorCollection migrators)
     {
         _eventAggregator = eventAggregator;
         _migrationFileService = fileService;
@@ -49,6 +51,7 @@ internal class DataTypeMigrationHandler : ISyncMigrationHandler, ISyncMigrationV
             Formatting = Formatting.Indented,
         };
         _dataTypeService = dataTypeService;
+        _migrators = migrators;
     }
 
     public string Group => uSync.BackOffice.uSyncConstants.Groups.Settings;
@@ -254,6 +257,7 @@ internal class DataTypeMigrationHandler : ISyncMigrationHandler, ISyncMigrationV
         var messages = new List<MigrationMessage>();
 
         var dataTypes = Path.Combine(options.Source, ItemType);
+        var migrators = _migrators.GetPreferedMigratorList(options.PreferedMigrators);
 
         foreach (var file in Directory.GetFiles(dataTypes, "*.config", SearchOption.AllDirectories))
         {
@@ -270,7 +274,7 @@ internal class DataTypeMigrationHandler : ISyncMigrationHandler, ISyncMigrationV
                 if (string.IsNullOrEmpty(name)) throw new Exception("Missing Name value");
                 if (string.IsNullOrEmpty(databaseType)) throw new Exception("Missing database type");
 
-                if (!options.Migrators.Any(x => x.Editors.InvariantContains(editorAlias)))
+                if (!migrators.Any(x => x.EditorAlias.InvariantEquals(editorAlias)))
                 {
                     messages.Add(new MigrationMessage(ItemType, name, MigrationMessageType.Warning)
                     {

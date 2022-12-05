@@ -9,31 +9,7 @@ namespace uSync.Migrations.Models;
 /// </summary>
 public class SyncMigrationContext
 {
-    private Dictionary<string, ISyncPropertyMigrator> _migrators { get; set; }
-
-    public ISyncPropertyMigrator? TryGetMigrator(string? editorAlias)
-        => string.IsNullOrEmpty(editorAlias) 
-            ? null 
-            : _migrators.TryGetValue(editorAlias, out var migrator) == true ? migrator : null;
-
-    public void AddMigrator(ISyncPropertyMigrator migrator)
-    {
-        foreach(var editor in migrator.Editors)
-        {
-            _migrators.TryAdd(editor, migrator);
-        }
-    }
-
-    public ISyncVariationPropertyMigrator? TryGetVariantMigrator(string editorAlias)
-    {
-        if (_migrators.TryGetValue(editorAlias, out var migrator) 
-            && migrator is ISyncVariationPropertyMigrator variationPropertyMigrator)
-        {
-            return variationPropertyMigrator;
-        }
-
-        return null;
-    }
+    private Dictionary<string, ISyncPropertyMigrator> _migrators { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
     private HashSet<string> _blockedTypes = new(StringComparer.OrdinalIgnoreCase);
 
@@ -254,6 +230,37 @@ public class SyncMigrationContext
     public string GetDataTypeVariation(Guid guid)
         => _dataTypeVariations?.TryGetValue(guid, out var variation) == true
             ? variation : "Nothing";
+
+
+    /// <summary>
+    ///  get the migrator for a given editorAlias
+    /// </summary>
+    public ISyncPropertyMigrator? TryGetMigrator(string? editorAlias)
+        => string.IsNullOrEmpty(editorAlias)
+            ? null
+            : _migrators.TryGetValue(editorAlias, out var migrator) == true ? migrator : null;
+
+    /// <summary>
+    ///  Add a migrator for a given editorAlias
+    /// </summary>
+    public void AddPropertyMigration(string editorAlias, ISyncPropertyMigrator migrator)
+    {
+        _migrators.TryAdd(editorAlias, migrator);
+    }
+
+    /// <summary>
+    ///  get the variant version of a migrator (if there is one)
+    /// </summary>
+    public ISyncVariationPropertyMigrator? TryGetVariantMigrator(string editorAlias)
+    {
+        if (_migrators.TryGetValue(editorAlias, out var migrator)
+            && migrator is ISyncVariationPropertyMigrator variationPropertyMigrator)
+        {
+            return variationPropertyMigrator;
+        }
+
+        return null;
+    }
 }
 
 public class EditorAliasInfo
