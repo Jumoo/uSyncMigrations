@@ -60,7 +60,7 @@ internal class SyncMigrationFileService : ISyncMigrationFileService
     {
         var path = Path.Combine(_webHostEnvironment.MapPathContentRoot(folder));
         if (!path.StartsWith(_uSyncRoot, StringComparison.OrdinalIgnoreCase))
-            throw new AccessViolationException("Cannot migrate outsided the uSync folder");
+            throw new AccessViolationException("Cannot migrate outside the uSync folder");
 
         return path;
     }

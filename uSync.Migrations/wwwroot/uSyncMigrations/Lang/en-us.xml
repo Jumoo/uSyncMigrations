@@ -14,7 +14,7 @@
 		</key>
 
 		<key alias="customize">
-			<![CDATA[You can customize this list with a you own `ISyncMigrationProfile` or remove and add simple configs with a '/usync/profiles.json' file.]]>
+			<![CDATA[You can customize this list with your own `ISyncMigrationProfile` or remove and add simple configs with a '/usync/profiles.json' file.]]>
 		</key>
 	</area>
 </language>
