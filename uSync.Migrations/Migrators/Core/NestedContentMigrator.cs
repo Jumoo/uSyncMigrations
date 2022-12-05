@@ -11,6 +11,7 @@ namespace uSync.Migrations.Migrators;
 
 [SyncMigrator(UmbConstants.PropertyEditors.Aliases.NestedContent, typeof(NestedContentConfiguration), IsDefaultAlias = true)]
 [SyncMigrator("Our.Umbraco.NestedContent")]
+[SyncDefaultMigrator]
 public class NestedContentMigrator : SyncPropertyMigratorBase
 {
     public NestedContentMigrator()

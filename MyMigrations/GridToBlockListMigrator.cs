@@ -7,7 +7,7 @@ using uSync.Migrations.Models;
 namespace MyMigrations;
 
 [SyncMigrator(Umbraco.Cms.Core.Constants.PropertyEditors.Aliases.Grid)]
-// [HideFromTypeFinder] // hide from type if you don't want to automatically load this one (you have to replace in a composer)
+[HideFromTypeFinder] // hide from type if you don't want to automatically load this one (you have to replace in a composer)
 // [SyncDefaultMigrator] // set it to default if you do load it and always want it to be the one you use. (can be overriden by preferred)
 internal class GridToBlockListMigrator : SyncPropertyMigratorBase
 {
