@@ -167,7 +167,7 @@ internal class SyncMigrationService : ISyncMigrationService
             .ForEach(kvp =>
                 kvp.Value?.ForEach(value => context.AddIgnoredProperty(kvp.Key, value)));
 
-        AddMigrators(context, options.PreferedMigrators);
+        AddMigrators(context, options.PreferredMigrators);
 
         // let the handlers run through their prep (populate all the lookups)
         GetHandlers()?
@@ -178,10 +178,10 @@ internal class SyncMigrationService : ISyncMigrationService
         return context;
     }
 
-    private void AddMigrators(SyncMigrationContext context, IDictionary<string,string> preferedMigrators)
+    private void AddMigrators(SyncMigrationContext context, IDictionary<string,string> preferredMigrators)
     {
-        var preferedList = _migrators.GetPreferedMigratorList(preferedMigrators);
-        foreach(var item in preferedList)
+        var preferredList = _migrators.GetPreferredMigratorList(preferredMigrators);
+        foreach(var item in preferredList)
         {
             context.AddPropertyMigration(item.EditorAlias, item.Migrator);
         }

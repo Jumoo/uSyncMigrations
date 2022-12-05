@@ -19,7 +19,7 @@ public class SyncPropertyMigratorCollection
         : base(items)
     { }
 
-    public IList<MigratorEditorPair> GetPreferedMigratorList(IDictionary<string, string> preferedMigrators)
+    public IList<MigratorEditorPair> GetPreferredMigratorList(IDictionary<string, string> preferredMigrators)
     {
         var migrators = this.ToList();
         var defaultMigrators = GetDefaults();
@@ -29,9 +29,9 @@ public class SyncPropertyMigratorCollection
         {
             foreach (var editor in migrator.Editors)
             {
-                if (preferedMigrators != null && preferedMigrators.ContainsKey(editor))
+                if (preferredMigrators != null && preferredMigrators.ContainsKey(editor))
                 {
-                    var syncMigrator = migrators.FirstOrDefault(x => x.GetType().Name == preferedMigrators[editor]) ?? migrator;
+                    var syncMigrator = migrators.FirstOrDefault(x => x.GetType().Name == preferredMigrators[editor]) ?? migrator;
                     editors.Add(new MigratorEditorPair(editor, syncMigrator));
                 }
                 else
@@ -50,7 +50,7 @@ public class SyncPropertyMigratorCollection
             }
         }
 
-        // remove duplicates (we might add prefered or default multiple times).
+        // remove duplicates (we might add preferred or default multiple times).
         return editors.DistinctBy(x => $"{x.EditorAlias}_{x.Migrator.GetType().Name}").ToList();
     }
 

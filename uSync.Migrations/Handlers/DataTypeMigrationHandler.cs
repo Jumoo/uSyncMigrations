@@ -257,7 +257,7 @@ internal class DataTypeMigrationHandler : ISyncMigrationHandler, ISyncMigrationV
         var messages = new List<MigrationMessage>();
 
         var dataTypes = Path.Combine(options.Source, ItemType);
-        var migrators = _migrators.GetPreferedMigratorList(options.PreferedMigrators);
+        var migrators = _migrators.GetPreferredMigratorList(options.PreferredMigrators);
 
         foreach (var file in Directory.GetFiles(dataTypes, "*.config", SearchOption.AllDirectories))
         {
