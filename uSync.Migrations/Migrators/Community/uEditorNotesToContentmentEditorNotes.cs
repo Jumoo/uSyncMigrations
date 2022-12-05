@@ -1,7 +1,5 @@
 using Newtonsoft.Json.Linq;
 
-using Umbraco.Cms.Core.Composing;
-
 using uSync.Migrations.Extensions;
 using uSync.Migrations.Migrators.Models;
 using uSync.Migrations.Models;
@@ -9,7 +7,6 @@ using uSync.Migrations.Models;
 namespace uSync.Migrations.Migrators.Community
 {
     [SyncMigrator("tooorangey.EditorNotes")]
-    [HideFromTypeFinder]
     public class uEditorNotesToContentmentEditorNotesMigrator : SyncPropertyMigratorBase
     {
         public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
