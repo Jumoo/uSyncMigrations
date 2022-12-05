@@ -6,11 +6,11 @@ using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Validation;
 
-internal class PreferedMigratorValidator : ISyncMigrationValidator
+internal class PreferredMigratorValidator : ISyncMigrationValidator
 {
     private readonly SyncPropertyMigratorCollection _migrators;
 
-    public PreferedMigratorValidator(SyncPropertyMigratorCollection migrators)
+    public PreferredMigratorValidator(SyncPropertyMigratorCollection migrators)
     {
         _migrators = migrators;
     }
@@ -19,8 +19,8 @@ internal class PreferedMigratorValidator : ISyncMigrationValidator
     {
         var results = new List<MigrationMessage>();
 
-        var preferedList = _migrators.GetPreferedMigratorList(options.PreferedMigrators);
-        foreach(var missing in preferedList.Where(x => x.Migrator == null))
+        var preferredList = _migrators.GetPreferredMigratorList(options.PreferredMigrators);
+        foreach(var missing in preferredList.Where(x => x.Migrator == null))
         {
             results.Add(new MigrationMessage("Migrator", "Missing", MigrationMessageType.Error)
             {
@@ -28,7 +28,7 @@ internal class PreferedMigratorValidator : ISyncMigrationValidator
             });
         }
 
-        var duplicates = preferedList
+        var duplicates = preferredList
             .DistinctBy(x => $"{x.EditorAlias}_{x.Migrator}")
             .GroupBy(x => x.EditorAlias).Where(x => x.Count() > 1);
 

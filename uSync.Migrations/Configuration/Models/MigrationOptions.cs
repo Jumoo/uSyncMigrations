@@ -14,7 +14,7 @@ public class MigrationOptions
 
     public IList<HandlerOption> Handlers { get; set; }
 
-    public IDictionary<string, string> PreferedMigrators { get; set; }
+    public IDictionary<string, string> PreferredMigrators { get; set; }
 
     public bool BlockListViews { get; set; } = true;
 
