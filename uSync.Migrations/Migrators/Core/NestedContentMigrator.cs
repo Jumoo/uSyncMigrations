@@ -11,6 +11,7 @@ namespace uSync.Migrations.Migrators;
 
 [SyncMigrator(UmbConstants.PropertyEditors.Aliases.NestedContent, typeof(NestedContentConfiguration), IsDefaultAlias = true)]
 [SyncMigrator("Our.Umbraco.NestedContent")]
+[SyncDefaultMigrator]
 public class NestedContentMigrator : SyncPropertyMigratorBase
 {
     public NestedContentMigrator()
@@ -20,7 +21,17 @@ public class NestedContentMigrator : SyncPropertyMigratorBase
         => UmbConstants.PropertyEditors.Aliases.NestedContent;
 
     public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
-        => new NestedContentConfiguration().MapPreValues(dataTypeProperty.PreValues);
+    {
+        var config = (NestedContentConfiguration)new NestedContentConfiguration().MapPreValues(dataTypeProperty.PreValues);
+
+        foreach(var contentTypeAlias in config.ContentTypes.Select(x => x.Alias))
+        {
+            var key = context.GetContentTypeKey(contentTypeAlias);
+            context.AddElementType(key);
+        }
+
+        return config;
+    }
 
     // TODO: [KJ] Nested content GetContentValue (so we can recurse)
     public override string GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
@@ -31,12 +42,12 @@ public class NestedContentMigrator : SyncPropertyMigratorBase
 
         foreach (var row in rowValues)
         {
-            // row.ContentTypeAlias
-
             foreach (var property in row.RawPropertyValues)
             {
                 var editorAlias = context.GetEditorAlias(row.ContentTypeAlias, property.Key);
                 if (editorAlias == null) continue;
+
+                
                 
                 var migrator = context.TryGetMigrator(editorAlias.OriginalEditorAlias);
                 if (migrator != null)
