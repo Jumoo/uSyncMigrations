@@ -89,25 +89,27 @@ internal class SyncMigrationService : ISyncMigrationService
 
         var handlers = GetHandlers(itemTypes);
 
-        var migrationContext = PrepareContext(migrationId, sourceRoot, options);
-
-        var results = MigrateFromDisk(migrationId, sourceRoot, migrationContext, handlers);
-
-        var success = results.All(x => x.MessageType != MigrationMessageType.Error);
-
-        if (success == true && results.Count() > 0)
+        using (var migrationContext = PrepareContext(migrationId, sourceRoot, options))
         {
-            // if everything works
-            _migrationFileService.CopyMigrationToFolder(migrationId, targetRoot);
-            _migrationFileService.RemoveMigration(migrationId);
+            var results = MigrateFromDisk(migrationId, sourceRoot, migrationContext, handlers);
+
+            var success = results.All(x => x.MessageType != MigrationMessageType.Error);
+
+            if (success == true && results.Count() > 0)
+            {
+                // if everything works
+                _migrationFileService.CopyMigrationToFolder(migrationId, targetRoot);
+                _migrationFileService.RemoveMigration(migrationId);
+            }
+
+            return new MigrationResults
+            {
+                Success = success,
+                MigrationId = migrationId,
+                Messages = results
+            };
         }
 
-        return new MigrationResults
-        {
-            Success = success,
-            MigrationId = migrationId,
-            Messages = results
-        };
     }
 
     private IOrderedEnumerable<ISyncMigrationHandler> GetHandlers(HashSet<string>? itemTypes = null)
