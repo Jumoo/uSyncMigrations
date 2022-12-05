@@ -275,6 +275,18 @@ public class SyncMigrationContext : IDisposable
     public Guid GetKey(int id)
         => _idKeyMap?.TryGetValue(id, out var key) == true ? key : Guid.Empty;
 
+    /// <summary>
+    ///  list of content types that need to be set as element types. 
+    /// </summary>
+    private HashSet<Guid> _elementContentTypes = new HashSet<Guid>();
+
+    public bool IsElementType(Guid key) => _elementContentTypes.Contains(key);
+
+    public void AddElementType(Guid key)
+    {
+        if (!_elementContentTypes.Contains(key)) _elementContentTypes.Add(key);
+    }
+
     public void Dispose()
     { }
 }

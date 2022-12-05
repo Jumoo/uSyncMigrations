@@ -48,6 +48,9 @@ public class NestedToBlockListMigrator : SyncPropertyMigratorBase
             {
                 var contentTypeKey = context.GetContentTypeKey(item.Alias);
 
+                // tell the process we need this to be an element type
+                context.AddElementType(contentTypeKey);
+
                 blocks.Add(new BlockListConfiguration.BlockConfiguration
                 {
                     ContentElementTypeKey = contentTypeKey,
