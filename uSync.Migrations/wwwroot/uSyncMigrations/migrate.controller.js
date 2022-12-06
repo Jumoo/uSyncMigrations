@@ -357,7 +357,7 @@
 
         var messages = [
             'Rewilding Canada',
-            'Squesting carbon footprints',
+            'Sequesting carbon footprints',
             'Chlorinating Car Pools',
             'Partitioning Social Network',
             'Prelaminating Drywall Inventory',

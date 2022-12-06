@@ -9,10 +9,14 @@ public class ContentMigrationProfile : ISyncMigrationProfile
     public int Order => 110;
 
     private readonly SyncMigrationHandlerCollection _migrationHandlers;
+    private readonly SyncPropertyMigratorCollection _migrators;
 
-    public ContentMigrationProfile(SyncMigrationHandlerCollection migrationHandlers)
+    public ContentMigrationProfile(
+        SyncMigrationHandlerCollection migrationHandlers,
+        SyncPropertyMigratorCollection migrators)
     {
         _migrationHandlers = migrationHandlers;
+        _migrators = migrators;
     }
 
     public string Name => "Content";
@@ -24,8 +28,6 @@ public class ContentMigrationProfile : ISyncMigrationProfile
     public MigrationOptions Options => new MigrationOptions
     {
         Target = $"{uSyncMigrations.MigrationFolder}/{DateTime.Now:yyyyMMdd_HHmmss}",
-        Handlers = _migrationHandlers
-            .Handlers
-            .Select(x => x.ToHandlerOption(x.Group == BackOffice.uSyncConstants.Groups.Content))
+        Handlers = _migrationHandlers.SelectGroup(BackOffice.uSyncConstants.Groups.Content),
     };
 }

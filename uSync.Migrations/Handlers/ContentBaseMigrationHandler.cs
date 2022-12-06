@@ -1,6 +1,7 @@
 ﻿using System.Xml.Linq;
 
 using Umbraco.Cms.Core.Events;
+using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Models.Entities;
 using Umbraco.Cms.Core.Notifications;
 using Umbraco.Cms.Core.Strings;
@@ -22,21 +23,19 @@ internal class ContentBaseMigrationHandler<TEntity>
     public string Group => uSync.BackOffice.uSyncConstants.Groups.Content;
 
     private readonly IEventAggregator _eventAggregator;
-    private readonly SyncPropertyMigratorCollection _migrators;
     private readonly ISyncMigrationFileService _migrationFileService;
     private readonly IShortStringHelper _shortStringHelper;
 
     protected readonly HashSet<string> _ignoredProperties = new(StringComparer.OrdinalIgnoreCase);
+    protected readonly Dictionary<string, string> _mediaTypeAliasForFileExtension = new(StringComparer.OrdinalIgnoreCase);
 
     public ContentBaseMigrationHandler(
         IEventAggregator eventAggregator,
         ISyncMigrationFileService migrationFileService,
-        SyncPropertyMigratorCollection contentPropertyMigrators,
         IShortStringHelper shortStringHelper)
     {
         _eventAggregator = eventAggregator;
         _migrationFileService = migrationFileService;
-        _migrators = contentPropertyMigrators;
         _shortStringHelper = shortStringHelper;
     }
 
@@ -111,6 +110,15 @@ internal class ContentBaseMigrationHandler<TEntity>
 
         context.AddContentPath(key, path);
 
+        if (itemType == nameof(Media) && _mediaTypeAliasForFileExtension.Count > 0)
+        {
+            var fileExtension = source.Element(UmbConstants.Conventions.Media.Extension)?.ValueOrDefault(string.Empty) ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(fileExtension) == false && _mediaTypeAliasForFileExtension.TryGetValue(fileExtension, out var newMediaTypeAlias) == true)
+            {
+                contentType = newMediaTypeAlias;
+            }
+        }
+
         var target = new XElement(itemType,
 
             new XAttribute("Key", key),
@@ -126,7 +134,7 @@ internal class ContentBaseMigrationHandler<TEntity>
                 new XElement("NodeName", new XAttribute("Default", alias)),
                 new XElement("SortOrder", sortOrder)));
 
-        if (itemType == "Content")
+        if (itemType == nameof(Content))
         {
             var info = target.Element("Info");
 
@@ -179,7 +187,7 @@ internal class ContentBaseMigrationHandler<TEntity>
         // convert the property .
 
         var migrationProperty = new SyncMigrationContentProperty(editorAlias, property.Value);
-        var migrator = _migrators.GetVariantMigrator(editorAlias);
+        var migrator = context.TryGetVariantMigrator(editorAlias);
         if (migrator != null && itemType == "Content")
         {
             // it might be the case that the property needs to be split into variants. 
@@ -290,9 +298,12 @@ internal class ContentBaseMigrationHandler<TEntity>
 
     private string MigrateContentValue(SyncMigrationContentProperty migrationProperty, SyncMigrationContext context)
     {
+        if (migrationProperty == null) return string.Empty;
+
         if (string.IsNullOrWhiteSpace(migrationProperty?.EditorAlias)) return migrationProperty.Value;
 
-        if (_migrators.TryGet(migrationProperty?.EditorAlias, out var migrator) == true)
+        var migrator = context.TryGetMigrator(migrationProperty?.EditorAlias);
+        if (migrator != null)
         {
             return migrator?.GetContentValue(migrationProperty, context) ?? migrationProperty.Value;
         }
@@ -307,11 +318,20 @@ internal class ContentBaseMigrationHandler<TEntity>
         {
             var source = XElement.Load(file);
             var key = source.Attribute("guid").ValueOrDefault(Guid.Empty);
-            var alias = source.Attribute("nodeName").ValueOrDefault(string.Empty);
-
-            if (key != Guid.Empty && string.IsNullOrWhiteSpace(alias) == false)
+            if (key != Guid.Empty)
             {
-                context.AddContentKey(key, alias);
+                var id = source.Attribute("id").ValueOrDefault(0);
+                var alias = source.Attribute("nodeName").ValueOrDefault(string.Empty);
+
+                if (id > 0)
+                {
+                    context.AddKey(id, key);
+                }
+
+                if (string.IsNullOrWhiteSpace(alias) == false)
+                {
+                    context.AddContentKey(key, alias);
+                }
             }
         }
     }

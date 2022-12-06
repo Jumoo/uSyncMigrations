@@ -21,6 +21,7 @@ internal class SyncMigrationConfigurationService : ISyncMigrationConfigurationSe
     private readonly ILogger<SyncMigrationConfigurationService> _logger;
     private readonly ISyncMigrationService _migrationService;
     private readonly SyncMigrationProfileCollection _syncMigrationProfiles;
+    private readonly SyncPropertyMigratorCollection _migrators;
 
     public SyncMigrationConfigurationService(
         IHostEnvironment hostEnvironment,
@@ -92,7 +93,7 @@ internal class SyncMigrationConfigurationService : ISyncMigrationConfigurationSe
                             {
                                 Name = x.ItemType,
                                 Include = configuredHandlers.InvariantContains(x.ItemType)
-                            });
+                            }).ToList();
                     }
 
                     return config;

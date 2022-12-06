@@ -9,6 +9,7 @@ using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Notifications;
 using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Cms.Core.Services;
+using Umbraco.Extensions;
 
 using uSync.Core;
 using uSync.Migrations.Composing;
@@ -27,21 +28,20 @@ namespace uSync.Migrations.Handlers;
 internal class DataTypeMigrationHandler : ISyncMigrationHandler, ISyncMigrationValidator
 {
     private readonly IEventAggregator _eventAggregator;
-    private readonly SyncPropertyMigratorCollection _migrators;
     private readonly ISyncMigrationFileService _migrationFileService;
     private readonly ILogger<DataTypeMigrationHandler> _logger;
     private readonly JsonSerializerSettings _jsonSerializerSettings;
     private readonly IDataTypeService _dataTypeService;
+    private readonly SyncPropertyMigratorCollection _migrators;
 
     public DataTypeMigrationHandler(
         IEventAggregator eventAggregator,
         ISyncMigrationFileService fileService,
         ILogger<DataTypeMigrationHandler> logger,
-        SyncPropertyMigratorCollection migrators,
-        IDataTypeService dataTypeService)
+        IDataTypeService dataTypeService,
+        SyncPropertyMigratorCollection migrators)
     {
         _eventAggregator = eventAggregator;
-        _migrators = migrators;
         _migrationFileService = fileService;
         _logger = logger;
 
@@ -51,6 +51,7 @@ internal class DataTypeMigrationHandler : ISyncMigrationHandler, ISyncMigrationV
             Formatting = Formatting.Indented,
         };
         _dataTypeService = dataTypeService;
+        _migrators = migrators;
     }
 
     public string Group => uSync.BackOffice.uSyncConstants.Groups.Settings;
@@ -79,9 +80,8 @@ internal class DataTypeMigrationHandler : ISyncMigrationHandler, ISyncMigrationV
             //
             // replacements
             //
-            if (_migrators.TryGet(editorAlias, out ISyncPropertyMigrator migrator)
-                && (migrator is not null)
-                && (migrator is ISyncReplacablePropertyMigrator replacablePropertyMigrator))
+            var migrator = context.TryGetMigrator(editorAlias);
+            if (migrator != null && migrator is ISyncReplacablePropertyMigrator replacablePropertyMigrator)
             {
                 var replacementInfo = replacablePropertyMigrator.GetReplacementEditorId(
                     new SyncMigrationDataTypeProperty(editorAlias, databaseType, GetPreValues(source)),
@@ -190,8 +190,8 @@ internal class DataTypeMigrationHandler : ISyncMigrationHandler, ISyncMigrationV
         // change the type of thing as part of a migration.
 
         // the migration for this type goes here...
-        var hasMigrator = _migrators.TryGet(editorAlias, out var migrator);
-        if (hasMigrator == false)
+        var migrator = context.TryGetMigrator(editorAlias);
+        if (migrator is null)
         {
             _logger.LogWarning("No migrator for {editorAlias} will make it a label.", editorAlias);
         }
@@ -257,6 +257,7 @@ internal class DataTypeMigrationHandler : ISyncMigrationHandler, ISyncMigrationV
         var messages = new List<MigrationMessage>();
 
         var dataTypes = Path.Combine(options.Source, ItemType);
+        var migrators = _migrators.GetPreferredMigratorList(options.PreferredMigrators);
 
         foreach (var file in Directory.GetFiles(dataTypes, "*.config", SearchOption.AllDirectories))
         {
@@ -273,7 +274,7 @@ internal class DataTypeMigrationHandler : ISyncMigrationHandler, ISyncMigrationV
                 if (string.IsNullOrEmpty(name)) throw new Exception("Missing Name value");
                 if (string.IsNullOrEmpty(databaseType)) throw new Exception("Missing database type");
 
-                if (!_migrators.TryGet(editorAlias, out var migrator))
+                if (!migrators.Any(x => x.EditorAlias.InvariantEquals(editorAlias)))
                 {
                     messages.Add(new MigrationMessage(ItemType, name, MigrationMessageType.Warning)
                     {

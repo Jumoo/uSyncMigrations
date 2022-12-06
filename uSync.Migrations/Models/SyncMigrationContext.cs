@@ -1,10 +1,16 @@
-﻿namespace uSync.Migrations.Models;
+﻿using Umbraco.Cms.Core.Composing;
+
+using uSync.Migrations.Migrators;
+
+namespace uSync.Migrations.Models;
 
 /// <summary>
 ///  A uSync migration context, lets us keep a whole list of things in memory while we do the migration.
 /// </summary>
-public class SyncMigrationContext
+public class SyncMigrationContext : IDisposable
 {
+    private Dictionary<string, ISyncPropertyMigrator> _migrators { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+
     private HashSet<string> _blockedTypes = new(StringComparer.OrdinalIgnoreCase);
 
     private HashSet<string> _ignoredProperties = new(StringComparer.OrdinalIgnoreCase);
@@ -34,6 +40,8 @@ public class SyncMigrationContext
 
     private Dictionary<string, EditorAliasInfo> _propertyTypes { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     private Dictionary<string, Guid> _templateKeys { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+
+    private Dictionary<int, Guid> _idKeyMap { get; set; } = new();
 
     public SyncMigrationContext(Guid migrationId)
     {
@@ -229,6 +237,63 @@ public class SyncMigrationContext
     public string GetDataTypeVariation(Guid guid)
         => _dataTypeVariations?.TryGetValue(guid, out var variation) == true
             ? variation : "Nothing";
+
+    /// <summary>
+    ///  get the migrator for a given editorAlias
+    /// </summary>
+    public ISyncPropertyMigrator? TryGetMigrator(string? editorAlias)
+        => string.IsNullOrEmpty(editorAlias)
+            ? null
+            : _migrators.TryGetValue(editorAlias, out var migrator) == true ? migrator : null;
+
+    /// <summary>
+    ///  Add a migrator for a given editorAlias
+    /// </summary>
+    public void AddPropertyMigration(string editorAlias, ISyncPropertyMigrator migrator)
+    {
+        _migrators.TryAdd(editorAlias, migrator);
+    }
+
+    /// <summary>
+    ///  get the variant version of a migrator (if there is one)
+    /// </summary>
+    public ISyncVariationPropertyMigrator? TryGetVariantMigrator(string editorAlias)
+    {
+        if (_migrators.TryGetValue(editorAlias, out var migrator)
+            && migrator is ISyncVariationPropertyMigrator variationPropertyMigrator)
+        {
+            return variationPropertyMigrator;
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Adds the `int` ID (from the v7 CMS) with the corresponding `Guid` key.
+    /// </summary>
+    public void AddKey(int id, Guid key)
+        => _idKeyMap.TryAdd(id, key);
+
+    /// <summary>
+    /// Retrieves the `Guid` key from the `int` ID reference (from the v7 CMS).
+    /// </summary>
+    public Guid GetKey(int id)
+        => _idKeyMap?.TryGetValue(id, out var key) == true ? key : Guid.Empty;
+
+    /// <summary>
+    ///  list of content types that need to be set as element types. 
+    /// </summary>
+    private HashSet<Guid> _elementContentTypes = new HashSet<Guid>();
+
+    public bool IsElementType(Guid key) => _elementContentTypes.Contains(key);
+
+    public void AddElementType(Guid key)
+    {
+        if (!_elementContentTypes.Contains(key)) _elementContentTypes.Add(key);
+    }
+
+    public void Dispose()
+    { }
 }
 
 public class EditorAliasInfo

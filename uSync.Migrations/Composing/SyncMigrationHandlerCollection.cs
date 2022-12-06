@@ -1,5 +1,7 @@
 ﻿using Umbraco.Cms.Core.Composing;
 
+using uSync.Migrations.Configuration.Models;
+using uSync.Migrations.Extensions;
 using uSync.Migrations.Handlers;
 
 namespace uSync.Migrations.Composing;
@@ -17,4 +19,10 @@ public class SyncMigrationHandlerCollection : BuilderCollectionBase<ISyncMigrati
     { }
 
     public IEnumerable<ISyncMigrationHandler> Handlers => this;
+
+    public IList<HandlerOption> SelectGroup(string group)
+        => Handlers
+            .Select(x => x.ToHandlerOption(group == "" || x.Group == group))
+            .ToList();
+
 }

@@ -12,7 +12,9 @@ public class MigrationOptions
 
     public string MigrationType { get; set; }
 
-    public IEnumerable<HandlerOption> Handlers { get; set; }
+    public IList<HandlerOption> Handlers { get; set; }
+
+    public IDictionary<string, string> PreferredMigrators { get; set; }
 
     public bool BlockListViews { get; set; } = true;
 

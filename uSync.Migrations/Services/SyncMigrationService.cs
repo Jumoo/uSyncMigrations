@@ -18,17 +18,20 @@ internal class SyncMigrationService : ISyncMigrationService
     private readonly SyncMigrationHandlerCollection _migrationHandlers;
     private readonly SyncMigrationValidatorCollection _migrationValidators;
     private readonly uSyncConfigService _usyncConfig;
+    private readonly SyncPropertyMigratorCollection _migrators;
 
     public SyncMigrationService(
         ISyncMigrationFileService migrationFileService,
         SyncMigrationHandlerCollection migrationHandlers,
         uSyncConfigService usyncConfig,
-        SyncMigrationValidatorCollection migrationValidators)
+        SyncMigrationValidatorCollection migrationValidators,
+        SyncPropertyMigratorCollection migrators)
     {
         _migrationFileService = migrationFileService;
         _migrationHandlers = migrationHandlers;
         _usyncConfig = usyncConfig;
         _migrationValidators = migrationValidators;
+        _migrators = migrators;
     }
 
     public IEnumerable<string> HandlerTypes()
@@ -86,25 +89,27 @@ internal class SyncMigrationService : ISyncMigrationService
 
         var handlers = GetHandlers(itemTypes);
 
-        var migrationContext = PrepareContext(migrationId, sourceRoot, options);
-
-        var results = MigrateFromDisk(migrationId, sourceRoot, migrationContext, handlers);
-
-        var success = results.All(x => x.MessageType != MigrationMessageType.Error);
-
-        if (success == true && results.Count() > 0)
+        using (var migrationContext = PrepareContext(migrationId, sourceRoot, options))
         {
-            // if everything works
-            _migrationFileService.CopyMigrationToFolder(migrationId, targetRoot);
-            _migrationFileService.RemoveMigration(migrationId);
+            var results = MigrateFromDisk(migrationId, sourceRoot, migrationContext, handlers);
+
+            var success = results.All(x => x.MessageType != MigrationMessageType.Error);
+
+            if (success == true && results.Count() > 0)
+            {
+                // if everything works
+                _migrationFileService.CopyMigrationToFolder(migrationId, targetRoot);
+                _migrationFileService.RemoveMigration(migrationId);
+            }
+
+            return new MigrationResults
+            {
+                Success = success,
+                MigrationId = migrationId,
+                Messages = results
+            };
         }
 
-        return new MigrationResults
-        {
-            Success = success,
-            MigrationId = migrationId,
-            Messages = results
-        };
     }
 
     private IOrderedEnumerable<ISyncMigrationHandler> GetHandlers(HashSet<string>? itemTypes = null)
@@ -162,6 +167,7 @@ internal class SyncMigrationService : ISyncMigrationService
             .ForEach(kvp =>
                 kvp.Value?.ForEach(value => context.AddIgnoredProperty(kvp.Key, value)));
 
+        AddMigrators(context, options.PreferredMigrators);
 
         // let the handlers run through their prep (populate all the lookups)
         GetHandlers()?
@@ -170,5 +176,14 @@ internal class SyncMigrationService : ISyncMigrationService
             .ForEach(x => x.PrepareMigrations(migrationId, sourceRoot, context));
 
         return context;
+    }
+
+    private void AddMigrators(SyncMigrationContext context, IDictionary<string,string> preferredMigrators)
+    {
+        var preferredList = _migrators.GetPreferredMigratorList(preferredMigrators);
+        foreach(var item in preferredList)
+        {
+            context.AddPropertyMigration(item.EditorAlias, item.Migrator);
+        }
     }
 }

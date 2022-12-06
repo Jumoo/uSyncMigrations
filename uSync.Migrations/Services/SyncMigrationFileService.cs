@@ -38,7 +38,7 @@ internal class SyncMigrationFileService : ISyncMigrationFileService
         _uSyncConfig = uSyncConfig;
 
         // gets us the folder above where uSync saves stuff (usually uSync/v9 so this returns uSync); 
-        var uSyncPhysicalPath = _webHostEnvironment.MapPathContentRoot(_uSyncConfig.GetRootFolder()).TrimEnd('\\');
+        var uSyncPhysicalPath = _webHostEnvironment.MapPathContentRoot(_uSyncConfig.GetRootFolder()).TrimEnd(Path.DirectorySeparatorChar);
         _uSyncRoot = Path.GetDirectoryName(uSyncPhysicalPath) ?? _webHostEnvironment.MapPathContentRoot("uSync");
     }
 
@@ -60,7 +60,7 @@ internal class SyncMigrationFileService : ISyncMigrationFileService
     {
         var path = Path.Combine(_webHostEnvironment.MapPathContentRoot(folder));
         if (!path.StartsWith(_uSyncRoot, StringComparison.OrdinalIgnoreCase))
-            throw new AccessViolationException("Cannot migrate outsided the uSync folder");
+            throw new AccessViolationException("Cannot migrate outside the uSync folder");
 
         return path;
     }

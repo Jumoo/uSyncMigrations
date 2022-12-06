@@ -5,6 +5,7 @@ using uSync.Migrations.Composing;
 using uSync.Migrations.Configuration.Models;
 using uSync.Migrations.Extensions;
 using uSync.Migrations.Migrators;
+using uSync.Migrations.Migrators.Optional;
 
 namespace MyMigrations;
 
@@ -39,7 +40,16 @@ public class MyMigrationProfile : ISyncMigrationProfile
         // load all the handlers just enable the content ones.
         Handlers = _migrationHandlers
                         .Handlers
-                        .Select(x => x.ToHandlerOption(x.Group == uSync.BackOffice.uSyncConstants.Groups.Content)),
+                        // .Select(x => x.ToHandlerOption(x.Group == uSync.BackOffice.uSyncConstants.Groups.Content))
+                        .Select(x => x.ToHandlerOption(true) )
+                        .ToList(),
+
+        // for this migrator we want to use our special grid migrator.
+        PreferredMigrators = new Dictionary<string, string>()
+        {
+            // { Umbraco.Cms.Core.Constants.PropertyEditors.Aliases.Grid, nameof(GridToBlockListMigrator) }
+            { Umbraco.Cms.Core.Constants.PropertyEditors.Aliases.NestedContent, nameof(NestedToBlockListMigrator) }
+        },
 
         // eveything beneath is optional... 
 

@@ -17,18 +17,15 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity>
 {
     public string Group => uSync.BackOffice.uSyncConstants.Groups.Settings;
 
-    private readonly IEventAggregator _eventAggregator;
-    private readonly ISyncMigrationFileService _migrationFileService;
-    private readonly SyncPropertyMigratorCollection _migrators;
+    protected readonly IEventAggregator _eventAggregator;
+    protected readonly ISyncMigrationFileService _migrationFileService;
 
     public ContentTypeBaseMigrationHandler(
         IEventAggregator eventAggregator,
-        ISyncMigrationFileService migrationFileService,
-        SyncPropertyMigratorCollection migrators)
+        ISyncMigrationFileService migrationFileService)
     {
         _eventAggregator = eventAggregator;
         _migrationFileService = migrationFileService;
-        _migrators = migrators;
     }
 
     public void PrepareContext(string sourceFolder, SyncMigrationContext context)
@@ -147,7 +144,7 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity>
             new XAttribute(uSyncConstants.Xml.Level, level));
 
         // update info element. 
-        UpdateInfoSection(info, target);
+        UpdateInfoSection(info, target, key, context);
 
         // structure
         UpdateStructure(source, target);
@@ -251,14 +248,14 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity>
     /// <summary>
     ///  update the info section, with the new things that are in v8+ that have no equivalent in v7
     /// </summary>
-    private void UpdateInfoSection(XElement? info, XElement target)
+    private void UpdateInfoSection(XElement? info, XElement target, Guid key, SyncMigrationContext context)
     {
         var targetInfo = XElement.Parse(info.ToString());
         targetInfo.Element("Key")?.Remove();
         targetInfo.Element("Alias")?.Remove();
 
         targetInfo.Add(new XElement("Variations", "Nothing"));
-        targetInfo.Add(new XElement("IsElement", false));
+        targetInfo.Add(new XElement("IsElement", context.IsElementType(key)));
 
         target.Add(targetInfo);
     }
