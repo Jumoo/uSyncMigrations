@@ -18,10 +18,14 @@ public class CheckboxListTests : MigratiorTestBase
 
     [Test]
     public override void ConfigValueAsExpected() { }
-    
-    [TestCase("Two,Three", "[\r\n  \"Two\",\r\n  \"Three\"\r\n]")]
-    public override void ContentValueAsExpeceted(string value, string expected)
-        => ContentValueAsExpecetedBase(value, expected);
+
+    [Test]
+    public void ContentValueIsJsonAsExpeceted()
+    {
+        var value = "Two, Three";
+        var expected = $"[{Environment.NewLine}  \"Two\",{Environment.NewLine}  \"Three\"{Environment.NewLine}]";
+        ContentValueAsExpecetedBase(value, expected);
+    }
 
     [Test]
     public override void DatabaseTypeAsExpected()
@@ -43,4 +47,9 @@ public class CheckboxListTests : MigratiorTestBase
                 new PreValue { SortOrder = 1, Alias = "1", Value = "Twe"},
                 new PreValue { SortOrder = 1, Alias = "2", Value = "Three"},
             });
+
+    public override void ContentValueAsExpeceted(string value, string expected)
+    {
+        // 
+    }
 }
