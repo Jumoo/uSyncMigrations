@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Models.Blocks;
 using Umbraco.Cms.Core.PropertyEditors;
+using Umbraco.Extensions;
 using uSync.Migrations.Composing;
 using uSync.Migrations.Extensions;
 using uSync.Migrations.Migrators.Models;
@@ -29,13 +30,22 @@ public class StackedContentToBlockListMigrator : SyncPropertyMigratorBase
         var maxItems = dataTypeProperty.PreValues.GetPreValueOrDefault("maxItems", 0);
         var singleItemMode = dataTypeProperty.PreValues.GetPreValueOrDefault("singleItemMode", 0);
 
-        var blocks = JsonConvert.DeserializeObject<List<StackedContentConfigurationBlock>>(contentTypes)?
+        var blocks = JsonConvert
+            .DeserializeObject<List<StackedContentConfigurationBlock>>(contentTypes)?
             .Select(x => new BlockListConfiguration.BlockConfiguration
             {
                 ContentElementTypeKey = x.ContentTypeKey,
                 Label = x.NameTemplate,
             })
             .ToArray();
+
+        if (blocks?.Any() == true)
+        {
+            foreach (var elementTypeKey in blocks.Select(x => x.ContentElementTypeKey))
+            {
+                context.AddElementType(elementTypeKey);
+            }
+        }
 
         var validationLimit = singleItemMode == 1
              ? new BlockListConfiguration.NumberRange { Min = 1, Max = 1 }
@@ -50,59 +60,75 @@ public class StackedContentToBlockListMigrator : SyncPropertyMigratorBase
 
     public override string GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
     {
-        if (string.IsNullOrWhiteSpace(contentProperty.Value) == false)
+        if (string.IsNullOrWhiteSpace(contentProperty.Value))
         {
-            var items = JsonConvert.DeserializeObject<IList<StackedContentItem>>(contentProperty.Value);
-            if (items?.Any() == true)
-            {
-                var contentData = new List<BlockItemData>();
-                var layout = new List<BlockListLayoutItem>();
-
-                foreach (var item in items)
-                {
-                    var contentTypeAlias = context.GetContentTypeAlias(item.ContentTypeKey);
-
-                    foreach (var property in item.Values)
-                    {
-                        var editorAlias = context.GetEditorAlias(contentTypeAlias, property.Key);
-                        if (editorAlias != null)
-                        {
-                            var migrator = _migrators.Value.Get(editorAlias.OriginalEditorAlias);
-                            if (migrator != null)
-                            {
-                                item.Values[property.Key] = migrator.GetContentValue(new SyncMigrationContentProperty(editorAlias.OriginalEditorAlias, property.Value?.ToString() ?? string.Empty), context);
-                            }
-                        }
-                    }
-
-                    var block = new BlockItemData
-                    {
-                        ContentTypeKey = item.ContentTypeKey,
-                        Udi = Udi.Create(UmbConstants.UdiEntityType.Element, item.Key),
-                        RawPropertyValues = item.Values,
-                    };
-
-                    layout.Add(new BlockListLayoutItem { ContentUdi = block.Udi });
-                    contentData.Add(block);
-                }
-
-                if (contentData.Count > 0)
-                {
-                    var model = new BlockValue
-                    {
-                        ContentData = contentData,
-                        Layout = new Dictionary<string, JToken>()
-                        {
-                            { UmbConstants.PropertyEditors.Aliases.BlockList, JArray.FromObject(layout) }
-                        },
-                    };
-
-                    return JsonConvert.SerializeObject(model, Formatting.Indented);
-                }
-            }
+            return string.Empty;
         }
 
-        return base.GetContentValue(contentProperty, context);
+        var items = JsonConvert.DeserializeObject<IList<StackedContentItem>>(contentProperty.Value);
+        if (items?.Any() != true)
+        {
+            return string.Empty;
+        }
+
+        var contentData = new List<BlockItemData>();
+
+        var layout = new List<BlockListLayoutItem>();
+
+        foreach (var item in items)
+        {
+            var contentTypeAlias = context.GetContentTypeAlias(item.ContentTypeKey);
+
+            foreach (var (propertyAlias, value) in item.Values)
+            {
+                var editorAlias = context.GetEditorAlias(contentTypeAlias, propertyAlias);
+
+                if (editorAlias == null)
+                {
+                    continue;
+                }
+
+                var migrator = _migrators.Value
+                    .FirstOrDefault(x => x.Editors.InvariantContains(editorAlias.OriginalEditorAlias));
+
+                if (migrator == null)
+                {
+                    continue;
+                }
+
+                var childProperty = new SyncMigrationContentProperty(editorAlias.OriginalEditorAlias,
+                    value?.ToString() ?? string.Empty);
+
+                item.Values[propertyAlias] = migrator.GetContentValue(childProperty, context);
+            }
+
+            var block = new BlockItemData
+            {
+                ContentTypeKey = item.ContentTypeKey,
+                Udi = Udi.Create(UmbConstants.UdiEntityType.Element, item.Key),
+                RawPropertyValues = item.Values,
+            };
+
+            layout.Add(new BlockListLayoutItem { ContentUdi = block.Udi });
+
+            contentData.Add(block);
+        }
+
+        if (contentData.Any() == false)
+        {
+            return string.Empty;
+        }
+
+        var model = new BlockValue
+        {
+            ContentData = contentData,
+            Layout = new Dictionary<string, JToken>
+            {
+                { UmbConstants.PropertyEditors.Aliases.BlockList, JArray.FromObject(layout) },
+            },
+        };
+
+        return JsonConvert.SerializeObject(model, Formatting.Indented);
     }
 
     internal class StackedContentItem
