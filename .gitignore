@@ -29,7 +29,8 @@ Bin/
 Archive/
 uSync.Site/
 
-[Dd]ist/
+[Dd]ist/**
+![Dd]ist/build-package.ps1
 
 [Bb]uild-[Ff]iles/
 
