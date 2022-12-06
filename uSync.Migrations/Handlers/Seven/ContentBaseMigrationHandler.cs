@@ -12,7 +12,7 @@ using uSync.Migrations.Migrators.Models;
 using uSync.Migrations.Models;
 using uSync.Migrations.Services;
 
-namespace uSync.Migrations.Handlers;
+namespace uSync.Migrations.Handlers.Seven;
 
 internal abstract class ContentBaseMigrationHandler<TEntity> : MigrationHandlerBase<TEntity>
     where TEntity : IEntity

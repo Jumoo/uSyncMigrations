@@ -18,6 +18,10 @@ internal class SyncMigrationsManifestFilter : IManifestFilter
                 uSyncMigrations.PluginFolder + "/migrate.controller.js",
                 uSyncMigrations.PluginFolder + "/dialogs/handlerPicker.controller.js",
                 uSyncMigrations.PluginFolder + "/components/migrationResults.component.js"
+            },
+            Stylesheets = new[]
+            {
+                uSyncMigrations.PluginFolder + "/migrations.css"
             }
         });
     }

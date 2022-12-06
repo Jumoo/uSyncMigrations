@@ -7,7 +7,7 @@ using uSync.Core;
 using uSync.Migrations.Models;
 using uSync.Migrations.Services;
 
-namespace uSync.Migrations.Handlers;
+namespace uSync.Migrations.Handlers.Seven;
 
 internal abstract class ContentTypeBaseMigrationHandler<TEntity> : MigrationHandlerBase<TEntity>
     where TEntity : IEntity
@@ -126,7 +126,7 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : MigrationHand
                 newProperty.Add(new XElement("ValidationRegExpMessage", string.Empty));
                 newProperty.Add(new XElement("LabelOnTop", false));
 
-                var tabNode = newProperty.Element("Tab");               
+                var tabNode = newProperty.Element("Tab");
                 tabNode?.Add(new XAttribute("Alias", tabNode.ValueOrDefault(string.Empty)));
 
                 newProperties.Add(newProperty);
@@ -167,7 +167,7 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : MigrationHand
     /// </summary>
     private static void UpdateInfoSection(XElement? info, XElement target, Guid key, SyncMigrationContext context)
     {
-        if (info == null) return;   
+        if (info == null) return;
 
         var targetInfo = XElement.Parse(info.ToString());
         targetInfo.Element("Key")?.Remove();

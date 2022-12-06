@@ -17,7 +17,7 @@ internal class FileStructureValidator : ISyncMigrationValidator
 
     public IEnumerable<MigrationMessage> Validate(MigrationOptions options)
     {
-        var result = _migrationFileService.ValdateMigrationSource(options.Source);
+        var result = _migrationFileService.ValdateMigrationSource(options.SourceVersion, options.Source);
 
         var message = new MigrationMessage("FileValidator", "Files",
             result.Success ? MigrationMessageType.Success : MigrationMessageType.Error);
@@ -28,7 +28,7 @@ internal class FileStructureValidator : ISyncMigrationValidator
         }
         else
         {
-            message.Message = "File structure looks like it's Umbraco 7 🤷";
+            message.Message = $"File structure looks like it's Umbraco {options.SourceVersion} 🤷";
         }
 
         return message.AsEnumerableOfOne();

@@ -1,6 +1,5 @@
 ﻿using uSync.Migrations.Composing;
 using uSync.Migrations.Configuration.Models;
-using uSync.Migrations.Extensions;
 
 namespace uSync.Migrations.Configuration.CoreProfiles;
 
@@ -9,14 +8,11 @@ public class EverythingMigrationProfile : ISyncMigrationProfile
     public int Order => 120;
 
     private readonly SyncMigrationHandlerCollection _migrationHandlers;
-    private readonly SyncPropertyMigratorCollection _migrators;
 
     public EverythingMigrationProfile(
-        SyncMigrationHandlerCollection migrationHandlers,
-        SyncPropertyMigratorCollection migrators)
+        SyncMigrationHandlerCollection migrationHandlers)
     {
         _migrationHandlers = migrationHandlers;
-        _migrators = migrators;
     }
 
     public string Name => "Everything";
@@ -28,6 +24,6 @@ public class EverythingMigrationProfile : ISyncMigrationProfile
     public MigrationOptions Options => new MigrationOptions
     {
         Target = $"{uSyncMigrations.MigrationFolder}/{DateTime.Now:yyyyMMdd_HHmmss}",
-        Handlers = _migrationHandlers.SelectGroup("")
+        Handlers = _migrationHandlers.SelectGroup(7, string.Empty)
     };
 }

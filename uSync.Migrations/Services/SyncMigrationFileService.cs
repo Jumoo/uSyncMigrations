@@ -1,5 +1,7 @@
 ﻿using System.Xml.Linq;
 
+using Examine.Lucene.Providers;
+
 using Microsoft.AspNetCore.Hosting;
 
 using Umbraco.Cms.Core;
@@ -65,12 +67,13 @@ internal class SyncMigrationFileService : ISyncMigrationFileService
         return path;
     }
 
-    static string[] _wellKnownPaths = new[]
+    static Dictionary<int, string[]> _wellKnownPaths = new Dictionary<int, string[]>()
     {
-        "DataType", "DocumentType" //, "Content"
+        { 7, new [] { "DataType", "DocumentType" } },
+        { 8, new [] { "DataTypes", "ContentTypes"} }
     };
 
-    public Attempt<string> ValdateMigrationSource(string folder)
+    public Attempt<string> ValdateMigrationSource(int version, string folder)
     {
         var path = _syncFileService.GetAbsPath(folder);
 
@@ -79,25 +82,10 @@ internal class SyncMigrationFileService : ISyncMigrationFileService
             return Attempt<string>.Fail(new DirectoryNotFoundException($"Root folder '{path}' doesn't exist"));
         }
 
-        foreach (var expectedFolder in _wellKnownPaths)
+        foreach (var expectedFolder in _wellKnownPaths[version])
         {
             if (!Directory.Exists(Path.Combine(path, expectedFolder)))
                 return Attempt<string>.Fail(new DirectoryNotFoundException($"Missing well known folder '{expectedFolder}'"));
-        }
-
-        var datatype = Directory.GetFiles(Path.Combine(path, "DataType"), "*.config", SearchOption.AllDirectories).FirstOrDefault();
-        if (datatype == null)
-            return Attempt<string>.Fail(new FileNotFoundException("No datatype config files found"));
-
-        try
-        {
-            var xml = XElement.Load(datatype);
-            if (xml.Attribute("DatabaseType") == null)
-                return Attempt<string>.Fail(new Exception("Datatype doesn't look like a v7 datatype"));
-        }
-        catch (Exception ex)
-        {
-            return Attempt<string>.Fail(new Exception($"Datatype files may be corrupt {ex.Message}"));
         }
 
         return Attempt<string>.Succeed("Pass");
