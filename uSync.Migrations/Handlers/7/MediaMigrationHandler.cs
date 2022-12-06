@@ -2,8 +2,6 @@
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Strings;
 
-using uSync.Migrations.Composing;
-using uSync.Migrations.Models;
 using uSync.Migrations.Services;
 
 namespace uSync.Migrations.Handlers;

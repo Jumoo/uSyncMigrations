@@ -64,18 +64,18 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : MigrationHand
             new XAttribute(uSyncConstants.Xml.Level, level));
 
         // update info element. 
-        UpdateInfoSection(info, target, key, context);
+        ContentTypeBaseMigrationHandler<TEntity>.UpdateInfoSection(info, target, key, context);
 
         // structure
         UpdateStructure(source, target);
 
         // properties. 
-        UpdateProperties(source, target, alias, context);
+        ContentTypeBaseMigrationHandler<TEntity>.UpdateProperties(source, target, alias, context);
 
         // tabs
         UpdateTabs(source, target);
 
-        CheckVariations(target);
+        ContentTypeBaseMigrationHandler<TEntity>.CheckVariations(target);
 
         return target;
     }
@@ -97,7 +97,7 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : MigrationHand
         }
     }
 
-    private void UpdateProperties(
+    private static void UpdateProperties(
         XElement source,
         XElement target,
         string contentTypeAlias,
@@ -120,17 +120,14 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : MigrationHand
                 var newProperty = XElement.Parse(property.ToString());
 
                 // update the datatype we are using (this might be new). 
-                UpdatePropertyEditor(contentTypeAlias, newProperty, context);
+                ContentTypeBaseMigrationHandler<TEntity>.UpdatePropertyEditor(contentTypeAlias, newProperty, context);
 
                 newProperty.Add(new XElement("MandatoryMessage", string.Empty));
                 newProperty.Add(new XElement("ValidationRegExpMessage", string.Empty));
                 newProperty.Add(new XElement("LabelOnTop", false));
 
-                var tabNode = newProperty.Element("Tab");
-                if (tabNode != null)
-                {
-                    tabNode.Add(new XAttribute("Alias", tabNode.ValueOrDefault(string.Empty)));
-                }
+                var tabNode = newProperty.Element("Tab");               
+                tabNode?.Add(new XAttribute("Alias", tabNode.ValueOrDefault(string.Empty)));
 
                 newProperties.Add(newProperty);
             }
@@ -143,7 +140,7 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : MigrationHand
     ///  Get the editor Alias for this property (it might have updated)
     /// </summary>
     /// <param name="newProperty"></param>
-    private void UpdatePropertyEditor(string contentTypeAlias, XElement newProperty, SyncMigrationContext context)
+    private static void UpdatePropertyEditor(string contentTypeAlias, XElement newProperty, SyncMigrationContext context)
     {
         var propertyAlias = newProperty.Element("Alias").ValueOrDefault(string.Empty);
 
@@ -168,8 +165,10 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : MigrationHand
     /// <summary>
     ///  update the info section, with the new things that are in v8+ that have no equivalent in v7
     /// </summary>
-    private void UpdateInfoSection(XElement? info, XElement target, Guid key, SyncMigrationContext context)
+    private static void UpdateInfoSection(XElement? info, XElement target, Guid key, SyncMigrationContext context)
     {
+        if (info == null) return;   
+
         var targetInfo = XElement.Parse(info.ToString());
         targetInfo.Element("Key")?.Remove();
         targetInfo.Element("Alias")?.Remove();
@@ -190,7 +189,7 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : MigrationHand
             target.Add(XElement.Parse(sourceStructure.ToString()));
     }
 
-    private void CheckVariations(XElement target)
+    private static void CheckVariations(XElement target)
     {
         if (target.Element("Info") == null) return;
 

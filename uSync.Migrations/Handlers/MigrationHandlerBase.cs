@@ -38,12 +38,12 @@ internal abstract class MigrationHandlerBase<TObject>
 
         if (!string.IsNullOrWhiteSpace(attribute.SourceFolderName))
         {
-            sourceFolderName = attribute.SourceFolderName;
+            SourceFolderName = attribute.SourceFolderName;
         }
 
         if (!string.IsNullOrWhiteSpace(attribute.TargetFolderName)) 
         {
-            destinationFolderName = attribute.TargetFolderName;
+            DestinationFolderName = attribute.TargetFolderName;
         }
     }
 
@@ -52,12 +52,12 @@ internal abstract class MigrationHandlerBase<TObject>
     public int SourceVersion { get; protected set; }
     public string ItemType { get; protected set; }
 
-    protected string sourceFolderName { get; init; }
-    protected string destinationFolderName { get; init; }
+    protected string? SourceFolderName { get; init; }
+    protected string? DestinationFolderName { get; init; }
 
 
     protected virtual string GetSourceFolder(string sourceRoot)
-        => Path.Combine(sourceRoot, sourceFolderName);
+        => Path.Combine(sourceRoot, SourceFolderName ?? string.Empty);
 
     protected virtual List<string>? GetSourceFiles(string sourceRoot)
     {
@@ -147,7 +147,7 @@ internal abstract class MigrationHandlerBase<TObject>
 
     protected virtual MigrationMessage SaveTargetXml(Guid id, XElement xml)
     {
-        _migrationFileService.SaveMigrationFile(id, xml, destinationFolderName);
+        _migrationFileService.SaveMigrationFile(id, xml, DestinationFolderName ?? string.Empty);
         return new MigrationMessage(ItemType, xml.GetAlias(), MigrationMessageType.Success);
     }
 

@@ -127,7 +127,7 @@ internal abstract class ContentBaseMigrationHandler<TEntity> : MigrationHandlerB
                 continue;
             }
 
-            var newProperty = ConvertPropertyValue(ItemType, contentType, property, context);
+            var newProperty = ContentBaseMigrationHandler<TEntity>.ConvertPropertyValue(ItemType, contentType, property, context);
             if (newProperty != null)
             {
                 propertiesList.Add(newProperty);
@@ -137,12 +137,12 @@ internal abstract class ContentBaseMigrationHandler<TEntity> : MigrationHandlerB
         target.Add(propertiesList);
 
         // check we have language title / and published statuses
-        EnsureLanguageTitles(target);
+        ContentBaseMigrationHandler<TEntity>.EnsureLanguageTitles(target);
 
         return target;
     }
 
-    private XElement ConvertPropertyValue(string itemType, string contentType, XElement property, SyncMigrationContext context)
+    private static XElement ConvertPropertyValue(string itemType, string contentType, XElement property, SyncMigrationContext context)
     {
         var editorAlias = context.GetEditorAlias(contentType, property.Name.LocalName)?.OriginalEditorAlias ?? string.Empty;
 
@@ -155,13 +155,13 @@ internal abstract class ContentBaseMigrationHandler<TEntity> : MigrationHandlerB
             // it might be the case that the property needs to be split into variants. 
             // if this is the case a ISyncVariationPropertyEditor will exist and it can 
             // split a single value into a collection split by culture
-            var vortoElement = GetVariedValueNode(migrator, property.Name.LocalName, migrationProperty, context);
+            var vortoElement = ContentBaseMigrationHandler<TEntity>.GetVariedValueNode(migrator, property.Name.LocalName, migrationProperty, context);
             if (vortoElement != null) return vortoElement;
         }
 
         // or this value doesn't need to be split by variation
         // and we can 'just' migrate it on its own.
-        var migratedValue = MigrateContentValue(migrationProperty, context);
+        var migratedValue = ContentBaseMigrationHandler<TEntity>.MigrateContentValue(migrationProperty, context);
         return new XElement(property.Name.LocalName,
                     new XElement("Value", new XCData(migratedValue)));
     }
@@ -170,7 +170,7 @@ internal abstract class ContentBaseMigrationHandler<TEntity> : MigrationHandlerB
     ///  special case, spit a vorto value into multiple cultures, 
     ///  and return them back as a blob of xml values
     /// </summary>
-    private XElement? GetVariedValueNode(ISyncVariationPropertyMigrator migrator, string propertyName, SyncMigrationContentProperty migrationProperty, SyncMigrationContext context)
+    private static XElement? GetVariedValueNode(ISyncVariationPropertyMigrator migrator, string propertyName, SyncMigrationContentProperty migrationProperty, SyncMigrationContext context)
     {
         // Get varied elements from the migrator.
         var attempt = migrator.GetVariedElements(migrationProperty, context);
@@ -189,7 +189,7 @@ internal abstract class ContentBaseMigrationHandler<TEntity> : MigrationHandlerB
                 {
                     var variationProperty = new SyncMigrationContentProperty(variantEditorAlias, variation.Value);
 
-                    var migratedValue = MigrateContentValue(variationProperty, context);
+                    var migratedValue = ContentBaseMigrationHandler<TEntity>.MigrateContentValue(variationProperty, context);
 
                     newProperty.Add(new XElement("Value",
                         new XAttribute("Culture", variation.Key),
@@ -208,7 +208,7 @@ internal abstract class ContentBaseMigrationHandler<TEntity> : MigrationHandlerB
     ///  to add nodename titles for the languages. 
     /// </summary>
     /// <param name="node"></param>
-    private void EnsureLanguageTitles(XElement node)
+    private static void EnsureLanguageTitles(XElement node)
     {
         var propertiesNode = node.Element("Properties");
         if (propertiesNode == null) return;
@@ -242,22 +242,19 @@ internal abstract class ContentBaseMigrationHandler<TEntity> : MigrationHandlerB
                 nodeNameNode.Add(new XElement("Name",
                     new XAttribute("Culture", language), defaultName));
 
-                if (publishedNode != null)
-                {
-                    publishedNode.Add(new XElement("Published",
+                publishedNode?.Add(new XElement("Published",
                         new XAttribute("Culture", language), publishedValue));
-                }
             }
         }
     }
 
-    private string MigrateContentValue(SyncMigrationContentProperty migrationProperty, SyncMigrationContext context)
+    private static string MigrateContentValue(SyncMigrationContentProperty migrationProperty, SyncMigrationContext context)
     {
         if (migrationProperty == null) return string.Empty;
 
-        if (string.IsNullOrWhiteSpace(migrationProperty?.EditorAlias)) return migrationProperty.Value;
+        if (string.IsNullOrWhiteSpace(migrationProperty.EditorAlias)) return migrationProperty.Value;
 
-        var migrator = context.TryGetMigrator(migrationProperty?.EditorAlias);
+        var migrator = context.TryGetMigrator(migrationProperty.EditorAlias);
         if (migrator != null)
         {
             return migrator?.GetContentValue(migrationProperty, context) ?? migrationProperty.Value;

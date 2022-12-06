@@ -15,7 +15,7 @@ namespace uSync.Migrations.Handlers;
     TargetFolderName = "Templates")]
 internal class TemplateMigrationHandler : MigrationHandlerBase<Template>,  ISyncMigrationHandler
 {
-    private IFileService _fileService;
+    private readonly IFileService _fileService;
 
     public TemplateMigrationHandler(
         IEventAggregator eventAggregator,
@@ -42,13 +42,13 @@ internal class TemplateMigrationHandler : MigrationHandlerBase<Template>,  ISync
 
     protected override XElement? MigrateFile(XElement source, int level, SyncMigrationContext context)
     {
-        var (alias, key) = GetAliasAndKey(source);
+        var (alias, _) = GetAliasAndKey(source);
 
         if (context.IsBlocked(ItemType, alias)) return null;
         return ConvertTemplate(source, level);
     }
 
-    private XElement ConvertTemplate(XElement source, int level)
+    private static XElement ConvertTemplate(XElement source, int level)
     {
         var key = source.Element("Key").ValueOrDefault(Guid.Empty);
         var alias = source.Element("Alias").ValueOrDefault(string.Empty);
@@ -65,7 +65,7 @@ internal class TemplateMigrationHandler : MigrationHandlerBase<Template>,  ISync
         return target;
     }
 
-    private (string alias, Guid key) GetAliasAndKey(XElement source)
+    private static (string alias, Guid key) GetAliasAndKey(XElement source)
     {
         return (
             alias: source.Element("Alias").ValueOrDefault(string.Empty),

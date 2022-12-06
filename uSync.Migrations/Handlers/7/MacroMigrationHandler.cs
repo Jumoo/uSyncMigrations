@@ -71,7 +71,7 @@ internal class MacroMigrationHandler : MigrationHandlerBase<Macro>, ISyncMigrati
         { "Umbraco.ContentPickerAlias", UmbConstants.PropertyEditors.Aliases.ContentPicker }
     };
 
-    private string MapPropertyType(string editorAlias)
+    private static string MapPropertyType(string editorAlias)
     {
         if (_mappedTypes.ContainsKey(editorAlias) == true)
         {

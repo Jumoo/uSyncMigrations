@@ -158,7 +158,7 @@ internal class DataTypeMigrationHandler : MigrationHandlerBase<DataType>, ISyncM
         return target;
     }
 
-    private IList<PreValue> GetPreValues(XElement source)
+    private static IList<PreValue> GetPreValues(XElement source)
     {
         var items = new List<PreValue>();
 
@@ -178,7 +178,7 @@ internal class DataTypeMigrationHandler : MigrationHandlerBase<DataType>, ISyncM
         return items;
     }
 
-    private object? MakeEmptyLabelConfig(IList<PreValue>? preValues)
+    private static object? MakeEmptyLabelConfig(IList<PreValue>? preValues)
         => preValues?.ConvertPreValuesToJson(false);
 
     public IEnumerable<MigrationMessage> Validate(MigrationOptions options)
