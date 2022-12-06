@@ -8,13 +8,10 @@ namespace uSync.Migrations.Services;
 
 public interface ISyncMigrationService
 {
-    IEnumerable<ISyncMigrationHandler> GetHandlers();
-
-    IEnumerable<string> HandlerTypes();
+    IEnumerable<ISyncMigrationHandler> GetHandlers(int version);
+    IEnumerable<string> HandlerTypes(int version);
 
     MigrationResults MigrateFiles(MigrationOptions options);
-
     MigrationResults Validate(MigrationOptions options);
-
     Attempt<string> ValidateMigrationSource(string source);
 }

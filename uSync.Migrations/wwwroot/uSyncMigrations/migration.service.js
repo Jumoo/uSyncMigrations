@@ -18,8 +18,8 @@
             return $http.get(serviceRoot + "HasPendingMigration");
         }
 
-        function getMigrationOptions() {
-            return $http.get(serviceRoot + "GetMigrationOptions");
+        function getMigrationOptions(version) {
+            return $http.get(serviceRoot + "GetMigrationOptions?version=" + version);
         }
 
         function migrate(options) {

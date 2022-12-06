@@ -11,44 +11,44 @@ using uSync.Migrations.Notifications;
 using uSync.Migrations.Services;
 
 namespace uSync.Migrations.Handlers;
-internal class DictionaryMigrationHandler : ISyncMigrationHandler
-{
-    private readonly IEventAggregator _eventAggregator;
-    private readonly ISyncMigrationFileService _migrationFileService;
 
+[SyncMigrtionHandler(BackOfficeConstants.Groups.Settings, uSyncMigrations.Priorities.Dictionary, 7,
+    SourceFolderName = "DictionaryItem",
+    TargetFolderName = "Dictionary")]
+internal class DictionaryMigrationHandler : MigrationHandlerBase<DictionaryItem>, ISyncMigrationHandler
+{
     public DictionaryMigrationHandler(
         IEventAggregator eventAggregator,
         ISyncMigrationFileService migrationFileService)
-    {
-        _eventAggregator = eventAggregator;
-        _migrationFileService = migrationFileService;
-    }
-
-    public string Group => uSync.BackOffice.uSyncConstants.Groups.Settings;
-
-    public string ItemType => nameof(DictionaryItem);
-
-    public int Priority => uSyncMigrations.Priorities.Dictionary;
-
-    public void PrepareMigrations(Guid migrationId, string sourceFolder, SyncMigrationContext context)
+        : base(eventAggregator, migrationFileService)
     { }
 
-    public IEnumerable<MigrationMessage> MigrateFromDisk(Guid migrationId, string sourceFolder, SyncMigrationContext context)
-    {
-        var dictionaryFolder = Path.Combine(sourceFolder, "DictionaryItem");
+    protected override void PrepareFile(XElement source, SyncMigrationContext context)
+    { }
 
-        if (Directory.Exists(dictionaryFolder) == false)
-        {
+    /// <summary>
+    ///  not actually called for a dictionary item, see DoMigration below.
+    /// </summary>
+    protected override XElement? MigrateFile(XElement source, int level, SyncMigrationContext context)
+         => null;
+
+    /// <summary>
+    ///  dictionary splits a single XElement into multiple, so it is slightly diferent from the rest.
+    /// </summary>
+    public override IEnumerable<MigrationMessage> DoMigration(SyncMigrationContext context)
+    {
+        var files = GetSourceFiles(context.SourceFolder);
+        if (files == null) { 
             return Enumerable.Empty<MigrationMessage>();
         }
 
         var messages = new List<MigrationMessage>();
 
-        foreach (var file in Directory.GetFiles(dictionaryFolder, "*.config", SearchOption.AllDirectories))
+        foreach (var file in files)
         {
             var source = XElement.Load(file);
-            var migratingNotification = new SyncMigratingNotification<DictionaryItem>(source, context);
 
+            var migratingNotification = new SyncMigratingNotification<DictionaryItem>(source, context);
             if (_eventAggregator.PublishCancelable(migratingNotification) == true)
             {
                 continue;
@@ -62,7 +62,7 @@ internal class DictionaryMigrationHandler : ISyncMigrationHandler
                 {
                     var migratedNotification = new SyncMigratedNotification<DictionaryItem>(target, context).WithStateFrom(migratingNotification);
                     _eventAggregator.Publish(migratedNotification);
-                    messages.Add(SaveTargetXml(migrationId, target));
+                    messages.Add(SaveTargetXml(context.MigrationId, target));
                 }
             }
         }
@@ -121,11 +121,5 @@ internal class DictionaryMigrationHandler : ISyncMigrationHandler
         }
 
         return nodes;
-    }
-
-    private MigrationMessage SaveTargetXml(Guid id, XElement xml)
-    {
-        _migrationFileService.SaveMigrationFile(id, xml, "Dictionary");
-        return new MigrationMessage(ItemType, xml.GetAlias(), MigrationMessageType.Success);
     }
 }
