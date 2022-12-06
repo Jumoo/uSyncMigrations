@@ -1,4 +1,6 @@
-﻿using Umbraco.Cms.Core.Models;
+﻿using Newtonsoft.Json;
+
+using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Extensions;
 
@@ -30,7 +32,7 @@ public class CheckboxListMigrator : SyncPropertyMigratorBase
     }
 
     public override string GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
-        => string.IsNullOrWhiteSpace(contentProperty.Value)
+        => string.IsNullOrWhiteSpace(contentProperty.Value) 
             ? contentProperty.Value
-            : string.Join($",{Environment.NewLine}", contentProperty.Value.ToDelimitedList());
+            : JsonConvert.SerializeObject(contentProperty.Value.ToDelimitedList(), Formatting.Indented);
 }
