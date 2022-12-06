@@ -1,4 +1,6 @@
-﻿using Umbraco.Cms.Core.Composing;
+﻿using CSharpTest.Net.Serialization;
+
+using Umbraco.Cms.Core.Composing;
 
 using uSync.Migrations.Migrators;
 
@@ -9,6 +11,26 @@ namespace uSync.Migrations.Models;
 /// </summary>
 public class SyncMigrationContext : IDisposable
 {
+    public SyncMigrationContext(Guid migrationId, string sourceFolder, int version)
+    {
+        MigrationId = migrationId;
+        SourceFolder = sourceFolder;
+        SourceVersion = version;
+    }
+
+    public Guid MigrationId { get; }
+
+    /// <summary>
+    ///  where the migration is coming from. 
+    /// </summary>
+    public string SourceFolder { get; }
+
+    /// <summary>
+    ///  the version of the source files (7 for now)
+    /// </summary>
+    public int SourceVersion { get; }
+
+
     private Dictionary<string, ISyncPropertyMigrator> _migrators { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
     private HashSet<string> _blockedTypes = new(StringComparer.OrdinalIgnoreCase);
@@ -43,13 +65,9 @@ public class SyncMigrationContext : IDisposable
 
     private Dictionary<int, Guid> _idKeyMap { get; set; } = new();
 
-    public SyncMigrationContext(Guid migrationId)
-    {
-        MigrationId = migrationId;
-    }
+    public string DefaultLanguage { get; set; }
 
-    public Guid MigrationId { get; }
-
+  
     /// <summary>
     ///  Add a template key to the context.
     /// </summary>

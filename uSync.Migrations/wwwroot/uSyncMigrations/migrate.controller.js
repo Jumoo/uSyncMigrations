@@ -28,7 +28,7 @@
 
         vm.$onInit = function () {
             InitHub();
-            validateSource(vm.options.source);
+            validateSource(vm.options.sourceVersion, vm.options.source);
             validate(vm.options);
             shuffleMessages(vm.messages);
         };
@@ -62,14 +62,14 @@
         function pickSource() {
             pickFolder(function (folder) {
                 vm.options.source = folder;
-                validateSource(vm.options.source);
+                validateSource(vm.options.sourceVersion, vm.options.source);
                 validate(vm.options);
             });
         }
 
-        function validateSource(source) {
+        function validateSource(version, source) {
 
-            uSyncMigrationService.validateSource(source)
+            uSyncMigrationService.validateSource(version, source)
                 .then(function (result) {
                     vm.sourceValid = result.data.length == 0;
                     vm.sourceError = result.data;

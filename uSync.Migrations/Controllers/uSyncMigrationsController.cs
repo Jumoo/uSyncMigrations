@@ -34,12 +34,12 @@ public class uSyncMigrationsController : UmbracoAuthorizedApiController
     public bool HasPendingMigration() => true;
 
     [HttpGet]
-    public object GetMigrationOptions()
+    public object GetMigrationOptions(int version)
     {
         return new
         {
             hasPending = true,
-            handlers = _migrationService.HandlerTypes().Select(x => new HandlerOption { Name = x, Include = false })
+            handlers = _migrationService.HandlerTypes(version).Select(x => new HandlerOption { Name = x, Include = false })
         };
     }
 
@@ -52,9 +52,9 @@ public class uSyncMigrationsController : UmbracoAuthorizedApiController
         => _profileConfigService.GetProfiles();
 
     [HttpGet]
-    public string ValidateSource(string source)
+    public string ValidateSource(int version, string source)
     {
-        var attempt = _migrationService.ValidateMigrationSource(source);
+        var attempt = _migrationService.ValidateMigrationSource(version, source);
 
         if (attempt.Success)
         {

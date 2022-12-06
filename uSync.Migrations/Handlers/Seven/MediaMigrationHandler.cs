@@ -2,12 +2,14 @@
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Strings;
 
-using uSync.Migrations.Composing;
-using uSync.Migrations.Models;
+using uSync.Migrations.Handlers.Seven;
 using uSync.Migrations.Services;
 
-namespace uSync.Migrations.Handlers;
+namespace uSync.Migrations.Handlers.Seven;
 
+[SyncMigrationHandler(BackOfficeConstants.Groups.Content, uSyncMigrations.Priorities.Media, 7,
+    SourceFolderName = "Media",
+    TargetFolderName = "Media")]
 internal class MediaMigrationHandler : ContentBaseMigrationHandler<Media>, ISyncMigrationHandler
 {
     public MediaMigrationHandler(
@@ -38,15 +40,5 @@ internal class MediaMigrationHandler : ContentBaseMigrationHandler<Media>, ISync
             { "ogv", UmbConstants.Conventions.MediaTypes.VideoAlias },
             { "webm", UmbConstants.Conventions.MediaTypes.VideoAlias },
         });
-    }
-
-    public string ItemType => nameof(Media);
-
-    public int Priority => uSyncMigrations.Priorities.Media;
-
-    public void PrepareMigrations(Guid migrationId, string sourceFolder, SyncMigrationContext context)
-    { }
-
-    public IEnumerable<MigrationMessage> MigrateFromDisk(Guid migrationId, string sourceFolder, SyncMigrationContext context)
-        => DoMigrateFromDisk(migrationId, Path.Combine(sourceFolder, nameof(Media)), context);
+    } 
 }

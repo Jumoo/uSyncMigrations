@@ -1,4 +1,5 @@
 ﻿global using UmbConstants = Umbraco.Cms.Core.Constants;
+global using BackOfficeConstants = uSync.BackOffice.uSyncConstants;
 
 namespace uSync.Migrations;
 

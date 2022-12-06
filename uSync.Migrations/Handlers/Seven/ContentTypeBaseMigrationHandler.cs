@@ -2,133 +2,53 @@
 
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models.Entities;
-using Umbraco.Cms.Core.Notifications;
 
 using uSync.Core;
-using uSync.Migrations.Composing;
 using uSync.Migrations.Models;
-using uSync.Migrations.Notifications;
 using uSync.Migrations.Services;
 
-namespace uSync.Migrations.Handlers;
+namespace uSync.Migrations.Handlers.Seven;
 
-internal abstract class ContentTypeBaseMigrationHandler<TEntity>
+internal abstract class ContentTypeBaseMigrationHandler<TEntity> : MigrationHandlerBase<TEntity>
     where TEntity : IEntity
 {
-    public string Group => uSync.BackOffice.uSyncConstants.Groups.Settings;
-
-    protected readonly IEventAggregator _eventAggregator;
-    protected readonly ISyncMigrationFileService _migrationFileService;
-
     public ContentTypeBaseMigrationHandler(
         IEventAggregator eventAggregator,
         ISyncMigrationFileService migrationFileService)
+        : base(eventAggregator, migrationFileService)
+    { }
+
+    protected override void PrepareFile(XElement source, SyncMigrationContext context)
     {
-        _eventAggregator = eventAggregator;
-        _migrationFileService = migrationFileService;
-    }
+        var contentTypeAlias = source.Element("Info")?.Element("Alias")?.ValueOrDefault(string.Empty) ?? string.Empty;
 
-    public void PrepareContext(string sourceFolder, SyncMigrationContext context)
-    {
-        if (Directory.Exists(sourceFolder) == false)
+        context.AddContentTypeKey(contentTypeAlias, source.Element("Info")?.Element("Key")?.ValueOrDefault(Guid.Empty));
+
+        var compositions = source.Element("Info")?.Element("Compositions")?.Elements("Composition")?.Select(x => x.Value) ?? Enumerable.Empty<string>();
+        context.AddContentTypeCompositions(contentTypeAlias, compositions);
+
+        var properties = source.Element("GenericProperties")?.Elements("GenericProperty") ?? Enumerable.Empty<XElement>();
+
+        foreach (var property in properties)
         {
-            return;
-        }
+            var editorAlias = property.Element("Type").ValueOrDefault(string.Empty);
+            var definition = property.Element("Definition").ValueOrDefault(Guid.Empty);
+            var alias = property.Element("Alias")?.ValueOrDefault(string.Empty) ?? string.Empty;
 
-        foreach (var file in Directory.GetFiles(sourceFolder, "*.config", SearchOption.AllDirectories))
-        {
-            var source = XElement.Load(file);
+            context.AddContentProperty(contentTypeAlias, alias,
+                    editorAlias, context.GetDataTypeFromDefinition(definition));
 
-            var contentTypeAlias = source.Element("Info")?.Element("Alias")?.ValueOrDefault(string.Empty);
-
-            context.AddContentTypeKey(contentTypeAlias, source.Element("Info")?.Element("Key")?.ValueOrDefault(Guid.Empty));
-
-            var compositions = source.Element("Info")?.Element("Compositions")?.Elements("Composition")?.Select(x => x.Value) ?? Enumerable.Empty<string>();
-            context.AddContentTypeCompositions(contentTypeAlias, compositions);
-
-            var properties = source.Element("GenericProperties")?.Elements("GenericProperty") ?? Enumerable.Empty<XElement>();
-
-            foreach (var property in properties)
+            //
+            // for now we are doing this just for media folders, but it might be
+            // that all list view properties should be ignored ??
+            if (contentTypeAlias.Equals("Folder") && editorAlias.Equals("Umbraco.ListView"))
             {
-                var editorAlias = property.Element("Type").ValueOrDefault(string.Empty);
-                var definition = property.Element("Definition").ValueOrDefault(Guid.Empty);
-
-                context.AddContentProperty(contentTypeAlias,
-                    property.Element("Alias")?.ValueOrDefault(string.Empty),
-                        editorAlias, context.GetDataTypeFromDefinition(definition));
+                context.AddIgnoredProperty(contentTypeAlias, alias);
             }
         }
     }
 
-    public IEnumerable<MigrationMessage> DoMigrateFromDisk(
-        Guid id,
-        string folder,
-        string itemType,
-        string targetFolder,
-        SyncMigrationContext context)
-    {
-        return MigrateFolder(id, folder, itemType, targetFolder, 0, context);
-    }
-
-    private IEnumerable<MigrationMessage> MigrateFolder(
-        Guid id,
-        string folder,
-        string itemType,
-        string targetFolder,
-        int level,
-        SyncMigrationContext context)
-    {
-        if (Directory.Exists(folder) == false)
-        {
-            return Enumerable.Empty<MigrationMessage>();
-        }
-
-        var messages = new List<MigrationMessage>();
-
-        var files = Directory.GetFiles(folder, "*.config").ToList();
-
-        foreach (var file in files)
-        {
-            var source = XElement.Load(file);
-
-            var migratingNotification = new SyncMigratingNotification<TEntity>(source, context);
-            if (_eventAggregator.PublishCancelable(migratingNotification) == true)
-            {
-                continue;
-            }
-
-            var target = ConvertContentType(source, itemType, level, context);
-
-            if (target != null)
-            {
-                var migratedNotification = new SyncMigratedNotification<TEntity>(target, context).WithStateFrom(migratingNotification);
-
-                _eventAggregator.Publish(migratedNotification);
-
-                messages.Add(SaveTargetXml(itemType, id, migratedNotification.Xml, targetFolder));
-            }
-        }
-
-        foreach (var childFolder in Directory.GetDirectories(folder))
-        {
-            messages.AddRange(MigrateFolder(id, childFolder, itemType, targetFolder, level + 1, context));
-        }
-
-        return messages;
-    }
-
-    private MigrationMessage SaveTargetXml(string itemType, Guid id, XElement xml, string folder)
-    {
-        _migrationFileService.SaveMigrationFile(id, xml, folder);
-
-        return new MigrationMessage(itemType, xml.GetAlias(), MigrationMessageType.Success);
-    }
-
-    private XElement? ConvertContentType(
-        XElement source,
-        string itemType,
-        int level,
-        SyncMigrationContext context)
+    protected override XElement? MigrateFile(XElement source, int level, SyncMigrationContext context)
     {
         var info = source.Element("Info");
         if (info == null) return null;
@@ -136,26 +56,26 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity>
         var key = info.Element("Key").ValueOrDefault(Guid.Empty);
         var alias = info.Element("Alias").ValueOrDefault(string.Empty);
 
-        if (context.IsBlocked(itemType, alias)) return null;
+        if (context.IsBlocked(ItemType, alias)) return null;
 
-        var target = new XElement(itemType,
+        var target = new XElement(ItemType,
             new XAttribute(uSyncConstants.Xml.Key, key),
             new XAttribute(uSyncConstants.Xml.Alias, alias),
             new XAttribute(uSyncConstants.Xml.Level, level));
 
         // update info element. 
-        UpdateInfoSection(info, target, key, context);
+        ContentTypeBaseMigrationHandler<TEntity>.UpdateInfoSection(info, target, key, context);
 
         // structure
         UpdateStructure(source, target);
 
         // properties. 
-        UpdateProperties(source, target, alias, context);
+        ContentTypeBaseMigrationHandler<TEntity>.UpdateProperties(source, target, alias, context);
 
         // tabs
         UpdateTabs(source, target);
 
-        CheckVariations(target);
+        ContentTypeBaseMigrationHandler<TEntity>.CheckVariations(target);
 
         return target;
     }
@@ -177,7 +97,7 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity>
         }
     }
 
-    private void UpdateProperties(
+    private static void UpdateProperties(
         XElement source,
         XElement target,
         string contentTypeAlias,
@@ -200,17 +120,14 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity>
                 var newProperty = XElement.Parse(property.ToString());
 
                 // update the datatype we are using (this might be new). 
-                UpdatePropertyEditor(contentTypeAlias, newProperty, context);
+                ContentTypeBaseMigrationHandler<TEntity>.UpdatePropertyEditor(contentTypeAlias, newProperty, context);
 
                 newProperty.Add(new XElement("MandatoryMessage", string.Empty));
                 newProperty.Add(new XElement("ValidationRegExpMessage", string.Empty));
                 newProperty.Add(new XElement("LabelOnTop", false));
 
                 var tabNode = newProperty.Element("Tab");
-                if (tabNode != null)
-                {
-                    tabNode.Add(new XAttribute("Alias", tabNode.ValueOrDefault(string.Empty)));
-                }
+                tabNode?.Add(new XAttribute("Alias", tabNode.ValueOrDefault(string.Empty)));
 
                 newProperties.Add(newProperty);
             }
@@ -223,7 +140,7 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity>
     ///  Get the editor Alias for this property (it might have updated)
     /// </summary>
     /// <param name="newProperty"></param>
-    private void UpdatePropertyEditor(string contentTypeAlias, XElement newProperty, SyncMigrationContext context)
+    private static void UpdatePropertyEditor(string contentTypeAlias, XElement newProperty, SyncMigrationContext context)
     {
         var propertyAlias = newProperty.Element("Alias").ValueOrDefault(string.Empty);
 
@@ -248,8 +165,10 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity>
     /// <summary>
     ///  update the info section, with the new things that are in v8+ that have no equivalent in v7
     /// </summary>
-    private void UpdateInfoSection(XElement? info, XElement target, Guid key, SyncMigrationContext context)
+    private static void UpdateInfoSection(XElement? info, XElement target, Guid key, SyncMigrationContext context)
     {
+        if (info == null) return;
+
         var targetInfo = XElement.Parse(info.ToString());
         targetInfo.Element("Key")?.Remove();
         targetInfo.Element("Alias")?.Remove();
@@ -270,7 +189,7 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity>
             target.Add(XElement.Parse(sourceStructure.ToString()));
     }
 
-    private void CheckVariations(XElement target)
+    private static void CheckVariations(XElement target)
     {
         if (target.Element("Info") == null) return;
 

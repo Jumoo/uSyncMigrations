@@ -3,27 +3,20 @@
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Models.Entities;
-using Umbraco.Cms.Core.Notifications;
 using Umbraco.Cms.Core.Strings;
 using Umbraco.Extensions;
 
 using uSync.Core;
-using uSync.Migrations.Composing;
 using uSync.Migrations.Migrators;
 using uSync.Migrations.Migrators.Models;
 using uSync.Migrations.Models;
-using uSync.Migrations.Notifications;
 using uSync.Migrations.Services;
 
-namespace uSync.Migrations.Handlers;
+namespace uSync.Migrations.Handlers.Seven;
 
-internal class ContentBaseMigrationHandler<TEntity>
+internal abstract class ContentBaseMigrationHandler<TEntity> : MigrationHandlerBase<TEntity>
     where TEntity : IEntity
 {
-    public string Group => uSync.BackOffice.uSyncConstants.Groups.Content;
-
-    private readonly IEventAggregator _eventAggregator;
-    private readonly ISyncMigrationFileService _migrationFileService;
     private readonly IShortStringHelper _shortStringHelper;
 
     protected readonly HashSet<string> _ignoredProperties = new(StringComparer.OrdinalIgnoreCase);
@@ -33,65 +26,32 @@ internal class ContentBaseMigrationHandler<TEntity>
         IEventAggregator eventAggregator,
         ISyncMigrationFileService migrationFileService,
         IShortStringHelper shortStringHelper)
+        : base(eventAggregator, migrationFileService)
     {
-        _eventAggregator = eventAggregator;
-        _migrationFileService = migrationFileService;
         _shortStringHelper = shortStringHelper;
     }
 
-    public IEnumerable<MigrationMessage> DoMigrateFromDisk(Guid id, string folder, SyncMigrationContext context)
+    protected override void PrepareFile(XElement source, SyncMigrationContext context)
     {
-        if (!Directory.Exists(folder)) return Enumerable.Empty<MigrationMessage>();
-
-        // loads all the content names into the context, so we can get them later on.
-        PrepareContext(folder, context);
-
-        var itemType = Path.GetFileName(folder);
-
-        return MigrateFolder(id, itemType, folder, 0, context);
-    }
-
-    private IEnumerable<MigrationMessage> MigrateFolder(Guid id, string itemType, string folder, int level, SyncMigrationContext context)
-    {
-        if (Directory.Exists(folder) == false)
+        var key = source.Attribute("guid").ValueOrDefault(Guid.Empty);
+        if (key != Guid.Empty)
         {
-            return Enumerable.Empty<MigrationMessage>();
-        }
+            var id = source.Attribute("id").ValueOrDefault(0);
+            var alias = source.Attribute("nodeName").ValueOrDefault(string.Empty);
 
-        var messages = new List<MigrationMessage>();
-
-        foreach (var file in Directory.GetFiles(folder, "*.config"))
-        {
-            var source = XElement.Load(file);
-
-            var migratingNotification = new SyncMigratingNotification<TEntity>(source, context);
-
-            if (_eventAggregator.PublishCancelable(migratingNotification) == true)
+            if (id > 0)
             {
-                continue;
+                context.AddKey(id, key);
             }
 
-            var target = ConvertContent(itemType, source, level, context);
-
-            if (target != null)
+            if (string.IsNullOrWhiteSpace(alias) == false)
             {
-                var migratedNotification = new SyncMigratedNotification<TEntity>(target, context).WithStateFrom(migratingNotification);
-
-                _eventAggregator.Publish(migratedNotification);
-
-                messages.Add(SaveTargetXml(itemType, id, target));
+                context.AddContentKey(key, alias);
             }
         }
-
-        foreach (var childFolder in Directory.GetDirectories(folder))
-        {
-            messages.AddRange(MigrateFolder(id, itemType, childFolder, level + 1, context));
-        }
-
-        return messages;
     }
 
-    private XElement ConvertContent(string itemType, XElement source, int level, SyncMigrationContext context)
+    protected override XElement? MigrateFile(XElement source, int level, SyncMigrationContext context)
     {
         var key = source.Attribute("guid").ValueOrDefault(Guid.Empty);
         var alias = source.Attribute("nodeName").ValueOrDefault(string.Empty);
@@ -106,11 +66,11 @@ internal class ContentBaseMigrationHandler<TEntity>
 
         // content is blocked by path (e.g home/about-us)
 
-        if (context.IsBlocked(itemType, path)) return null;
+        if (context.IsBlocked(ItemType, path)) return null;
 
         context.AddContentPath(key, path);
 
-        if (itemType == nameof(Media) && _mediaTypeAliasForFileExtension.Count > 0)
+        if (ItemType == nameof(Media) && _mediaTypeAliasForFileExtension.Count > 0)
         {
             var fileExtension = source.Element(UmbConstants.Conventions.Media.Extension)?.ValueOrDefault(string.Empty) ?? string.Empty;
             if (string.IsNullOrWhiteSpace(fileExtension) == false && _mediaTypeAliasForFileExtension.TryGetValue(fileExtension, out var newMediaTypeAlias) == true)
@@ -119,7 +79,7 @@ internal class ContentBaseMigrationHandler<TEntity>
             }
         }
 
-        var target = new XElement(itemType,
+        var target = new XElement(ItemType,
 
             new XAttribute("Key", key),
             new XAttribute("Alias", alias),
@@ -134,20 +94,22 @@ internal class ContentBaseMigrationHandler<TEntity>
                 new XElement("NodeName", new XAttribute("Default", alias)),
                 new XElement("SortOrder", sortOrder)));
 
-        if (itemType == nameof(Content))
+        if (ItemType == nameof(Content))
         {
             var info = target.Element("Info");
-
-            info.Add(new XElement("Published", new XAttribute("Default", published)));
-            info.Add(new XElement("Schedule"));
-
-            if (string.IsNullOrWhiteSpace(template) == false)
+            if (info != null)
             {
-                info.Add(new XElement("Template", new XAttribute("Key", context.GetTemplateKey(template)), template));
-            }
-            else
-            {
-                info.Add(new XElement("Template"));
+                info.Add(new XElement("Published", new XAttribute("Default", published)));
+                info.Add(new XElement("Schedule"));
+
+                if (string.IsNullOrWhiteSpace(template) == false)
+                {
+                    info.Add(new XElement("Template", new XAttribute("Key", context.GetTemplateKey(template)), template));
+                }
+                else
+                {
+                    info.Add(new XElement("Template"));
+                }
             }
         }
 
@@ -165,7 +127,7 @@ internal class ContentBaseMigrationHandler<TEntity>
                 continue;
             }
 
-            var newProperty = ConvertPropertyValue(itemType, contentType, property, context);
+            var newProperty = ContentBaseMigrationHandler<TEntity>.ConvertPropertyValue(ItemType, contentType, property, context);
             if (newProperty != null)
             {
                 propertiesList.Add(newProperty);
@@ -175,12 +137,12 @@ internal class ContentBaseMigrationHandler<TEntity>
         target.Add(propertiesList);
 
         // check we have language title / and published statuses
-        EnsureLanguageTitles(target);
+        ContentBaseMigrationHandler<TEntity>.EnsureLanguageTitles(target);
 
         return target;
     }
 
-    private XElement ConvertPropertyValue(string itemType, string contentType, XElement property, SyncMigrationContext context)
+    private static XElement ConvertPropertyValue(string itemType, string contentType, XElement property, SyncMigrationContext context)
     {
         var editorAlias = context.GetEditorAlias(contentType, property.Name.LocalName)?.OriginalEditorAlias ?? string.Empty;
 
@@ -193,13 +155,13 @@ internal class ContentBaseMigrationHandler<TEntity>
             // it might be the case that the property needs to be split into variants. 
             // if this is the case a ISyncVariationPropertyEditor will exist and it can 
             // split a single value into a collection split by culture
-            var vortoElement = GetVariedValueNode(migrator, property.Name.LocalName, migrationProperty, context);
+            var vortoElement = ContentBaseMigrationHandler<TEntity>.GetVariedValueNode(migrator, property.Name.LocalName, migrationProperty, context);
             if (vortoElement != null) return vortoElement;
         }
 
         // or this value doesn't need to be split by variation
         // and we can 'just' migrate it on its own.
-        var migratedValue = MigrateContentValue(migrationProperty, context);
+        var migratedValue = ContentBaseMigrationHandler<TEntity>.MigrateContentValue(migrationProperty, context);
         return new XElement(property.Name.LocalName,
                     new XElement("Value", new XCData(migratedValue)));
     }
@@ -208,7 +170,7 @@ internal class ContentBaseMigrationHandler<TEntity>
     ///  special case, spit a vorto value into multiple cultures, 
     ///  and return them back as a blob of xml values
     /// </summary>
-    private XElement? GetVariedValueNode(ISyncVariationPropertyMigrator migrator, string propertyName, SyncMigrationContentProperty migrationProperty, SyncMigrationContext context)
+    private static XElement? GetVariedValueNode(ISyncVariationPropertyMigrator migrator, string propertyName, SyncMigrationContentProperty migrationProperty, SyncMigrationContext context)
     {
         // Get varied elements from the migrator.
         var attempt = migrator.GetVariedElements(migrationProperty, context);
@@ -227,7 +189,7 @@ internal class ContentBaseMigrationHandler<TEntity>
                 {
                     var variationProperty = new SyncMigrationContentProperty(variantEditorAlias, variation.Value);
 
-                    var migratedValue = MigrateContentValue(variationProperty, context);
+                    var migratedValue = ContentBaseMigrationHandler<TEntity>.MigrateContentValue(variationProperty, context);
 
                     newProperty.Add(new XElement("Value",
                         new XAttribute("Culture", variation.Key),
@@ -246,7 +208,7 @@ internal class ContentBaseMigrationHandler<TEntity>
     ///  to add nodename titles for the languages. 
     /// </summary>
     /// <param name="node"></param>
-    private void EnsureLanguageTitles(XElement node)
+    private static void EnsureLanguageTitles(XElement node)
     {
         var propertiesNode = node.Element("Properties");
         if (propertiesNode == null) return;
@@ -280,59 +242,24 @@ internal class ContentBaseMigrationHandler<TEntity>
                 nodeNameNode.Add(new XElement("Name",
                     new XAttribute("Culture", language), defaultName));
 
-                if (publishedNode != null)
-                {
-                    publishedNode.Add(new XElement("Published",
+                publishedNode?.Add(new XElement("Published",
                         new XAttribute("Culture", language), publishedValue));
-                }
             }
         }
     }
 
-    private MigrationMessage SaveTargetXml(string itemType, Guid id, XElement xml)
-    {
-        _migrationFileService.SaveMigrationFile(id, xml, xml.Name.LocalName);
-
-        return new MigrationMessage(itemType, xml.GetAlias(), MigrationMessageType.Success);
-    }
-
-    private string MigrateContentValue(SyncMigrationContentProperty migrationProperty, SyncMigrationContext context)
+    private static string MigrateContentValue(SyncMigrationContentProperty migrationProperty, SyncMigrationContext context)
     {
         if (migrationProperty == null) return string.Empty;
 
-        if (string.IsNullOrWhiteSpace(migrationProperty?.EditorAlias)) return migrationProperty.Value;
+        if (string.IsNullOrWhiteSpace(migrationProperty.EditorAlias)) return migrationProperty.Value;
 
-        var migrator = context.TryGetMigrator(migrationProperty?.EditorAlias);
+        var migrator = context.TryGetMigrator(migrationProperty.EditorAlias);
         if (migrator != null)
         {
             return migrator?.GetContentValue(migrationProperty, context) ?? migrationProperty.Value;
         }
 
         return migrationProperty.Value;
-    }
-
-    private void PrepareContext(string folder, SyncMigrationContext context)
-    {
-        var files = Directory.GetFiles(folder, "*.config", SearchOption.AllDirectories);
-        foreach (var file in files)
-        {
-            var source = XElement.Load(file);
-            var key = source.Attribute("guid").ValueOrDefault(Guid.Empty);
-            if (key != Guid.Empty)
-            {
-                var id = source.Attribute("id").ValueOrDefault(0);
-                var alias = source.Attribute("nodeName").ValueOrDefault(string.Empty);
-
-                if (id > 0)
-                {
-                    context.AddKey(id, key);
-                }
-
-                if (string.IsNullOrWhiteSpace(alias) == false)
-                {
-                    context.AddContentKey(key, alias);
-                }
-            }
-        }
     }
 }

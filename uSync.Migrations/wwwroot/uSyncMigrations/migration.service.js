@@ -18,8 +18,8 @@
             return $http.get(serviceRoot + "HasPendingMigration");
         }
 
-        function getMigrationOptions() {
-            return $http.get(serviceRoot + "GetMigrationOptions");
+        function getMigrationOptions(version) {
+            return $http.get(serviceRoot + "GetMigrationOptions?version=" + version);
         }
 
         function migrate(options) {
@@ -30,8 +30,8 @@
             return $http.get(serviceRoot + "GetProfiles");
         }
 
-        function validateSource(source) {
-            return $http.get(serviceRoot + "ValidateSource/?source=" + source);
+        function validateSource(version, source) {
+            return $http.get(serviceRoot + "ValidateSource/?version=" + version + "&source=" + source);
         }
 
         function validate(options) {

@@ -88,7 +88,7 @@ internal class SyncMigrationConfigurationService : ISyncMigrationConfigurationSe
                     foreach (var profile in config.Profiles)
                     {
                         var configuredHandlers = profile.Options.Handlers.Select(x => x.Name);
-                        profile.Options.Handlers = _migrationService.GetHandlers()
+                        profile.Options.Handlers = _migrationService.GetHandlers(profile.Version)
                             .Select(x => new HandlerOption
                             {
                                 Name = x.ItemType,

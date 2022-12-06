@@ -20,8 +20,9 @@ public class SyncMigrationHandlerCollection : BuilderCollectionBase<ISyncMigrati
 
     public IEnumerable<ISyncMigrationHandler> Handlers => this;
 
-    public IList<HandlerOption> SelectGroup(string group)
+    public IList<HandlerOption> SelectGroup(int version, string group)
         => Handlers
+            .Where(x => x.SourceVersion == version)
             .Select(x => x.ToHandlerOption(group == "" || x.Group == group))
             .ToList();
 

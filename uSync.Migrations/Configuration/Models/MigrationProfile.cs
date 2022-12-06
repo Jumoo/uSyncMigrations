@@ -12,6 +12,8 @@ namespace uSync.Migrations.Configuration.Models;
 [HideFromTypeFinder]
 public class MigrationProfile : ISyncMigrationProfile
 {
+    public int Version { get; set; } = 7;
+
     public string Name { get; set; }
 
     public string Icon { get; set; }
