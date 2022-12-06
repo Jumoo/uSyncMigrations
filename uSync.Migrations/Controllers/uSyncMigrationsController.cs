@@ -52,9 +52,9 @@ public class uSyncMigrationsController : UmbracoAuthorizedApiController
         => _profileConfigService.GetProfiles();
 
     [HttpGet]
-    public string ValidateSource(string source)
+    public string ValidateSource(int version, string source)
     {
-        var attempt = _migrationService.ValidateMigrationSource(source);
+        var attempt = _migrationService.ValidateMigrationSource(version, source);
 
         if (attempt.Success)
         {

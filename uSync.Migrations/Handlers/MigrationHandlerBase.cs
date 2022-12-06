@@ -25,7 +25,7 @@ internal abstract class MigrationHandlerBase<TObject>
         _eventAggregator = eventAggregator;
         _migrationFileService = migrationFileService;
 
-        var attribute = GetType().GetCustomAttribute<SyncMigrtionHandlerAttribute>();
+        var attribute = GetType().GetCustomAttribute<SyncMigrationHandlerAttribute>();
         if (attribute == null)
         {
             throw new ArgumentException("Handler must has SyncMigrationAttribute to use base class");

@@ -1,7 +1,7 @@
 ﻿namespace uSync.Migrations.Handlers;
-internal class SyncMigrtionHandlerAttribute : Attribute
+internal class SyncMigrationHandlerAttribute : Attribute
 {
-    public SyncMigrtionHandlerAttribute(string group, int priority, int sourceVersion)
+    public SyncMigrationHandlerAttribute(string group, int priority, int sourceVersion)
     {
         Group = group;
         Priority = priority;

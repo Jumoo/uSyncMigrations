@@ -13,5 +13,5 @@ public interface ISyncMigrationService
 
     MigrationResults MigrateFiles(MigrationOptions options);
     MigrationResults Validate(MigrationOptions options);
-    Attempt<string> ValidateMigrationSource(string source);
+    Attempt<string> ValidateMigrationSource(int version, string source);
 }

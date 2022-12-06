@@ -10,9 +10,9 @@ using uSync.Migrations.Extensions;
 using uSync.Migrations.Models;
 using uSync.Migrations.Services;
 
-namespace uSync.Migrations.Handlers;
+namespace uSync.Migrations.Handlers.Seven;
 
-[SyncMigrtionHandler(BackOfficeConstants.Groups.Settings, uSyncMigrations.Priorities.Languages, 7,
+[SyncMigrationHandler(BackOfficeConstants.Groups.Settings, uSyncMigrations.Priorities.Languages, 7,
     SourceFolderName = "Languages", TargetFolderName = "Languages")]
 internal class LanguageMigrationHandler : MigrationHandlerBase<Language>, ISyncMigrationHandler
 {

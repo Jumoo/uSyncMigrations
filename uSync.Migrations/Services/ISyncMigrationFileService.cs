@@ -14,5 +14,5 @@ public interface ISyncMigrationFileService
 
     void SaveMigrationFile(Guid id, XElement xml, string folder);
 
-    Attempt<string> ValdateMigrationSource(string folder);
+    Attempt<string> ValdateMigrationSource(int version, string folder);
 }

@@ -1,11 +1,12 @@
 ﻿using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 
+using uSync.Migrations.Handlers.Seven;
 using uSync.Migrations.Services;
 
-namespace uSync.Migrations.Handlers;
+namespace uSync.Migrations.Handlers.Seven;
 
-[SyncMigrtionHandler(BackOfficeConstants.Groups.Settings, uSyncMigrations.Priorities.ContentTypes, 7,
+[SyncMigrationHandler(BackOfficeConstants.Groups.Settings, uSyncMigrations.Priorities.ContentTypes, 7,
     SourceFolderName = "DocumentType",
     TargetFolderName = "ContentTypes")]
 internal class ContentTypeMigrationHandler : ContentTypeBaseMigrationHandler<ContentType>, ISyncMigrationHandler

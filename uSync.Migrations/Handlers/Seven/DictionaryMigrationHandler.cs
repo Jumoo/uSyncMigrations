@@ -10,9 +10,9 @@ using uSync.Migrations.Models;
 using uSync.Migrations.Notifications;
 using uSync.Migrations.Services;
 
-namespace uSync.Migrations.Handlers;
+namespace uSync.Migrations.Handlers.Seven;
 
-[SyncMigrtionHandler(BackOfficeConstants.Groups.Settings, uSyncMigrations.Priorities.Dictionary, 7,
+[SyncMigrationHandler(BackOfficeConstants.Groups.Settings, uSyncMigrations.Priorities.Dictionary, 7,
     SourceFolderName = "DictionaryItem",
     TargetFolderName = "Dictionary")]
 internal class DictionaryMigrationHandler : MigrationHandlerBase<DictionaryItem>, ISyncMigrationHandler

@@ -19,6 +19,9 @@ internal class PreferredMigratorValidator : ISyncMigrationValidator
     {
         var results = new List<MigrationMessage>();
 
+        // we only do this for v7
+        if (options.SourceVersion != 7) return results;
+
         var preferredList = _migrators.GetPreferredMigratorList(options.PreferredMigrators);
         foreach(var missing in preferredList.Where(x => x.Migrator == null))
         {

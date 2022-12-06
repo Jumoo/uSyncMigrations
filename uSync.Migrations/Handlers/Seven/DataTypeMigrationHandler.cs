@@ -21,9 +21,9 @@ using uSync.Migrations.Serialization;
 using uSync.Migrations.Services;
 using uSync.Migrations.Validation;
 
-namespace uSync.Migrations.Handlers;
+namespace uSync.Migrations.Handlers.Seven;
 
-[SyncMigrtionHandler(BackOfficeConstants.Groups.Settings, uSyncMigrations.Priorities.DataTypes, 7,
+[SyncMigrationHandler(BackOfficeConstants.Groups.Settings, uSyncMigrations.Priorities.DataTypes, 7,
     SourceFolderName = "DataType",
     TargetFolderName = "DataTypes")]
 internal class DataTypeMigrationHandler : MigrationHandlerBase<DataType>, ISyncMigrationHandler, ISyncMigrationValidator

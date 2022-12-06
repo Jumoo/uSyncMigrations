@@ -7,9 +7,9 @@ using uSync.Core;
 using uSync.Migrations.Models;
 using uSync.Migrations.Services;
 
-namespace uSync.Migrations.Handlers;
+namespace uSync.Migrations.Handlers.Seven;
 
-[SyncMigrtionHandler(BackOfficeConstants.Groups.Settings, uSyncMigrations.Priorities.Macros, 7,
+[SyncMigrationHandler(BackOfficeConstants.Groups.Settings, uSyncMigrations.Priorities.Macros, 7,
     SourceFolderName = "Macro", TargetFolderName = "Macros")]
 internal class MacroMigrationHandler : MigrationHandlerBase<Macro>, ISyncMigrationHandler
 {

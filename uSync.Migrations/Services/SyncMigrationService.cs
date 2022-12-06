@@ -43,8 +43,8 @@ internal class SyncMigrationService : ISyncMigrationService
     public IEnumerable<ISyncMigrationHandler> GetHandlers(int version)
         => _migrationHandlers.Where(x => x.SourceVersion == version);
 
-    public Attempt<string> ValidateMigrationSource(string source)   
-        => _migrationFileService.ValdateMigrationSource(source);
+    public Attempt<string> ValidateMigrationSource(int version, string source)   
+        => _migrationFileService.ValdateMigrationSource(version, source);
 
     /// <summary>
     ///  validate things before we run through them and do an actuall migration.
@@ -68,7 +68,7 @@ internal class SyncMigrationService : ISyncMigrationService
                 // TODO: what do we do if the validator fails ???
             }
         }
-
+  
         return new MigrationResults
         {
             Messages = messages,

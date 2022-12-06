@@ -30,8 +30,8 @@
             return $http.get(serviceRoot + "GetProfiles");
         }
 
-        function validateSource(source) {
-            return $http.get(serviceRoot + "ValidateSource/?source=" + source);
+        function validateSource(version, source) {
+            return $http.get(serviceRoot + "ValidateSource/?version=" + version + "&source=" + source);
         }
 
         function validate(options) {
