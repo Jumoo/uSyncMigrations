@@ -7,8 +7,9 @@ namespace uSync.Migrations.Configuration.Models;
 public class MigrationOptions
 {
     public string Source { get; set; } = "uSync/data";
-
     public string Target { get; set; } = "uSync/migrated";
+
+    public int SourceVersion { get; set; } = 7;
 
     public string MigrationType { get; set; }
 

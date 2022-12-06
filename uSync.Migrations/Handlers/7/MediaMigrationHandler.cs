@@ -8,6 +8,9 @@ using uSync.Migrations.Services;
 
 namespace uSync.Migrations.Handlers;
 
+[SyncMigrtionHandler(BackOfficeConstants.Groups.Content, uSyncMigrations.Priorities.Media, 7,
+    SourceFolderName = "Media",
+    TargetFolderName = "Media")]
 internal class MediaMigrationHandler : ContentBaseMigrationHandler<Media>, ISyncMigrationHandler
 {
     public MediaMigrationHandler(
@@ -38,15 +41,5 @@ internal class MediaMigrationHandler : ContentBaseMigrationHandler<Media>, ISync
             { "ogv", UmbConstants.Conventions.MediaTypes.VideoAlias },
             { "webm", UmbConstants.Conventions.MediaTypes.VideoAlias },
         });
-    }
-
-    public string ItemType => nameof(Media);
-
-    public int Priority => uSyncMigrations.Priorities.Media;
-
-    public void PrepareMigrations(Guid migrationId, string sourceFolder, SyncMigrationContext context)
-    { }
-
-    public IEnumerable<MigrationMessage> MigrateFromDisk(Guid migrationId, string sourceFolder, SyncMigrationContext context)
-        => DoMigrateFromDisk(migrationId, Path.Combine(sourceFolder, nameof(Media)), context);
+    } 
 }

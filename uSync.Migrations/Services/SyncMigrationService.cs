@@ -34,13 +34,14 @@ internal class SyncMigrationService : ISyncMigrationService
         _migrators = migrators;
     }
 
-    public IEnumerable<string> HandlerTypes()
+    public IEnumerable<string> HandlerTypes(int version)
         => _migrationHandlers
+            .Where(x => x.SourceVersion == version)
             .OrderBy(x => x.Priority)
             .Select(x => x.ItemType);
 
-    public IEnumerable<ISyncMigrationHandler> GetHandlers()
-        => _migrationHandlers;
+    public IEnumerable<ISyncMigrationHandler> GetHandlers(int version)
+        => _migrationHandlers.Where(x => x.SourceVersion == version);
 
     public Attempt<string> ValidateMigrationSource(string source)   
         => _migrationFileService.ValdateMigrationSource(source);
@@ -131,7 +132,7 @@ internal class SyncMigrationService : ISyncMigrationService
 
         foreach (var handler in handlers)
         {
-            results.AddRange(handler.MigrateFromDisk(migrationId, sourceRoot, migrationContext));
+            results.AddRange(handler.DoMigration(migrationContext));
         }
 
         return results;
@@ -139,7 +140,7 @@ internal class SyncMigrationService : ISyncMigrationService
 
     private SyncMigrationContext PrepareContext(Guid migrationId, string sourceRoot, MigrationOptions options)
     {
-        var context = new SyncMigrationContext(migrationId);
+        var context = new SyncMigrationContext(migrationId, sourceRoot, options.SourceVersion);
 
         if (options.BlockListViews)
         {
@@ -170,10 +171,10 @@ internal class SyncMigrationService : ISyncMigrationService
         AddMigrators(context, options.PreferredMigrators);
 
         // let the handlers run through their prep (populate all the lookups)
-        GetHandlers()?
+        GetHandlers(options.SourceVersion)?
             .OrderBy(x => x.Priority)
             .ToList()
-            .ForEach(x => x.PrepareMigrations(migrationId, sourceRoot, context));
+            .ForEach(x => x.PrepareMigrations(context));
 
         return context;
     }

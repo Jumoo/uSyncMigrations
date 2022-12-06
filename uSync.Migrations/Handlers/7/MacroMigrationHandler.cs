@@ -2,75 +2,27 @@
 
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
-using Umbraco.Cms.Core.Notifications;
 
 using uSync.Core;
 using uSync.Migrations.Models;
-using uSync.Migrations.Notifications;
 using uSync.Migrations.Services;
 
 namespace uSync.Migrations.Handlers;
 
-internal class MacroMigrationHandler : ISyncMigrationHandler
+[SyncMigrtionHandler(BackOfficeConstants.Groups.Settings, uSyncMigrations.Priorities.Macros, 7,
+    SourceFolderName = "Macro", TargetFolderName = "Macros")]
+internal class MacroMigrationHandler : MigrationHandlerBase<Macro>, ISyncMigrationHandler
 {
-    private readonly IEventAggregator _eventAggregator;
-    private readonly ISyncMigrationFileService _migrationFileService;
-
     public MacroMigrationHandler(
         IEventAggregator eventAggregator,
         ISyncMigrationFileService migrationFileService)
-    {
-        _eventAggregator = eventAggregator;
-        _migrationFileService = migrationFileService;
-    }
-
-    public string Group => uSync.BackOffice.uSyncConstants.Groups.Settings;
-
-    public string ItemType => nameof(Macro);
-
-    public int Priority => uSyncMigrations.Priorities.Macros;
-
-    public void PrepareMigrations(Guid migrationId, string sourceFolder, SyncMigrationContext context)
+        : base(eventAggregator, migrationFileService)
     { }
 
-    public IEnumerable<MigrationMessage> MigrateFromDisk(Guid migrationId, string sourceFolder, SyncMigrationContext context)
-    {
-        var macroFolder = Path.Combine(sourceFolder, ItemType);
+    protected override void PrepareFile(XElement source, SyncMigrationContext context)
+    { }
 
-        if (Directory.Exists(macroFolder) == false)
-        {
-            return Enumerable.Empty<MigrationMessage>();
-        }
-
-        var messages = new List<MigrationMessage>();
-
-        foreach (var file in Directory.GetFiles(macroFolder, "*.config", SearchOption.AllDirectories))
-        {
-            var source = XElement.Load(file);
-
-            var migratingNotification = new SyncMigratingNotification<Macro>(source, context);
-
-            if (_eventAggregator.PublishCancelable(migratingNotification) == true)
-            {
-                continue;
-            }
-
-            var target = MigrateMacro(source);
-
-            if (target != null)
-            {
-                var migratedNotification = new SyncMigratedNotification<Macro>(target, context).WithStateFrom(migratingNotification);
-
-                _eventAggregator.Publish(migratedNotification);
-
-                messages.Add(SaveTargetXml(migrationId, target));
-            }
-        }
-
-        return messages;
-    }
-
-    private XElement MigrateMacro(XElement source)
+    protected override XElement? MigrateFile(XElement source, int level, SyncMigrationContext context)
     {
         var key = source.Element("Key").ValueOrDefault(Guid.Empty);
         var alias = source.Element("alias").ValueOrDefault(string.Empty);
@@ -127,12 +79,5 @@ internal class MacroMigrationHandler : ISyncMigrationHandler
         }
 
         return editorAlias;
-    }
-
-    private MigrationMessage SaveTargetXml(Guid id, XElement xml)
-    {
-        _migrationFileService.SaveMigrationFile(id, xml, "Macros");
-
-        return new MigrationMessage(ItemType, xml.GetAlias(), MigrationMessageType.Success);
     }
 }
