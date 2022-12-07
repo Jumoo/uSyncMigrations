@@ -1,6 +1,7 @@
 ﻿using System.Xml.Linq;
 
 using Umbraco.Cms.Core.Events;
+using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Extensions;
 
@@ -72,16 +73,6 @@ internal class DataTypeMigrationHandler : SharedDataTypeHandler, ISyncMigrationH
         return new SyncMigrationDataTypeProperty(editorAlias, database, preValues);
     }
 
-    protected override object? GetDataTypeConfig(ISyncPropertyMigrator? migrator, SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
-    {
-        return dataTypeProperty.PreValues != null
-            ? migrator?.GetConfigValues(dataTypeProperty, context)
-            ?? MakeEmptyLabelConfig(dataTypeProperty)
-            : MakeEmptyLabelConfig(dataTypeProperty);
-    }
-    protected override object? MakeEmptyLabelConfig(SyncMigrationDataTypeProperty dataTypeProperty)
-        => dataTypeProperty.PreValues?.ConvertPreValuesToJson(false);
-
     private static IList<PreValue> GetPreValues(XElement source)
     {
         var items = new List<PreValue>();
@@ -144,4 +135,20 @@ internal class DataTypeMigrationHandler : SharedDataTypeHandler, ISyncMigrationH
 
         return messages;
     }
+
+    protected override string GetNewEditorAlias(ISyncPropertyMigrator? migrator, SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
+        => migrator?.GetEditorAlias(dataTypeProperty, context) ?? UmbConstants.PropertyEditors.Aliases.Label;
+
+    protected override string GetNewDatabaseType(ISyncPropertyMigrator? migrator, SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
+        => migrator?.GetDatabaseType(dataTypeProperty, context) ?? ValueTypes.String;
+
+    protected override object? GetDataTypeConfig(ISyncPropertyMigrator? migrator, SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
+    {
+        return dataTypeProperty.PreValues != null
+            ? migrator?.GetConfigValues(dataTypeProperty, context)
+            ?? MakeEmptyLabelConfig(dataTypeProperty)
+            : MakeEmptyLabelConfig(dataTypeProperty);
+    }
+    protected override object? MakeEmptyLabelConfig(SyncMigrationDataTypeProperty dataTypeProperty)
+        => dataTypeProperty.PreValues?.ConvertPreValuesToJson(false);
 }

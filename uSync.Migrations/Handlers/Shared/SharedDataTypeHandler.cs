@@ -4,7 +4,6 @@ using Newtonsoft.Json;
 
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
-using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Cms.Core.Services;
 
 using uSync.Core;
@@ -80,6 +79,9 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
     protected abstract object? GetDataTypeConfig(ISyncPropertyMigrator? migrator, SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context);
     protected abstract object? MakeEmptyLabelConfig(SyncMigrationDataTypeProperty dataTypeProperty);
 
+    protected abstract string GetNewEditorAlias(ISyncPropertyMigrator? migrator, SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context);
+    protected abstract string GetNewDatabaseType(ISyncPropertyMigrator? migrator, SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context);
+
     protected override XElement? MigrateFile(XElement source, int level, SyncMigrationContext context)
     {
         var (alias, key) = GetAliasAndKey(source);
@@ -101,9 +103,8 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
         }
 
         var dataTypeProperty = GetMigrationDataTypeProperty(alias, databaseType, source);
-        var newEditorAlias = migrator?.GetEditorAlias(dataTypeProperty, context) ?? UmbConstants.PropertyEditors.Aliases.Label;
-        var newDatabaseType = migrator?.GetDatabaseType(dataTypeProperty, context) ?? ValueTypes.String;
-
+        var newEditorAlias = GetNewEditorAlias(migrator, dataTypeProperty, context);
+        var newDatabaseType = GetNewDatabaseType(migrator, dataTypeProperty, context);
         var newConfig = GetDataTypeConfig(migrator, dataTypeProperty, context) ?? MakeEmptyLabelConfig(dataTypeProperty);
 
         return MakeMigratedXml(key, name, level, newEditorAlias, newDatabaseType, folder, newConfig);

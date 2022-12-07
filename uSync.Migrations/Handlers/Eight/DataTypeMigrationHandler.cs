@@ -32,9 +32,6 @@ internal class DataTypeMigrationHandler : SharedDataTypeHandler, ISyncMigrationH
     protected override string GetDocTypeName(XElement source)
         => source.Element("Info")?.Element(uSyncConstants.Xml.Name).ValueOrDefault(string.Empty) ?? string.Empty;
 
-    protected override object? GetDataTypeConfig(ISyncPropertyMigrator? migrator, SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
-        => migrator?.GetConfigValues(dataTypeProperty, context);
-
     protected override SyncMigrationDataTypeProperty GetMigrationDataTypeProperty(string editorAlias, string database, XElement source)
         => new SyncMigrationDataTypeProperty(editorAlias, database, GetXmlConfig(source));
 
@@ -55,6 +52,21 @@ internal class DataTypeMigrationHandler : SharedDataTypeHandler, ISyncMigrationH
 
     protected override object? MakeEmptyLabelConfig(SyncMigrationDataTypeProperty dataTypeProperty)
         => dataTypeProperty.ConfigAsString;
+
+    // v8 behavior is - if we don't know about it, we leave it alone.
     private string? GetXmlConfig(XElement source) 
         => source.Element("Config").ValueOrDefault(string.Empty);
+
+    // v8 behavior is - if we don't know about it, we leave it alone.
+    protected override string GetNewEditorAlias(ISyncPropertyMigrator? migrator, SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
+        => migrator?.GetEditorAlias(dataTypeProperty, context) ?? dataTypeProperty.EditorAlias;
+
+    // v8 behavior is - if we don't know about it, we leave it alone.
+    protected override string GetNewDatabaseType(ISyncPropertyMigrator? migrator, SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
+        => migrator?.GetDatabaseType(dataTypeProperty, context) ?? dataTypeProperty.DatabaseType;
+
+    // v8 behavior is - if we don't know about it, we leave it alone.
+    protected override object? GetDataTypeConfig(ISyncPropertyMigrator? migrator, SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
+        => migrator?.GetConfigValues(dataTypeProperty, context) ?? dataTypeProperty.ConfigAsString;
+
 }
