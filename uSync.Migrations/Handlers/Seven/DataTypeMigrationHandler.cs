@@ -38,7 +38,7 @@ internal class DataTypeMigrationHandler : SharedDataTypeHandler, ISyncMigrationH
 
     protected override (string alias, Guid key) GetAliasAndKey(XElement source)
         => (
-            alias: source.Attribute("Id").ValueOrDefault(string.Empty),
+            alias: source.Attribute("Name").ValueOrDefault(string.Empty),
             key: source.Attribute("Key").ValueOrDefault(Guid.Empty)
         );
 
@@ -58,10 +58,13 @@ internal class DataTypeMigrationHandler : SharedDataTypeHandler, ISyncMigrationH
         return null;
     }
 
-    protected override string GetDocTypeName(XElement source)
+    protected override string GetEditorAlias(XElement source)
+        => source.Attribute("Id").ValueOrDefault(string.Empty);
+
+    protected override string GetDataTypeName(XElement source)
         => source.Attribute("Name").ValueOrDefault(string.Empty);
 
-    protected override string GetDocTypeFolder(XElement source)
+    protected override string GetDataTypeFolder(XElement source)
         => source.Attribute("Folder").ValueOrDefault(string.Empty);
 
     protected override string GetDatabaseType(XElement source)
@@ -106,7 +109,8 @@ internal class DataTypeMigrationHandler : SharedDataTypeHandler, ISyncMigrationH
             try
             {
                 var source = XElement.Load(file);
-                var (editorAlias, key) = GetAliasAndKey(source);
+                var (alias, key) = GetAliasAndKey(source);
+                var editorAlias = GetEditorAlias(source);
 
                 var name = source.Attribute("Name").ValueOrDefault(string.Empty);
                 var databaseType = source.Attribute("DatabaseType").ValueOrDefault(string.Empty);

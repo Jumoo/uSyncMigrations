@@ -23,13 +23,16 @@ internal class DataTypeMigrationHandler : SharedDataTypeHandler, ISyncMigrationH
         IDataTypeService dataTypeService) : base(eventAggregator, migrationFileService, dataTypeService)
     { }
 
+    protected override string GetEditorAlias(XElement source)
+        => source.Element("Info")?.Element("EditorAlias").ValueOrDefault(string.Empty) ?? string.Empty;
+
     protected override string GetDatabaseType(XElement source)
         => source.Element("Info")?.Element("DatabaseType").ValueOrDefault(string.Empty) ?? string.Empty;
 
-    protected override string GetDocTypeFolder(XElement source)
+    protected override string GetDataTypeFolder(XElement source)
         => source.Element("Info")?.Element("Folder").ValueOrDefault(string.Empty) ?? string.Empty;
 
-    protected override string GetDocTypeName(XElement source)
+    protected override string GetDataTypeName(XElement source)
         => source.Element("Info")?.Element(uSyncConstants.Xml.Name).ValueOrDefault(string.Empty) ?? string.Empty;
 
     protected override SyncMigrationDataTypeProperty GetMigrationDataTypeProperty(string editorAlias, string database, XElement source)

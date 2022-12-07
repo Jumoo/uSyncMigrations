@@ -33,3 +33,24 @@ public class SyncMigratorAttribute : Attribute
 /// </remarks>
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
 public class SyncDefaultMigratorAttribute : Attribute { }
+
+
+/// <summary>
+///  When you want to specifically support a version you can add a SyncMigratorVersion attribute
+/// </summary>
+/// <remarks>
+///  if the attribute is not present then the migrator will assume it supports v7. 
+///  but you use the attribute you have to specifiy all versions you support. 
+///  the version is passed in the Context so you can choose to do diffrent things per version
+/// </remarks>
+
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+public class SyncMigratorVersionAttribute : Attribute
+{
+    public int[] Versions { get; set; }
+
+    public SyncMigratorVersionAttribute(params int[] versions)
+    {
+        Versions = versions;
+    }
+}

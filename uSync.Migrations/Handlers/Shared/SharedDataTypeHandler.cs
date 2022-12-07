@@ -48,7 +48,9 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
 
     protected override void PrepareFile(XElement source, SyncMigrationContext context)
     {
-        var (editorAlias, dtd) = GetAliasAndKey(source);
+        var (alias, dtd) = GetAliasAndKey(source);
+        var editorAlias = GetEditorAlias(source);
+
         if (dtd == Guid.Empty || string.IsNullOrEmpty(editorAlias)) return;
 
         var databaseType = GetDatabaseType(source);
@@ -71,9 +73,9 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
         context.AddDataTypeDefinition(dtd, editorAlias);
     }
 
-
-    protected abstract string GetDocTypeName(XElement source);
-    protected abstract string GetDocTypeFolder(XElement source);
+    protected abstract string GetEditorAlias(XElement source);
+    protected abstract string GetDataTypeName(XElement source);
+    protected abstract string GetDataTypeFolder(XElement source);
 
     protected abstract SyncMigrationDataTypeProperty GetMigrationDataTypeProperty(string editorAlias, string database, XElement source);
     protected abstract object? GetDataTypeConfig(ISyncPropertyMigrator? migrator, SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context);
@@ -85,6 +87,7 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
     protected override XElement? MigrateFile(XElement source, int level, SyncMigrationContext context)
     {
         var (alias, key) = GetAliasAndKey(source);
+        var editorAlias = GetEditorAlias(source);   
 
         if (context.GetReplacementDataType(key) != key)
         {
@@ -92,17 +95,17 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
             return null;
         }
 
-        var name = GetDocTypeName(source);
-        var folder = GetDocTypeFolder(source);
+        var name = GetDataTypeName(source);
+        var folder = GetDataTypeFolder(source);
         var databaseType = GetDatabaseType(source);
 
-        var migrator = context.TryGetMigrator(alias);
+        var migrator = context.TryGetMigrator(editorAlias);
         if (migrator is null)
         {
             // no migrator. 
         }
 
-        var dataTypeProperty = GetMigrationDataTypeProperty(alias, databaseType, source);
+        var dataTypeProperty = GetMigrationDataTypeProperty(editorAlias, databaseType, source);
         var newEditorAlias = GetNewEditorAlias(migrator, dataTypeProperty, context);
         var newDatabaseType = GetNewDatabaseType(migrator, dataTypeProperty, context);
         var newConfig = GetDataTypeConfig(migrator, dataTypeProperty, context) ?? MakeEmptyLabelConfig(dataTypeProperty);

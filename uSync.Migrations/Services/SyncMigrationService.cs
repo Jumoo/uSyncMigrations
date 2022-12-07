@@ -8,6 +8,7 @@ using uSync.BackOffice.Configuration;
 using uSync.Migrations.Composing;
 using uSync.Migrations.Configuration.Models;
 using uSync.Migrations.Handlers;
+using uSync.Migrations.Migrators;
 using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Services;
@@ -186,7 +187,7 @@ internal class SyncMigrationService : ISyncMigrationService
         var preferredList = _migrators.GetPreferredMigratorList(preferredMigrators);
         if (preferredList != null)
         {
-            foreach (var item in preferredList)
+            foreach (var item in preferredList.Where(x => x.Migrator.Versions.Contains(context.SourceVersion)))
             {
                 context.AddPropertyMigration(item.EditorAlias, item.Migrator);
             }
