@@ -70,7 +70,6 @@ internal abstract class ContentBaseMigrationHandler<TEntity> : MigrationHandlerB
         var path = context.GetContentPath(parent) + "/" + alias.ToSafeAlias(_shortStringHelper);
 
         // content is blocked by path (e.g home/about-us)
-
         if (context.IsBlocked(ItemType, path)) return null;
 
         context.AddContentPath(key, path);
