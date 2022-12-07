@@ -31,14 +31,19 @@ internal abstract class ContentBaseMigrationHandler<TEntity> : MigrationHandlerB
         _shortStringHelper = shortStringHelper;
     }
 
+    protected override (string alias, Guid key) GetAliasAndKey(XElement source)
+       => (
+            alias: source.Attribute("nodeName").ValueOrDefault(string.Empty),
+            key: source.Attribute("guid").ValueOrDefault(Guid.Empty)
+        );
+
     protected override void PrepareFile(XElement source, SyncMigrationContext context)
     {
-        var key = source.Attribute("guid").ValueOrDefault(Guid.Empty);
+        var (alias, key) = GetAliasAndKey(source);
+
         if (key != Guid.Empty)
         {
             var id = source.Attribute("id").ValueOrDefault(0);
-            var alias = source.Attribute("nodeName").ValueOrDefault(string.Empty);
-
             if (id > 0)
             {
                 context.AddKey(id, key);
@@ -53,8 +58,8 @@ internal abstract class ContentBaseMigrationHandler<TEntity> : MigrationHandlerB
 
     protected override XElement? MigrateFile(XElement source, int level, SyncMigrationContext context)
     {
-        var key = source.Attribute("guid").ValueOrDefault(Guid.Empty);
-        var alias = source.Attribute("nodeName").ValueOrDefault(string.Empty);
+        var (alias, key) = GetAliasAndKey(source);
+
         var parent = source.Attribute("parentGUID").ValueOrDefault(Guid.Empty);
         var contentType = source.Attribute("nodeTypeAlias").ValueOrDefault(string.Empty);
         var template = source.Attribute("templateAlias").ValueOrDefault(string.Empty);

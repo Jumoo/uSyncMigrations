@@ -18,11 +18,16 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : MigrationHand
         : base(eventAggregator, migrationFileService)
     { }
 
+    protected override (string alias, Guid key) GetAliasAndKey(XElement source)
+        => (
+            alias: source.Element("Info")?.Element("Alias")?.ValueOrDefault(string.Empty) ?? string.Empty,
+            key: source.Element("Info")?.Element("Key")?.ValueOrDefault(Guid.Empty) ?? Guid.Empty
+        );
+
     protected override void PrepareFile(XElement source, SyncMigrationContext context)
     {
-        var contentTypeAlias = source.Element("Info")?.Element("Alias")?.ValueOrDefault(string.Empty) ?? string.Empty;
-
-        context.AddContentTypeKey(contentTypeAlias, source.Element("Info")?.Element("Key")?.ValueOrDefault(Guid.Empty));
+        var (contentTypeAlias, key) = GetAliasAndKey(source);
+        context.AddContentTypeKey(contentTypeAlias, key);
 
         var compositions = source.Element("Info")?.Element("Compositions")?.Elements("Composition")?.Select(x => x.Value) ?? Enumerable.Empty<string>();
         context.AddContentTypeCompositions(contentTypeAlias, compositions);
@@ -53,10 +58,7 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : MigrationHand
         var info = source.Element("Info");
         if (info == null) return null;
 
-        var key = info.Element("Key").ValueOrDefault(Guid.Empty);
-        var alias = info.Element("Alias").ValueOrDefault(string.Empty);
-
-        if (context.IsBlocked(ItemType, alias)) return null;
+        var (alias, key) = GetAliasAndKey(source);
 
         var target = new XElement(ItemType,
             new XAttribute(uSyncConstants.Xml.Key, key),

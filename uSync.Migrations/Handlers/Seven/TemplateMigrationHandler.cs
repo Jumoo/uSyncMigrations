@@ -42,14 +42,6 @@ internal class TemplateMigrationHandler : MigrationHandlerBase<Template>,  ISync
 
     protected override XElement? MigrateFile(XElement source, int level, SyncMigrationContext context)
     {
-        var (alias, _) = GetAliasAndKey(source);
-
-        if (context.IsBlocked(ItemType, alias)) return null;
-        return ConvertTemplate(source, level);
-    }
-
-    private static XElement ConvertTemplate(XElement source, int level)
-    {
         var key = source.Element("Key").ValueOrDefault(Guid.Empty);
         var alias = source.Element("Alias").ValueOrDefault(string.Empty);
         var name = source.Element("Name").ValueOrDefault(string.Empty);
@@ -65,11 +57,10 @@ internal class TemplateMigrationHandler : MigrationHandlerBase<Template>,  ISync
         return target;
     }
 
-    private static (string alias, Guid key) GetAliasAndKey(XElement source)
-    {
-        return (
+    protected override (string alias, Guid key) GetAliasAndKey(XElement source)
+        => (
             alias: source.Element("Alias").ValueOrDefault(string.Empty),
             key: source.Element("Key").ValueOrDefault(Guid.Empty)
         );
-    }
+    
 }

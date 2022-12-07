@@ -30,14 +30,17 @@ internal class LanguageMigrationHandler : MigrationHandlerBase<Language>, ISyncM
     protected override void PrepareFile(XElement source, SyncMigrationContext context)
     { }
 
-    protected override XElement? MigrateFile(XElement source, int level, SyncMigrationContext context)
+    protected override (string alias, Guid key) GetAliasAndKey(XElement source)
     {
         var alias = source.Attribute("CultureAlias").ValueOrDefault(string.Empty);
+        var key = CultureInfo.GetCultureInfo(alias)?.LCID.Int2Guid() ?? Guid.Empty;
+        return (alias: alias, key: key);
+    }
+    protected override XElement? MigrateFile(XElement source, int level, SyncMigrationContext context)
+    {
+        var (alias, key) = GetAliasAndKey(source);
 
         var existing = _localizationService.GetLanguageByIsoCode(alias);
-
-        var culture = CultureInfo.GetCultureInfo(alias);
-        var key = culture.LCID.Int2Guid();
 
         var target = new XElement("Language",
             new XAttribute(uSyncConstants.Xml.Key, key),

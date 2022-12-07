@@ -60,12 +60,18 @@ internal class DataTypeMigrationHandler : MigrationHandlerBase<DataType>, ISyncM
         }
     }
 
+    protected override (string alias, Guid key) GetAliasAndKey(XElement source)
+        => (
+            alias: source.Attribute("Id").ValueOrDefault(string.Empty),
+            key: source.Attribute("Key").ValueOrDefault(Guid.Empty)
+        );
+
     protected override void PrepareFile(XElement source, SyncMigrationContext context)
     {
-        var dtd = source.Attribute("Key").ValueOrDefault(Guid.Empty);
-        var databaseType = source.Attribute("DatabaseType").ValueOrDefault(string.Empty);
-        var editorAlias = source.Attribute("Id").ValueOrDefault(string.Empty);
+        var (editorAlias, dtd) = GetAliasAndKey(source);
         if (dtd == Guid.Empty || string.IsNullOrEmpty(editorAlias)) return;
+
+        var databaseType = source.Attribute("DatabaseType").ValueOrDefault(string.Empty);
 
         //
         // replacements
@@ -96,8 +102,8 @@ internal class DataTypeMigrationHandler : MigrationHandlerBase<DataType>, ISyncM
 
     protected override XElement? MigrateFile(XElement source, int level, SyncMigrationContext context)
     {
-        var key = source.Attribute("Key").ValueOrDefault(Guid.Empty);
-        var editorAlias = source.Attribute("Id").ValueOrDefault(string.Empty);
+        var (editorAlias, key) = GetAliasAndKey(source);
+
         var name = source.Attribute("Name").ValueOrDefault(string.Empty);
         var databaseType = source.Attribute("DatabaseType").ValueOrDefault(string.Empty);
         var folder = source.Attribute("Folder").ValueOrDefault(string.Empty);
@@ -193,8 +199,8 @@ internal class DataTypeMigrationHandler : MigrationHandlerBase<DataType>, ISyncM
             try
             {
                 var source = XElement.Load(file);
-                var key = source.Attribute("Key").ValueOrDefault(Guid.Empty);
-                var editorAlias = source.Attribute("Id").ValueOrDefault(string.Empty);
+                var (editorAlias, key) = GetAliasAndKey(source);
+
                 var name = source.Attribute("Name").ValueOrDefault(string.Empty);
                 var databaseType = source.Attribute("DatabaseType").ValueOrDefault(string.Empty);
 

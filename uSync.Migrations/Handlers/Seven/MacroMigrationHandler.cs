@@ -22,10 +22,15 @@ internal class MacroMigrationHandler : MigrationHandlerBase<Macro>, ISyncMigrati
     protected override void PrepareFile(XElement source, SyncMigrationContext context)
     { }
 
+    protected override (string alias, Guid key) GetAliasAndKey(XElement source)
+        => (
+            alias: source.Element("alias").ValueOrDefault(string.Empty),
+            key: source.Element("key").ValueOrDefault(Guid.Empty)
+        );
+
     protected override XElement? MigrateFile(XElement source, int level, SyncMigrationContext context)
     {
-        var key = source.Element("Key").ValueOrDefault(Guid.Empty);
-        var alias = source.Element("alias").ValueOrDefault(string.Empty);
+        var (alias, key) = GetAliasAndKey(source);
 
         var target = new XElement("Macro",
             new XAttribute(uSyncConstants.Xml.Key, key),

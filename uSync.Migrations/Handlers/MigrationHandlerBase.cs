@@ -121,6 +121,9 @@ internal abstract class MigrationHandlerBase<TObject>
         {
             var source = XElement.Load(file);
 
+            var (alias, key) = GetAliasAndKey(source);
+            if (context.IsBlocked(ItemType, alias)) continue;
+
             var migratingNotification = new SyncMigratingNotification<TObject>(source, context);
             if (_eventAggregator.PublishCancelable(migratingNotification) == true)
             {
@@ -153,4 +156,12 @@ internal abstract class MigrationHandlerBase<TObject>
 
     protected abstract void PrepareFile(XElement source, SyncMigrationContext context);
     protected abstract XElement? MigrateFile(XElement source, int level, SyncMigrationContext context);
+
+    /// <summary>
+    ///  method to get the source and alias of a value.
+    /// </summary>
+    /// <param name="source"></param>
+    /// <returns></returns>
+    protected abstract (string alias, Guid key) GetAliasAndKey(XElement source);
+        
 }
