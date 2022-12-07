@@ -1,12 +1,6 @@
 ﻿using System.Xml.Linq;
 
-using Microsoft.Extensions.Logging;
-
-using Newtonsoft.Json;
-
 using Umbraco.Cms.Core.Events;
-using Umbraco.Cms.Core.Models;
-using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Extensions;
 
@@ -14,50 +8,31 @@ using uSync.Core;
 using uSync.Migrations.Composing;
 using uSync.Migrations.Configuration.Models;
 using uSync.Migrations.Extensions;
+using uSync.Migrations.Handlers.Shared;
 using uSync.Migrations.Migrators;
 using uSync.Migrations.Migrators.Models;
 using uSync.Migrations.Models;
-using uSync.Migrations.Serialization;
 using uSync.Migrations.Services;
 using uSync.Migrations.Validation;
 
 namespace uSync.Migrations.Handlers.Seven;
 
-[SyncMigrationHandler(BackOfficeConstants.Groups.Settings, uSyncMigrations.Priorities.DataTypes, 7,
+[SyncMigrationHandler(BackOfficeConstants.Groups.Settings, uSyncMigrations.Priorities.DataTypes,
+    SourceVersion = 7,
     SourceFolderName = "DataType",
     TargetFolderName = "DataTypes")]
-internal class DataTypeMigrationHandler : MigrationHandlerBase<DataType>, ISyncMigrationHandler, ISyncMigrationValidator
+internal class DataTypeMigrationHandler : SharedDataTypeHandler, ISyncMigrationHandler, ISyncMigrationValidator
 {
-    private readonly ILogger<DataTypeMigrationHandler> _logger;
-    private readonly JsonSerializerSettings _jsonSerializerSettings;
-    private readonly IDataTypeService _dataTypeService;
     private readonly SyncPropertyMigratorCollection _migrators;
 
     public DataTypeMigrationHandler(
         IEventAggregator eventAggregator,
         ISyncMigrationFileService fileService,
-        ILogger<DataTypeMigrationHandler> logger,
         IDataTypeService dataTypeService,
         SyncPropertyMigratorCollection migrators)
-        : base(eventAggregator, fileService)
+        : base(eventAggregator, fileService, dataTypeService)
     {
-        _logger = logger;
-
-        _jsonSerializerSettings = new JsonSerializerSettings()
-        {
-            ContractResolver = new SyncMigrationsContractResolver(),
-            Formatting = Formatting.Indented,
-        };
-        _dataTypeService = dataTypeService;
         _migrators = migrators;
-    }
-
-    public override void Prepare(SyncMigrationContext context)
-    {
-        foreach (var datatype in _dataTypeService.GetAll())
-        {
-            context.AddDataTypeDefinition(datatype.Key, datatype.EditorAlias);
-        }
     }
 
     protected override (string alias, Guid key) GetAliasAndKey(XElement source)
@@ -66,103 +41,46 @@ internal class DataTypeMigrationHandler : MigrationHandlerBase<DataType>, ISyncM
             key: source.Attribute("Key").ValueOrDefault(Guid.Empty)
         );
 
-    protected override void PrepareFile(XElement source, SyncMigrationContext context)
+    protected override ReplacementDataTypeInfo? GetReplacementInfo(string editorAlias, string databaseType, XElement source, SyncMigrationContext context)
     {
-        var (editorAlias, dtd) = GetAliasAndKey(source);
-        if (dtd == Guid.Empty || string.IsNullOrEmpty(editorAlias)) return;
-
-        var databaseType = source.Attribute("DatabaseType").ValueOrDefault(string.Empty);
-
         //
         // replacements
         //
         var migrator = context.TryGetMigrator(editorAlias);
         if (migrator != null && migrator is ISyncReplacablePropertyMigrator replacablePropertyMigrator)
         {
-            var replacementInfo = replacablePropertyMigrator.GetReplacementEditorId(
+            return replacablePropertyMigrator.GetReplacementEditorId(
                 new SyncMigrationDataTypeProperty(editorAlias, databaseType, GetPreValues(source)),
                 context);
-
-            if (replacementInfo != null)
-            {
-                context.AddReplacementDataType(dtd, replacementInfo.Key);
-                context.AddDataTypeDefinition(dtd, replacementInfo.EditorAlias);
-
-                if (string.IsNullOrWhiteSpace(replacementInfo.Variation) == false)
-                {
-                    context.AddDataTypeVariation(dtd, replacementInfo.Variation);
-                }
-            }
         }
 
-        // add alias, (won't update if replacement was added)
-        context.AddDataTypeDefinition(dtd, editorAlias);
+        return null;
     }
 
+    protected override string GetDocTypeName(XElement source)
+        => source.Attribute("Name").ValueOrDefault(string.Empty);
 
-    protected override XElement? MigrateFile(XElement source, int level, SyncMigrationContext context)
+    protected override string GetDocTypeFolder(XElement source)
+        => source.Attribute("Folder").ValueOrDefault(string.Empty);
+
+    protected override string GetDatabaseType(XElement source)
+        => source.Attribute("DatabaseType").ValueOrDefault(string.Empty);
+
+    protected override SyncMigrationDataTypeProperty GetMigrationDataTypeProperty(string editorAlias, string database, XElement source)
     {
-        var (editorAlias, key) = GetAliasAndKey(source);
-
-        var name = source.Attribute("Name").ValueOrDefault(string.Empty);
-        var databaseType = source.Attribute("DatabaseType").ValueOrDefault(string.Empty);
-        var folder = source.Attribute("Folder").ValueOrDefault(string.Empty);
-
-        // this way we can block certain types of thing (e.g list items)
-        if (context.IsBlocked(ItemType, editorAlias) == true)
-        {
-            return null;
-        }
-
-        if (context.GetReplacementDataType(key) != key)
-        {
-            // this datatype has been replaced 
-            return null;
-        }
-
         var preValues = GetPreValues(source);
-
-        // change the type of thing as part of a migration.
-
-        // the migration for this type goes here...
-        var migrator = context.TryGetMigrator(editorAlias);
-        if (migrator is null)
-        {
-            _logger.LogWarning("No migrator for {editorAlias} will make it a label.", editorAlias);
-        }
-
-        var dataTypeProperty = new SyncMigrationDataTypeProperty(editorAlias, databaseType, preValues);
-
-        var newEditorAlias = migrator?.GetEditorAlias(dataTypeProperty, context) ?? UmbConstants.PropertyEditors.Aliases.Label;
-        var newDatabaseType = migrator?.GetDatabaseType(dataTypeProperty, context) ?? ValueTypes.String;
-
-        var newConfig = preValues != null
-            ? migrator?.GetConfigValues(dataTypeProperty, context) ?? MakeEmptyLabelConfig(preValues)
-            : MakeEmptyLabelConfig(preValues);
-
-        // now we write the new xml. 
-        var target = new XElement("DataType",
-            new XAttribute(uSyncConstants.Xml.Key, key),
-            new XAttribute(uSyncConstants.Xml.Alias, name),
-            new XAttribute(uSyncConstants.Xml.Level, level),
-            new XElement(uSyncConstants.Xml.Info,
-                new XElement(uSyncConstants.Xml.Name, name),
-                new XElement("EditorAlias", newEditorAlias),
-                new XElement("DatabaseType", newDatabaseType)));
-
-        if (string.IsNullOrWhiteSpace(folder) == false)
-        {
-            target.Element(uSyncConstants.Xml.Info)?.Add(new XElement("Folder", folder));
-        }
-
-        if (newConfig != null)
-        {
-            target.Add(new XElement("Config",
-                new XCData(JsonConvert.SerializeObject(newConfig, _jsonSerializerSettings))));
-        }
-
-        return target;
+        return new SyncMigrationDataTypeProperty(editorAlias, database, preValues);
     }
+
+    protected override object? GetDataTypeConfig(ISyncPropertyMigrator? migrator, SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
+    {
+        return dataTypeProperty.PreValues != null
+            ? migrator?.GetConfigValues(dataTypeProperty, context)
+            ?? MakeEmptyLabelConfig(dataTypeProperty)
+            : MakeEmptyLabelConfig(dataTypeProperty);
+    }
+    protected override object? MakeEmptyLabelConfig(SyncMigrationDataTypeProperty dataTypeProperty)
+        => dataTypeProperty.PreValues?.ConvertPreValuesToJson(false);
 
     private static IList<PreValue> GetPreValues(XElement source)
     {
@@ -184,8 +102,6 @@ internal class DataTypeMigrationHandler : MigrationHandlerBase<DataType>, ISyncM
         return items;
     }
 
-    private static object? MakeEmptyLabelConfig(IList<PreValue>? preValues)
-        => preValues?.ConvertPreValuesToJson(false);
 
     public IEnumerable<MigrationMessage> Validate(MigrationOptions options)
     {

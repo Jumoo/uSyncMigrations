@@ -2,12 +2,12 @@
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Strings;
 
-using uSync.Migrations.Handlers.Seven;
 using uSync.Migrations.Services;
 
 namespace uSync.Migrations.Handlers.Seven;
 
-[SyncMigrationHandler(BackOfficeConstants.Groups.Content, uSyncMigrations.Priorities.Media, 7,
+[SyncMigrationHandler(BackOfficeConstants.Groups.Content, uSyncMigrations.Priorities.Media, 
+    SourceVersion = 7,
     SourceFolderName = "Media",
     TargetFolderName = "Media")]
 internal class MediaMigrationHandler : ContentBaseMigrationHandler<Media>, ISyncMigrationHandler

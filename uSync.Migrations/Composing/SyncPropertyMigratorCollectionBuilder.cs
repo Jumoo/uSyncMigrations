@@ -19,7 +19,7 @@ public class SyncPropertyMigratorCollection
         : base(items)
     { }
 
-    public IList<MigratorEditorPair> GetPreferredMigratorList(IDictionary<string, string> preferredMigrators)
+    public IList<MigratorEditorPair> GetPreferredMigratorList(IDictionary<string, string>? preferredMigrators)
     {
         var migrators = this.ToList();
         var defaultMigrators = GetDefaults();

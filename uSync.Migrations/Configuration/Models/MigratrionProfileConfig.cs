@@ -6,7 +6,8 @@ namespace uSync.Migrations.Configuration.Models;
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class MigratrionProfileConfig
 {
-    public string[] Remove { get; set; }
+    public string[]? Remove { get; set; } 
 
     public List<MigrationProfile> Profiles { get; set; }
+        = new List<MigrationProfile>();
 }

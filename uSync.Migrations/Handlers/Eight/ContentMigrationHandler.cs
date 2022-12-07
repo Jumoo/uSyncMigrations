@@ -4,10 +4,10 @@ using Umbraco.Cms.Core.Strings;
 
 using uSync.Migrations.Services;
 
-namespace uSync.Migrations.Handlers.Seven;
+namespace uSync.Migrations.Handlers.Eight;
 
-[SyncMigrationHandler(BackOfficeConstants.Groups.Content, uSyncMigrations.Priorities.Content,
-    SourceVersion = 7,
+[SyncMigrationHandler(BackOfficeConstants.Groups.Content, uSyncMigrations.Priorities.Content, 
+    SourceVersion = 8,
     SourceFolderName = "Content",
     TargetFolderName = "Content")]
 internal class ContentMigrationHandler : ContentBaseMigrationHandler<Content>, ISyncMigrationHandler

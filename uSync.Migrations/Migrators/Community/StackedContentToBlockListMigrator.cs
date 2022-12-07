@@ -26,9 +26,9 @@ public class StackedContentToBlockListMigrator : SyncPropertyMigratorBase
 
     public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
-        var contentTypes = dataTypeProperty.PreValues.GetPreValueOrDefault("contentTypes", "[]");
-        var maxItems = dataTypeProperty.PreValues.GetPreValueOrDefault("maxItems", 0);
-        var singleItemMode = dataTypeProperty.PreValues.GetPreValueOrDefault("singleItemMode", 0);
+        var contentTypes = dataTypeProperty.PreValues?.GetPreValueOrDefault("contentTypes", "[]") ?? "[]";
+        var maxItems = dataTypeProperty.PreValues?.GetPreValueOrDefault("maxItems", 0) ?? 0;
+        var singleItemMode = dataTypeProperty.PreValues?.GetPreValueOrDefault("singleItemMode", 0) ?? 0;
 
         var blocks = JsonConvert
             .DeserializeObject<List<StackedContentConfigurationBlock>>(contentTypes)?

@@ -11,11 +11,11 @@ public class MigrationOptions
 
     public int SourceVersion { get; set; } = 7;
 
-    public string MigrationType { get; set; }
+    public string? MigrationType { get; set; }
 
-    public IList<HandlerOption> Handlers { get; set; }
+    public IList<HandlerOption>? Handlers { get; set; }
 
-    public IDictionary<string, string> PreferredMigrators { get; set; }
+    public IDictionary<string, string>? PreferredMigrators { get; set; }
 
     public bool BlockListViews { get; set; } = true;
 
@@ -24,20 +24,20 @@ public class MigrationOptions
     /// <summary>
     ///  items that you want to block by type
     /// </summary>
-    public Dictionary<string, List<string>> BlockedItems { get; set; }
+    public Dictionary<string, List<string>>? BlockedItems { get; set; }
 
     /// <summary>
     ///  Blocked properties use (alias of somethign to block.) syntax?. 
     /// </summary>
-    public List<string> IgnoredProperties { get; set; }
+    public List<string>? IgnoredProperties { get; set; }
 
-    public Dictionary<string, List<string>> IgnoredPropertiesByContentType { get; set; }
+    public Dictionary<string, List<string>>? IgnoredPropertiesByContentType { get; set; }
 }
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class HandlerOption
 {
-    public string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
 
     public bool Include { get; set; } = true;
 }

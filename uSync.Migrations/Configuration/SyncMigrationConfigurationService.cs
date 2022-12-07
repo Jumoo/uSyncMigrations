@@ -21,7 +21,6 @@ internal class SyncMigrationConfigurationService : ISyncMigrationConfigurationSe
     private readonly ILogger<SyncMigrationConfigurationService> _logger;
     private readonly ISyncMigrationService _migrationService;
     private readonly SyncMigrationProfileCollection _syncMigrationProfiles;
-    private readonly SyncPropertyMigratorCollection _migrators;
 
     public SyncMigrationConfigurationService(
         IHostEnvironment hostEnvironment,
@@ -87,7 +86,11 @@ internal class SyncMigrationConfigurationService : ISyncMigrationConfigurationSe
                 {
                     foreach (var profile in config.Profiles)
                     {
-                        var configuredHandlers = profile.Options.Handlers.Select(x => x.Name);
+                        if (profile == null || profile.Options == null) continue;
+
+                        var configuredHandlers = profile.Options.Handlers?.Select(x => x.Name);
+                        if (configuredHandlers == null) continue;
+
                         profile.Options.Handlers = _migrationService.GetHandlers(profile.Version)
                             .Select(x => new HandlerOption
                             {

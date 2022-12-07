@@ -4,14 +4,17 @@ using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 
 using uSync.Core;
+using uSync.Migrations.Handlers.Shared;
 using uSync.Migrations.Models;
 using uSync.Migrations.Services;
 
 namespace uSync.Migrations.Handlers.Seven;
 
-[SyncMigrationHandler(BackOfficeConstants.Groups.Settings, uSyncMigrations.Priorities.Macros, 7,
-    SourceFolderName = "Macro", TargetFolderName = "Macros")]
-internal class MacroMigrationHandler : MigrationHandlerBase<Macro>, ISyncMigrationHandler
+[SyncMigrationHandler(BackOfficeConstants.Groups.Settings, uSyncMigrations.Priorities.Macros, 
+    SourceVersion = 7,
+    SourceFolderName = "Macro",
+    TargetFolderName = "Macros")]
+internal class MacroMigrationHandler : SharedHandlerBase<Macro>, ISyncMigrationHandler
 {
     public MacroMigrationHandler(
         IEventAggregator eventAggregator,
@@ -19,13 +22,10 @@ internal class MacroMigrationHandler : MigrationHandlerBase<Macro>, ISyncMigrati
         : base(eventAggregator, migrationFileService)
     { }
 
-    protected override void PrepareFile(XElement source, SyncMigrationContext context)
-    { }
-
     protected override (string alias, Guid key) GetAliasAndKey(XElement source)
         => (
             alias: source.Element("alias").ValueOrDefault(string.Empty),
-            key: source.Element("key").ValueOrDefault(Guid.Empty)
+            key: source.Element("Key").ValueOrDefault(Guid.Empty)
         );
 
     protected override XElement? MigrateFile(XElement source, int level, SyncMigrationContext context)

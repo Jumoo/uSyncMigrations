@@ -30,6 +30,10 @@ public class SyncMigrationContext : IDisposable
     /// </summary>
     public int SourceVersion { get; }
 
+    /// <summary>
+    ///  the current default language of the install. 
+    /// </summary>
+    public string DefaultLanguage { get; set; } = string.Empty;
 
     private Dictionary<string, ISyncPropertyMigrator> _migrators { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
@@ -65,7 +69,6 @@ public class SyncMigrationContext : IDisposable
 
     private Dictionary<int, Guid> _idKeyMap { get; set; } = new();
 
-    public string DefaultLanguage { get; set; }
 
   
     /// <summary>

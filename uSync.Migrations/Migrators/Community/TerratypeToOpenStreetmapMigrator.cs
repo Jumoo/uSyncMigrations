@@ -17,7 +17,7 @@ public class TerratypeToOpenStreetmapMigrator : SyncPropertyMigratorBase
         var config = new JObject();
 
         config.Add("allowClear", true);
-        config.Add("defaultPosition", GetPosition(dataTypeProperty.PreValues.GetPreValueOrDefault("definition", string.Empty)));
+        config.Add("defaultPosition", GetPosition(dataTypeProperty.PreValues?.GetPreValueOrDefault("definition", string.Empty) ?? string.Empty));
         config.Add("showCoordinates", false);
         config.Add("showSearch", false);
         config.Add("tileLayer", "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png");

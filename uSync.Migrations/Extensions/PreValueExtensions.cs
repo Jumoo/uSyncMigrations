@@ -35,7 +35,7 @@ public static class PreValueExtensions
         }
     }
 
-    public static object MapPreValues(this object? config, IEnumerable<PreValue> preValues)
+    public static object? MapPreValues(this object? config, IEnumerable<PreValue> preValues)
     {
         if (config == null) return null;
 
@@ -58,10 +58,11 @@ public static class PreValueExtensions
         return config;
     }
 
-    public static object MapPreValues(this object config, IEnumerable<PreValue> preValues, Dictionary<string, string> mappings)
+    public static object MapPreValues(this object config, IEnumerable<PreValue>? preValues, Dictionary<string, string> mappings)
     {
-        var properties = config.GetType().GetProperties();
+        if (preValues == null) return config;
 
+        var properties = config.GetType().GetProperties();
         foreach (var value in preValues)
         {
             if (mappings.ContainsKey(value.Alias))
@@ -81,19 +82,20 @@ public static class PreValueExtensions
 
         return config;
     }    
-    public static object ConvertPreValuesToJson(this IEnumerable<PreValue> preValues, bool uppercase)
+    public static object ConvertPreValuesToJson(this IEnumerable<PreValue>? preValues, bool uppercase)
     {
         return preValues.ConvertPreValuesToJson(uppercase, null);
     }
-    public static object ConvertPreValuesToJson(this IEnumerable<PreValue> preValues, bool uppercase, Dictionary<string, string> mappings)
+    public static object ConvertPreValuesToJson(this IEnumerable<PreValue>? preValues, bool uppercase, Dictionary<string, string>? mappings)
     {
         var config = new JObject();
-        bool hasMappings = mappings != null && mappings.Any();
+        if (preValues == null) return config;
+
         foreach (var preValue in preValues)
         {
             var alias = preValue.Alias;
             // look for mappings
-            if (hasMappings)
+            if (mappings != null && mappings.Count > 0)
             {
                 // then we need to ignore any properties that aren't in the mappings
                 if (mappings.ContainsKey(alias))
@@ -133,7 +135,7 @@ public static class PreValueExtensions
                 }
 
             }
-            catch (Exception ex)
+            catch
             {
                 // here - something went wrong ?
             }

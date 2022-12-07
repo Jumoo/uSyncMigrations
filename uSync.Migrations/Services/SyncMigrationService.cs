@@ -63,7 +63,7 @@ internal class SyncMigrationService : ISyncMigrationService
             {
                 messages.AddRange(validator.Validate(options));
             }
-            catch(Exception ex)
+            catch
             {
                 // TODO: what do we do if the validator fails ???
             }
@@ -86,9 +86,9 @@ internal class SyncMigrationService : ISyncMigrationService
         // TODO: Add notifications for `uSyncMigrationStartingNotification` and `uSyncMigrationCompleteNotification`? [LK]
         // Pass through the context, in case 3rd-party wants to populate/reference it? [LK]
 
-        var itemTypes = options.Handlers.Where(x => x.Include == true).Select(x => x.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var itemTypes = options.Handlers?.Where(x => x.Include == true).Select(x => x.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-        var handlers = GetHandlers(itemTypes);
+        var handlers = GetHandlers(options.SourceVersion, itemTypes);
 
         using (var migrationContext = PrepareContext(migrationId, sourceRoot, options))
         {
@@ -113,16 +113,18 @@ internal class SyncMigrationService : ISyncMigrationService
 
     }
 
-    private IOrderedEnumerable<ISyncMigrationHandler> GetHandlers(HashSet<string>? itemTypes = null)
+    private IOrderedEnumerable<ISyncMigrationHandler> GetHandlers(int sourceVersion, HashSet<string>? itemTypes = null)
     {
         if (itemTypes?.Any() == true)
         {
             return _migrationHandlers
-                .Where(x => itemTypes.Contains(x.ItemType) == true)
+                .Where(x => x.SourceVersion == sourceVersion && itemTypes.Contains(x.ItemType) == true)
                 .OrderBy(x => x.Priority);
         }
 
-        return _migrationHandlers.OrderBy(x => x.Priority);
+        return _migrationHandlers
+            .Where(x => x.SourceVersion == sourceVersion)
+            .OrderBy(x => x.Priority);
     }
 
     private static IEnumerable<MigrationMessage> MigrateFromDisk(Guid migrationId, string sourceRoot, SyncMigrationContext migrationContext, IOrderedEnumerable<ISyncMigrationHandler> handlers)
@@ -179,12 +181,15 @@ internal class SyncMigrationService : ISyncMigrationService
         return context;
     }
 
-    private void AddMigrators(SyncMigrationContext context, IDictionary<string,string> preferredMigrators)
+    private void AddMigrators(SyncMigrationContext context, IDictionary<string,string>? preferredMigrators)
     {
         var preferredList = _migrators.GetPreferredMigratorList(preferredMigrators);
-        foreach(var item in preferredList)
+        if (preferredList != null)
         {
-            context.AddPropertyMigration(item.EditorAlias, item.Migrator);
+            foreach (var item in preferredList)
+            {
+                context.AddPropertyMigration(item.EditorAlias, item.Migrator);
+            }
         }
     }
 }

@@ -6,7 +6,8 @@ using uSync.Migrations.Services;
 
 namespace uSync.Migrations.Handlers.Seven;
 
-[SyncMigrationHandler(BackOfficeConstants.Groups.Settings, uSyncMigrations.Priorities.ContentTypes, 7,
+[SyncMigrationHandler(BackOfficeConstants.Groups.Settings, uSyncMigrations.Priorities.ContentTypes,
+    SourceVersion = 7,
     SourceFolderName = "DocumentType",
     TargetFolderName = "ContentTypes")]
 internal class ContentTypeMigrationHandler : ContentTypeBaseMigrationHandler<ContentType>, ISyncMigrationHandler
