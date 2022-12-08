@@ -1,5 +1,7 @@
 ﻿using System.Xml.Linq;
 
+using Newtonsoft.Json.Linq;
+
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Services;
 
@@ -54,7 +56,7 @@ internal class DataTypeMigrationHandler : SharedDataTypeHandler, ISyncMigrationH
     }
 
     protected override object? MakeEmptyLabelConfig(SyncMigrationDataTypeProperty dataTypeProperty)
-        => dataTypeProperty.ConfigAsString;
+        => JToken.Parse(dataTypeProperty.ConfigAsString ?? "");
 
     // v8 behavior is - if we don't know about it, we leave it alone.
     private string? GetXmlConfig(XElement source) 
@@ -70,6 +72,6 @@ internal class DataTypeMigrationHandler : SharedDataTypeHandler, ISyncMigrationH
 
     // v8 behavior is - if we don't know about it, we leave it alone.
     protected override object? GetDataTypeConfig(ISyncPropertyMigrator? migrator, SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
-        => migrator?.GetConfigValues(dataTypeProperty, context) ?? dataTypeProperty.ConfigAsString;
+        => migrator?.GetConfigValues(dataTypeProperty, context) ?? MakeEmptyLabelConfig(dataTypeProperty);
 
 }

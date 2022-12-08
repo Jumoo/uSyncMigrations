@@ -60,16 +60,30 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
         // update info element. 
         UpdateInfoSection(info, target, key, context);
 
-        // structure
-        UpdateStructure(source, target);
+        if (ItemType == nameof(ContentType))
+        {
+            // structure
+            UpdateStructure(source, target);
+        }
 
         // properties. 
         UpdateProperties(source, target, alias, context);
 
+
+        if (ItemType != nameof(ContentType))
+        {
+            // odd usync thing, in media/member structure is after properties. 
+            UpdateStructure(source, target);
+        }
+
+
         // tabs
         UpdateTabs(source, target);
 
-        CheckVariations(target);
+        if (ItemType == nameof(ContentType))
+        {
+            CheckVariations(target);
+        }
 
         return target;
 
@@ -121,15 +135,19 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
         if (definitionElement == null) return;
 
         var definition = definitionElement.ValueOrDefault(Guid.Empty);
+        var variationValue = "Nothing";
+
         if (definition != Guid.Empty)
         {
             definitionElement.Value = context.GetReplacementDataType(definition).ToString();
-            newProperty.CreateOrSetElement("Variations", context.GetDataTypeVariation(definition));
+            variationValue = context.GetDataTypeVariation(definition);
         }
-        else
+
+        if (ItemType == nameof(ContentType))
         {
-            newProperty.CreateOrSetElement("Variations", "Nothing");
+            newProperty.CreateOrSetElement("Variations", variationValue);
         }
+
     }
     protected abstract void UpdatePropertyXml(XElement newProperty);
 

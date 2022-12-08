@@ -70,6 +70,8 @@ internal class DataTypeMigrationHandler : SharedDataTypeHandler, ISyncMigrationH
     protected override string GetDatabaseType(XElement source)
         => source.Attribute("DatabaseType").ValueOrDefault(string.Empty);
 
+    protected override int GetLevel(XElement source, int level) => level;
+
     protected override SyncMigrationDataTypeProperty GetMigrationDataTypeProperty(string editorAlias, string database, XElement source)
     {
         var preValues = GetPreValues(source);

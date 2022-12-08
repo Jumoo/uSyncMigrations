@@ -84,6 +84,8 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
     protected abstract string GetNewEditorAlias(ISyncPropertyMigrator? migrator, SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context);
     protected abstract string GetNewDatabaseType(ISyncPropertyMigrator? migrator, SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context);
 
+    protected virtual int GetLevel(XElement source, int level) => source.GetLevel();
+
     protected override XElement? MigrateFile(XElement source, int level, SyncMigrationContext context)
     {
         var (alias, key) = GetAliasAndKey(source);
@@ -110,7 +112,7 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
         var newDatabaseType = GetNewDatabaseType(migrator, dataTypeProperty, context);
         var newConfig = GetDataTypeConfig(migrator, dataTypeProperty, context) ?? MakeEmptyLabelConfig(dataTypeProperty);
 
-        return MakeMigratedXml(key, name, level, newEditorAlias, newDatabaseType, folder, newConfig);
+        return MakeMigratedXml(key, name, GetLevel(source, level), newEditorAlias, newDatabaseType, folder, newConfig);
     }
 
     protected virtual XElement MakeMigratedXml(
