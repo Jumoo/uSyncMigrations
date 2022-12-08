@@ -21,7 +21,7 @@ internal class BlockMigrationProfile : ISyncMigrationProfile
 
     public string Icon => "icon-brick color-green";
 
-    public string Description => "Convert to block list and block grids (Experimental!)";
+    public string Description => "Convert to block list (Experimental!)";
 
     public MigrationOptions Options => new MigrationOptions
     {
