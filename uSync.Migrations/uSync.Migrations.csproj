@@ -24,8 +24,4 @@
 			<_Parameter1>uSync.Migrations.Tests</_Parameter1>
 		</AssemblyAttribute>
 	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Handlers\Shared\" />
-	</ItemGroup>
 </Project>

@@ -10,6 +10,8 @@ public interface ISyncPropertyMigrator : IDiscoverable
 {
     string[] Editors { get; }
 
+    int[] Versions { get; }
+
     public string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context);
 
     public string GetDatabaseType(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context);

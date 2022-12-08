@@ -14,6 +14,8 @@ public abstract class SyncPropertyMigratorBase : ISyncPropertyMigrator
 
     public virtual string[] Editors { get; private set; }
 
+    public virtual int[] Versions { get; private set; }
+
     protected SyncPropertyMigratorBase()
     {
         // read the attribute
@@ -43,9 +45,17 @@ public abstract class SyncPropertyMigratorBase : ISyncPropertyMigrator
         {
             throw new InvalidOperationException($"Migrators inheriting from {nameof(SyncPropertyMigratorBase)} must contain at least one ${nameof(SyncMigratorAttribute)}");
         }
+
+        var versionAttributes = this.GetType().GetCustomAttributes<SyncMigratorVersionAttribute>(false);
+        if (versionAttributes != null && versionAttributes.Any())
+        {
+            Versions = versionAttributes.SelectMany(x => x.Versions).ToArray();
+        }
+        else
+        {
+            Versions = new[] { 7 };
+        }
     }
-
-
 
     public virtual string GetDatabaseType(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
         => dataTypeProperty.DatabaseType;

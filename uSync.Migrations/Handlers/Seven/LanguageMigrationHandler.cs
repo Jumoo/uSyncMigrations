@@ -7,14 +7,16 @@ using Umbraco.Cms.Core.Services;
 
 using uSync.Core;
 using uSync.Migrations.Extensions;
+using uSync.Migrations.Handlers.Shared;
 using uSync.Migrations.Models;
 using uSync.Migrations.Services;
 
 namespace uSync.Migrations.Handlers.Seven;
 
-[SyncMigrationHandler(BackOfficeConstants.Groups.Settings, uSyncMigrations.Priorities.Languages, 7,
+[SyncMigrationHandler(BackOfficeConstants.Groups.Settings, uSyncMigrations.Priorities.Languages, 
+    SourceVersion = 7,
     SourceFolderName = "Languages", TargetFolderName = "Languages")]
-internal class LanguageMigrationHandler : MigrationHandlerBase<Language>, ISyncMigrationHandler
+internal class LanguageMigrationHandler : SharedHandlerBase<Language>, ISyncMigrationHandler
 {
     private readonly ILocalizationService _localizationService;
 
@@ -26,9 +28,6 @@ internal class LanguageMigrationHandler : MigrationHandlerBase<Language>, ISyncM
     {
         _localizationService = localizationService;
     }
-
-    protected override void PrepareFile(XElement source, SyncMigrationContext context)
-    { }
 
     protected override (string alias, Guid key) GetAliasAndKey(XElement source)
     {

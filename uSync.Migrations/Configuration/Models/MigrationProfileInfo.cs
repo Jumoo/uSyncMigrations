@@ -7,6 +7,7 @@ namespace uSync.Migrations.Configuration.Models;
 public class MigrationProfileInfo
 {
     public List<ISyncMigrationProfile> Profiles { get; set; }
+        = new List<ISyncMigrationProfile>();
 
     public bool HasCustom { get; set; }
 }

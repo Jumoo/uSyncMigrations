@@ -14,11 +14,11 @@ public class MigrationProfile : ISyncMigrationProfile
 {
     public int Version { get; set; } = 7;
 
-    public string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
 
-    public string Icon { get; set; }
+    public string Icon { get; set; } = "icon-star";
 
-    public string Description { get; set; }
+    public string Description { get; set; } = "Loaded from disk";
 
     public int Order { get; set; } = 100;
 

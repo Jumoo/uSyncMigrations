@@ -14,5 +14,5 @@ public class ReplacementDataTypeInfo
     /// <summary>
     ///  is the replacement to a varied value - if so varies by what?
     /// </summary>
-    public string Variation { get; set; }
+    public string Variation { get; set; } = string.Empty;
 }

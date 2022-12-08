@@ -1,11 +1,10 @@
 ﻿namespace uSync.Migrations.Handlers;
 internal class SyncMigrationHandlerAttribute : Attribute
 {
-    public SyncMigrationHandlerAttribute(string group, int priority, int sourceVersion)
+    public SyncMigrationHandlerAttribute(string group, int priority)
     {
         Group = group;
         Priority = priority;
-        SourceVersion = sourceVersion;
     }
 
     public string Group { get; set; }

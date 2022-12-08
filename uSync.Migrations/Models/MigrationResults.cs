@@ -9,4 +9,5 @@ public class MigrationResults
     public bool Success { get; set; }
     public Guid MigrationId { get; set; }
     public IEnumerable<MigrationMessage> Messages { get; set; }
+        = new List<MigrationMessage>();
 }

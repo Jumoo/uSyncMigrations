@@ -1,5 +1,9 @@
-﻿using Newtonsoft.Json;
+﻿using Lucene.Net.Codecs;
+
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+
+using Polly;
 
 using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Models.Blocks;
@@ -15,6 +19,7 @@ namespace uSync.Migrations.Migrators.Optional;
 
 [SyncMigrator(UmbConstants.PropertyEditors.Aliases.NestedContent)]
 [SyncMigrator("Our.Umbraco.NestedContent")]
+[SyncMigratorVersion(7,8)]
 public class NestedToBlockListMigrator : SyncPropertyMigratorBase
 {
     public NestedToBlockListMigrator()
@@ -28,16 +33,48 @@ public class NestedToBlockListMigrator : SyncPropertyMigratorBase
     /// </summary>
     public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
-        var nestedConfig = (NestedContentConfiguration?)(new NestedContentConfiguration().MapPreValues(dataTypeProperty.PreValues));
-        if (nestedConfig == null)
+        switch (context.SourceVersion)
+        {
+            case 7:
+                return GetVersionSevenConfigValues(dataTypeProperty, context);
+            case 8:
+                return GetVersionEightConfigValues(dataTypeProperty, context);
+        }
+
+        return new BlockListConfiguration();
+    }
+
+    private object GetVersionSevenConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
+    {
+        if (dataTypeProperty.PreValues == null) 
             return new BlockListConfiguration();
 
+        var nestedConfig = (NestedContentConfiguration?)(new NestedContentConfiguration().MapPreValues(dataTypeProperty.PreValues));
+        if (nestedConfig == null) return new BlockListConfiguration();
+
+        return GetBlockListConfigFromNestedConfig(nestedConfig, context);
+
+    }
+
+    private object GetVersionEightConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
+    {
+        if (string.IsNullOrWhiteSpace(dataTypeProperty.ConfigAsString))
+            return new BlockListConfiguration();
+
+        var nestedConfig = JsonConvert.DeserializeObject<NestedContentConfiguration>(dataTypeProperty.ConfigAsString);
+        if (nestedConfig == null) return new BlockListConfiguration();
+
+        return GetBlockListConfigFromNestedConfig(nestedConfig, context);
+    }
+
+    private object GetBlockListConfigFromNestedConfig(NestedContentConfiguration nestedConfig, SyncMigrationContext context)
+    {
         var config = new BlockListConfiguration()
         {
             ValidationLimit = new BlockListConfiguration.NumberRange
             {
-                Max = nestedConfig.MaxItems,
-                Min = nestedConfig.MinItems
+                Max = nestedConfig.MaxItems == 0 ? null : nestedConfig.MaxItems,
+                Min = nestedConfig.MinItems == 0 ? null : nestedConfig.MinItems
             },
         };
 
@@ -46,6 +83,8 @@ public class NestedToBlockListMigrator : SyncPropertyMigratorBase
             var blocks = new List<BlockListConfiguration.BlockConfiguration>();
             foreach (var item in nestedConfig.ContentTypes)
             {
+                if (string.IsNullOrWhiteSpace(item.Alias)) continue;
+
                 var contentTypeKey = context.GetContentTypeKey(item.Alias);
 
                 // tell the process we need this to be an element type
@@ -63,6 +102,7 @@ public class NestedToBlockListMigrator : SyncPropertyMigratorBase
 
         return config;
     }
+
 
     public override string GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
     {
@@ -99,6 +139,10 @@ public class NestedToBlockListMigrator : SyncPropertyMigratorBase
                 if (migrator != null)
                 {
                     block.RawPropertyValues[property.Key] = migrator.GetContentValue(new SyncMigrationContentProperty(row.ContentTypeAlias, property.Value.ToString()), context);
+                }
+                else
+                {
+                    block.RawPropertyValues[property.Key] = property.Value;
                 }
             }
 

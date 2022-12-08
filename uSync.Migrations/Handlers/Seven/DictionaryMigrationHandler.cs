@@ -6,24 +6,23 @@ using Umbraco.Cms.Core.Notifications;
 using Umbraco.Extensions;
 
 using uSync.Core;
+using uSync.Migrations.Handlers.Shared;
 using uSync.Migrations.Models;
 using uSync.Migrations.Notifications;
 using uSync.Migrations.Services;
 
 namespace uSync.Migrations.Handlers.Seven;
 
-[SyncMigrationHandler(BackOfficeConstants.Groups.Settings, uSyncMigrations.Priorities.Dictionary, 7,
+[SyncMigrationHandler(BackOfficeConstants.Groups.Settings, uSyncMigrations.Priorities.Dictionary, 
+    SourceVersion = 7,
     SourceFolderName = "DictionaryItem",
     TargetFolderName = "Dictionary")]
-internal class DictionaryMigrationHandler : MigrationHandlerBase<DictionaryItem>, ISyncMigrationHandler
+internal class DictionaryMigrationHandler : SharedHandlerBase<DictionaryItem>, ISyncMigrationHandler
 {
     public DictionaryMigrationHandler(
         IEventAggregator eventAggregator,
         ISyncMigrationFileService migrationFileService)
         : base(eventAggregator, migrationFileService)
-    { }
-
-    protected override void PrepareFile(XElement source, SyncMigrationContext context)
     { }
 
     /// <summary>
