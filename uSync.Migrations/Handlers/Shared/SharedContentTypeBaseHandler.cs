@@ -1,5 +1,7 @@
 ﻿using System.Xml.Linq;
 
+using Microsoft.Extensions.Logging;
+
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 
@@ -13,7 +15,9 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
 {
     protected SharedContentTypeBaseHandler(
         IEventAggregator eventAggregator,
-        ISyncMigrationFileService migrationFileService) : base(eventAggregator, migrationFileService)
+        ISyncMigrationFileService migrationFileService,
+        ILogger<SharedContentTypeBaseHandler<TEntity>> logger) 
+        : base(eventAggregator, migrationFileService, logger)
     { }
 
     protected override void PrepareFile(XElement source, SyncMigrationContext context)

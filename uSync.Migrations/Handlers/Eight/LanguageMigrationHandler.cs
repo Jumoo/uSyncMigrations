@@ -1,4 +1,6 @@
-﻿using Umbraco.Cms.Core.Events;
+﻿using Microsoft.Extensions.Logging;
+
+using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 
 using uSync.Migrations.Handlers.Shared;
@@ -14,8 +16,9 @@ internal class LanguageMigrationHandler : SharedHandlerBase<Language>, ISyncMigr
 {
     public LanguageMigrationHandler(
         IEventAggregator eventAggregator,
-        ISyncMigrationFileService migrationFileService) 
-        : base(eventAggregator, migrationFileService)
+        ISyncMigrationFileService migrationFileService,
+        ILogger<LanguageMigrationHandler> logger) 
+        : base(eventAggregator, migrationFileService, logger)
     { }
 }
 

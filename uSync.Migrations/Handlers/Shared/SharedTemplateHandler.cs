@@ -1,5 +1,7 @@
 ﻿using System.Xml.Linq;
 
+using Microsoft.Extensions.Logging;
+
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Services;
@@ -19,7 +21,9 @@ internal abstract class SharedTemplateHandler : SharedHandlerBase<Template>
     protected SharedTemplateHandler(
         IEventAggregator eventAggregator,
         ISyncMigrationFileService migrationFileService,
-        IFileService fileService) : base(eventAggregator, migrationFileService)
+        IFileService fileService,
+        ILogger<SharedTemplateHandler> logger) 
+        : base(eventAggregator, migrationFileService, logger)
     {
         _fileService = fileService;
     }

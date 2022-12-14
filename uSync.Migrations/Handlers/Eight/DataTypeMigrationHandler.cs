@@ -1,5 +1,7 @@
 ﻿using System.Xml.Linq;
 
+using Microsoft.Extensions.Logging;
+
 using Newtonsoft.Json.Linq;
 
 using Umbraco.Cms.Core.Events;
@@ -22,7 +24,9 @@ internal class DataTypeMigrationHandler : SharedDataTypeHandler, ISyncMigrationH
     public DataTypeMigrationHandler(
         IEventAggregator eventAggregator,
         ISyncMigrationFileService migrationFileService,
-        IDataTypeService dataTypeService) : base(eventAggregator, migrationFileService, dataTypeService)
+        IDataTypeService dataTypeService,
+        ILogger<DataTypeMigrationHandler> logger) 
+        : base(eventAggregator, migrationFileService, dataTypeService, logger)
     { }
 
     protected override string GetEditorAlias(XElement source)

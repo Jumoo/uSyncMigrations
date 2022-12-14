@@ -1,4 +1,6 @@
-﻿using Umbraco.Cms.Core.Events;
+﻿using Microsoft.Extensions.Logging;
+
+using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 
 using uSync.Migrations.Handlers.Shared;
@@ -14,6 +16,8 @@ internal class MacroMigrationHandler : SharedHandlerBase<Macro>, ISyncMigrationH
 {
     public MacroMigrationHandler(
         IEventAggregator eventAggregator,
-        ISyncMigrationFileService migrationFileService) : base(eventAggregator, migrationFileService)
+        ISyncMigrationFileService migrationFileService,
+        ILogger<MacroMigrationHandler> logger) 
+        : base(eventAggregator, migrationFileService, logger)
     { }
 }

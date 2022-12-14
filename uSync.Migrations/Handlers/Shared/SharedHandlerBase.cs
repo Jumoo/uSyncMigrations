@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
+using Microsoft.Extensions.Logging;
+
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models.Entities;
 
@@ -28,8 +30,9 @@ internal abstract class SharedHandlerBase<TObject> :MigrationHandlerBase<TObject
 {
     protected SharedHandlerBase(
         IEventAggregator eventAggregator,
-        ISyncMigrationFileService migrationFileService) 
-        : base(eventAggregator, migrationFileService)
+        ISyncMigrationFileService migrationFileService,
+        ILogger<SharedHandlerBase<TObject>> _logger) 
+        : base(eventAggregator, migrationFileService, _logger)
     { }
 
     /// <summary>

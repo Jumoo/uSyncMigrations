@@ -1,5 +1,7 @@
 ﻿using System.Xml.Linq;
 
+using Microsoft.Extensions.Logging;
+
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Cms.Core.Services;
@@ -30,8 +32,9 @@ internal class DataTypeMigrationHandler : SharedDataTypeHandler, ISyncMigrationH
         IEventAggregator eventAggregator,
         ISyncMigrationFileService fileService,
         IDataTypeService dataTypeService,
-        SyncPropertyMigratorCollection migrators)
-        : base(eventAggregator, fileService, dataTypeService)
+        SyncPropertyMigratorCollection migrators,
+        ILogger<DataTypeMigrationHandler> logger)
+        : base(eventAggregator, fileService, dataTypeService, logger)
     {
         _migrators = migrators;
     }

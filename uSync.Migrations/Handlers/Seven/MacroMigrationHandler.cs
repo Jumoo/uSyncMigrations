@@ -1,5 +1,7 @@
 ﻿using System.Xml.Linq;
 
+using Microsoft.Extensions.Logging;
+
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 
@@ -18,8 +20,9 @@ internal class MacroMigrationHandler : SharedHandlerBase<Macro>, ISyncMigrationH
 {
     public MacroMigrationHandler(
         IEventAggregator eventAggregator,
-        ISyncMigrationFileService migrationFileService)
-        : base(eventAggregator, migrationFileService)
+        ISyncMigrationFileService migrationFileService,
+        ILogger<MacroMigrationHandler> logger)
+        : base(eventAggregator, migrationFileService, logger)
     { }
 
     protected override (string alias, Guid key) GetAliasAndKey(XElement source)

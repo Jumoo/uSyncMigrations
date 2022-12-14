@@ -1,6 +1,8 @@
 ﻿using System.Reflection;
 using System.Xml.Linq;
 
+using Microsoft.Extensions.Logging;
+
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models.Entities;
 using Umbraco.Cms.Core.Notifications;
@@ -17,13 +19,16 @@ internal abstract class MigrationHandlerBase<TObject>
 {
     protected readonly IEventAggregator _eventAggregator;
     protected readonly ISyncMigrationFileService _migrationFileService;
+    protected readonly ILogger<MigrationHandlerBase<TObject>> _logger;
 
     protected MigrationHandlerBase(
         IEventAggregator eventAggregator,
-        ISyncMigrationFileService migrationFileService)
+        ISyncMigrationFileService migrationFileService,
+        ILogger<MigrationHandlerBase<TObject>> logger)
     {
         _eventAggregator = eventAggregator;
         _migrationFileService = migrationFileService;
+        _logger = logger;
 
         var attribute = GetType().GetCustomAttribute<SyncMigrationHandlerAttribute>();
         if (attribute == null)
@@ -41,7 +46,7 @@ internal abstract class MigrationHandlerBase<TObject>
             SourceFolderName = attribute.SourceFolderName;
         }
 
-        if (!string.IsNullOrWhiteSpace(attribute.TargetFolderName)) 
+        if (!string.IsNullOrWhiteSpace(attribute.TargetFolderName))
         {
             DestinationFolderName = attribute.TargetFolderName;
         }
@@ -119,24 +124,32 @@ internal abstract class MigrationHandlerBase<TObject>
 
         foreach (var file in files)
         {
-            var source = XElement.Load(file);
-
-            var (alias, key) = GetAliasAndKey(source);
-            if (context.IsBlocked(ItemType, alias)) continue;
-
-            var migratingNotification = new SyncMigratingNotification<TObject>(source, context);
-            if (_eventAggregator.PublishCancelable(migratingNotification) == true)
+            try
             {
-                continue;
+                var source = XElement.Load(file);
+
+                var (alias, key) = GetAliasAndKey(source);
+                if (context.IsBlocked(ItemType, alias)) continue;
+
+                var migratingNotification = new SyncMigratingNotification<TObject>(source, context);
+                if (_eventAggregator.PublishCancelable(migratingNotification) == true)
+                {
+                    continue;
+                }
+
+                var target = MigrateFile(source, level, context);
+
+                if (target != null)
+                {
+                    var migratedNotification = new SyncMigratedNotification<TObject>(target, context).WithStateFrom(migratingNotification);
+                    _eventAggregator.Publish(migratedNotification);
+                    messages.Add(SaveTargetXml(context.MigrationId, target));
+                }
             }
-
-            var target = MigrateFile(source, level, context);
-
-            if (target != null)
+            catch(Exception ex)
             {
-                var migratedNotification = new SyncMigratedNotification<TObject>(target, context).WithStateFrom(migratingNotification);
-                _eventAggregator.Publish(migratedNotification);
-                messages.Add(SaveTargetXml(context.MigrationId, target));
+                _logger.LogError(ex, "Error while processing {file}", file);
+                throw new Exception($"Error processing {file}", ex);
             }
         }
 
