@@ -1,5 +1,7 @@
 ﻿using System.Xml.Linq;
 
+using Microsoft.Extensions.Logging;
+
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Strings;
@@ -22,7 +24,9 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
     public SharedContentBaseHandler(
         IEventAggregator eventAggregator,
         ISyncMigrationFileService migrationFileService,
-        IShortStringHelper shortStringHelper) : base(eventAggregator, migrationFileService)
+        IShortStringHelper shortStringHelper,
+        ILogger<SharedContentBaseHandler<TEntity>> logger) 
+        : base(eventAggregator, migrationFileService, logger)
     {
         _shortStringHelper = shortStringHelper;
     }

@@ -1,5 +1,7 @@
 ﻿using System.Xml.Linq;
 
+using Microsoft.Extensions.Logging;
+
 using Newtonsoft.Json;
 
 using Umbraco.Cms.Core.Events;
@@ -23,8 +25,9 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
     public SharedDataTypeHandler(
         IEventAggregator eventAggregator,
         ISyncMigrationFileService migrationFileService,
-        IDataTypeService dataTypeService)
-        : base(eventAggregator, migrationFileService)
+        IDataTypeService dataTypeService,
+        ILogger<SharedDataTypeHandler> logger)
+        : base(eventAggregator, migrationFileService, logger)
     {
         _dataTypeService = dataTypeService;
         _jsonSerializerSettings = new JsonSerializerSettings()

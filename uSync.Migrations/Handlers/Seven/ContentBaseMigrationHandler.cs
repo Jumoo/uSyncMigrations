@@ -1,5 +1,7 @@
 ﻿using System.Xml.Linq;
 
+using Microsoft.Extensions.Logging;
+
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Strings;
@@ -18,8 +20,9 @@ internal abstract class ContentBaseMigrationHandler<TEntity> : SharedContentBase
     public ContentBaseMigrationHandler(
         IEventAggregator eventAggregator,
         ISyncMigrationFileService migrationFileService,
-        IShortStringHelper shortStringHelper)
-        : base(eventAggregator, migrationFileService, shortStringHelper)
+        IShortStringHelper shortStringHelper,
+        ILogger<ContentBaseMigrationHandler<TEntity>> logger)
+        : base(eventAggregator, migrationFileService, shortStringHelper, logger)
     { }
 
     protected override int GetId(XElement source)

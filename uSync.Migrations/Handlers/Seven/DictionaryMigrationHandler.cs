@@ -1,5 +1,7 @@
 ﻿using System.Xml.Linq;
 
+using Microsoft.Extensions.Logging;
+
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Notifications;
@@ -21,8 +23,9 @@ internal class DictionaryMigrationHandler : SharedHandlerBase<DictionaryItem>, I
 {
     public DictionaryMigrationHandler(
         IEventAggregator eventAggregator,
-        ISyncMigrationFileService migrationFileService)
-        : base(eventAggregator, migrationFileService)
+        ISyncMigrationFileService migrationFileService,
+        ILogger<DictionaryMigrationHandler> logger)
+        : base(eventAggregator, migrationFileService, logger)
     { }
 
     /// <summary>

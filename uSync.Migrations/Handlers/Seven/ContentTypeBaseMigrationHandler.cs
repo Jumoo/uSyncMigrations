@@ -1,5 +1,7 @@
 ﻿using System.Xml.Linq;
 
+using Microsoft.Extensions.Logging;
+
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 
@@ -15,8 +17,9 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : SharedContent
 {
     public ContentTypeBaseMigrationHandler(
         IEventAggregator eventAggregator,
-        ISyncMigrationFileService migrationFileService)
-        : base(eventAggregator, migrationFileService)
+        ISyncMigrationFileService migrationFileService,
+        ILogger<ContentTypeBaseMigrationHandler<TEntity>> logger)
+        : base(eventAggregator, migrationFileService, logger)
     { }
 
     protected override (string alias, Guid key) GetAliasAndKey(XElement source)

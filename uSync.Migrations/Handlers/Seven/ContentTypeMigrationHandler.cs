@@ -1,4 +1,6 @@
-﻿using Umbraco.Cms.Core.Events;
+﻿using Microsoft.Extensions.Logging;
+
+using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 
 using uSync.Migrations.Handlers.Seven;
@@ -14,7 +16,8 @@ internal class ContentTypeMigrationHandler : ContentTypeBaseMigrationHandler<Con
 {
     public ContentTypeMigrationHandler(
         IEventAggregator eventAggregator,
-        ISyncMigrationFileService migrationFileService)
-        : base(eventAggregator, migrationFileService)
+        ISyncMigrationFileService migrationFileService,
+        ILogger<ContentTypeMigrationHandler> logger)
+        : base(eventAggregator, migrationFileService, logger)
     { }
 }

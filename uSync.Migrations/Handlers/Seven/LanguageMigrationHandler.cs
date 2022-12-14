@@ -1,6 +1,8 @@
 ﻿using System.Globalization;
 using System.Xml.Linq;
 
+using Microsoft.Extensions.Logging;
+
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Services;
@@ -23,8 +25,9 @@ internal class LanguageMigrationHandler : SharedHandlerBase<Language>, ISyncMigr
     public LanguageMigrationHandler(
         IEventAggregator eventAggregator,
         ISyncMigrationFileService migrationFileService,
-        ILocalizationService localizationService)
-        : base(eventAggregator, migrationFileService)
+        ILocalizationService localizationService,
+        ILogger<LanguageMigrationHandler> logger)
+        : base(eventAggregator, migrationFileService, logger)
     {
         _localizationService = localizationService;
     }

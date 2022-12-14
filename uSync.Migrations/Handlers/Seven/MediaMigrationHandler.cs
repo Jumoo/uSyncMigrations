@@ -1,4 +1,6 @@
-﻿using Umbraco.Cms.Core.Events;
+﻿using Microsoft.Extensions.Logging;
+
+using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Strings;
 
@@ -15,8 +17,9 @@ internal class MediaMigrationHandler : ContentBaseMigrationHandler<Media>, ISync
     public MediaMigrationHandler(
         IEventAggregator eventAggregator,
         ISyncMigrationFileService migrationFileService,
-        IShortStringHelper shortStringHelper)
-        : base(eventAggregator, migrationFileService, shortStringHelper)
+        IShortStringHelper shortStringHelper,
+        ILogger<MediaMigrationHandler> logger)
+        : base(eventAggregator, migrationFileService, shortStringHelper, logger)
     {
         _ignoredProperties.UnionWith(new[]
         {

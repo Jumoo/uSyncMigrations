@@ -1,5 +1,7 @@
 ﻿using System.Xml.Linq;
 
+using Microsoft.Extensions.Logging;
+
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Services;
 
@@ -19,8 +21,9 @@ internal class TemplateMigrationHandler : SharedTemplateHandler,  ISyncMigration
     public TemplateMigrationHandler(
         IEventAggregator eventAggregator,
         ISyncMigrationFileService migrationFileService,
-        IFileService fileService)
-        : base(eventAggregator, migrationFileService, fileService)
+        IFileService fileService,
+        ILogger<TemplateMigrationHandler> logger)
+        : base(eventAggregator, migrationFileService, fileService, logger)
     { }
 
     protected override XElement? MigrateFile(XElement source, int level, SyncMigrationContext context)
