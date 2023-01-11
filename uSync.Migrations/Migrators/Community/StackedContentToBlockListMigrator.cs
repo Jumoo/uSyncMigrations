@@ -79,35 +79,35 @@ public class StackedContentToBlockListMigrator : SyncPropertyMigratorBase
         {
             var contentTypeAlias = context.GetContentTypeAlias(item.ContentTypeKey);
 
-            foreach (var (propertyAlias, value) in item.Values)
+            var block = new BlockItemData
             {
-                var editorAlias = context.GetEditorAlias(contentTypeAlias, propertyAlias);
+                ContentTypeKey = item.ContentTypeKey,
+                Udi = Udi.Create(UmbConstants.UdiEntityType.Element, item.Key),
+            };
 
+            
+            foreach (var (propertyAlias, propertyValue) in item.Values)
+            {
+                if (propertyValue == null)
+                {
+                    continue;
+                }
+                
+                var editorAlias = context.GetEditorAlias(contentTypeAlias, propertyAlias);
                 if (editorAlias == null)
                 {
                     continue;
                 }
 
-                var migrator = _migrators.Value
-                    .FirstOrDefault(x => x.Editors.InvariantContains(editorAlias.OriginalEditorAlias));
-
-                if (migrator == null)
+                var migrator = context.TryGetMigrator(editorAlias.OriginalEditorAlias);
+                if (migrator != null)
                 {
-                    continue;
+                    var value = propertyValue?.ToString() ?? string.Empty;
+                    var property = new SyncMigrationContentProperty(contentTypeAlias, value);
+                    var migratedValue = migrator.GetContentValue(property, context);
+                    block.RawPropertyValues[propertyAlias] = migratedValue;
                 }
-
-                var childProperty = new SyncMigrationContentProperty(editorAlias.OriginalEditorAlias,
-                    value?.ToString() ?? string.Empty);
-
-                item.Values[propertyAlias] = migrator.GetContentValue(childProperty, context);
             }
-
-            var block = new BlockItemData
-            {
-                ContentTypeKey = item.ContentTypeKey,
-                Udi = Udi.Create(UmbConstants.UdiEntityType.Element, item.Key),
-                RawPropertyValues = item.Values,
-            };
 
             layout.Add(new BlockListLayoutItem { ContentUdi = block.Udi });
 

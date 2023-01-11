@@ -35,7 +35,8 @@ public static class PreValueExtensions
         }
     }
 
-    public static object? MapPreValues(this object? config, IEnumerable<PreValue> preValues)
+    public static T? MapPreValues<T>(this T? config, IEnumerable<PreValue> preValues)
+        where T : class
     {
         if (config == null) return null;
 
