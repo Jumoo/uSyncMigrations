@@ -1,12 +1,14 @@
 ﻿using System.Xml.Linq;
 
 using Microsoft.Extensions.Logging;
-
+using Org.BouncyCastle.Asn1.X509.Qualified;
+using Umbraco.Cms.Core.ContentApps;
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
-
+using Umbraco.Cms.Core.Notifications;
 using uSync.Core;
 using uSync.Migrations.Models;
+using uSync.Migrations.Notifications;
 using uSync.Migrations.Services;
 
 namespace uSync.Migrations.Handlers.Shared;
@@ -49,9 +51,82 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
         }
     }
 
+    public override IEnumerable<MigrationMessage> DoMigration(SyncMigrationContext context)
+    {
+        var messages = base.DoMigration(context).ToList();
+
+        if (typeof(TEntity) == typeof(ContentType))
+        {
+            foreach (var (contentTypeKey, (contentTypeAlias, name)) in context.GetAdditionalContentTypes())
+            {
+                try
+                {
+                    var source = XElement.Parse(@"<ContentType>
+                    <Info>
+                        <Name></Name>
+                        <Icon>icon-book-alt color-black</Icon>
+                        <Thumbnail></Thumbnail>
+                        <Description></Description>
+                        <AllowAtRoot>False</AllowAtRoot>
+                        <IsListView>False</IsListView>
+                        <Variations>Nothing</Variations>
+                        <IsElement>true</IsElement>
+                        <HistoryCleanup>
+                            <PreventCleanup>False</PreventCleanup>
+                            <KeepAllVersionsNewerThanDays></KeepAllVersionsNewerThanDays>
+                            <KeepLatestVersionPerDayForDays></KeepLatestVersionPerDayForDays>
+                        </HistoryCleanup>
+                        <Compositions />
+                        <DefaultTemplate></DefaultTemplate>
+                        <AllowedTemplates />
+                    </Info>
+                    <Structure />
+                    <GenericProperties />
+                    <Tabs />
+                    </ContentType>");
+
+                    source.SetAttributeValue(uSyncConstants.Xml.Key, contentTypeKey);
+                    source.SetAttributeValue(uSyncConstants.Xml.Alias, contentTypeAlias);
+                    source.SetAttributeValue(uSyncConstants.Xml.Level, 1);
+
+                    var info = source.FindOrCreate(uSyncConstants.Xml.Info);
+                    info.SetElementValue(uSyncConstants.Xml.Name, name ?? contentTypeAlias);
+                    info.SetElementValue(uSyncConstants.Xml.Key, contentTypeKey);
+                    info.SetElementValue(uSyncConstants.Xml.Alias, contentTypeAlias);
+
+                    var (alias, key) = GetAliasAndKey(source);
+                    if (context.IsBlocked(ItemType, alias)) continue;
+
+                    var migratingNotification = new SyncMigratingNotification<TEntity>(source, context);
+                    if (_eventAggregator.PublishCancelable(migratingNotification) == true)
+                    {
+                        continue;
+                    }
+
+                    var target = MigrateFile(source, 1, context);
+
+                    if (target != null)
+                    {
+                        var migratedNotification =
+                            new SyncMigratedNotification<TEntity>(target, context).WithStateFrom(migratingNotification);
+                        _eventAggregator.Publish(migratedNotification);
+                        messages.Add(SaveTargetXml(context.MigrationId, target));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error while processing additional content Type {alias}", contentTypeAlias);
+                    throw new Exception($"Error processing additional content Type {contentTypeAlias}", ex);
+                }
+            }
+        }
+
+        return messages;
+    }
+
     protected override XElement? MigrateFile(XElement source, int level, SyncMigrationContext context)
     {
-        var info = source.Element("Info");
+        var info = source.Element(uSyncConstants.Xml.Info);
         if (info == null) return null;
 
         var (alias, key) = GetAliasAndKey(source);
@@ -90,7 +165,6 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
         }
 
         return target;
-
     }
 
     protected abstract void UpdateInfoSection(XElement? info, XElement target, Guid key, SyncMigrationContext context);
@@ -102,7 +176,7 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
     {
         var properties = source.Element("GenericProperties");
 
-        var newProperties = new XElement("GenericProperties");
+        var newProperties = new XElement( "GenericProperties");
         if (properties != null)
         {
             foreach (var property in properties.Elements("GenericProperty"))
@@ -154,6 +228,4 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
 
     }
     protected abstract void UpdatePropertyXml(XElement newProperty);
-
-
 }

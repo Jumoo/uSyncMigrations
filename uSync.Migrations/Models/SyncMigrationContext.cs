@@ -1,7 +1,8 @@
-﻿using CSharpTest.Net.Serialization;
+﻿using System.Collections.ObjectModel;
+using CSharpTest.Net.Serialization;
 
 using Umbraco.Cms.Core.Composing;
-
+using Umbraco.Extensions;
 using uSync.Migrations.Migrators;
 
 namespace uSync.Migrations.Models;
@@ -69,8 +70,6 @@ public class SyncMigrationContext : IDisposable
 
     private Dictionary<int, Guid> _idKeyMap { get; set; } = new();
 
-
-  
     /// <summary>
     ///  Add a template key to the context.
     /// </summary>
@@ -100,6 +99,9 @@ public class SyncMigrationContext : IDisposable
     public string GetContentTypeAlias(Guid contentTypeKey)
         => _contentTypeAliases?.TryGetValue(contentTypeKey, out var alias) == true ? alias : string.Empty;
 
+    public IEnumerable<string> GetContentTypeAliases()
+        => _contentTypeAliases?.Values?.ToArray() ?? Array.Empty<string>();
+
     /// <summary>
     ///  get the key for a given content type alias from the context.
     /// </summary>
@@ -116,6 +118,18 @@ public class SyncMigrationContext : IDisposable
             _contentTypeCompositions.TryAdd(contentTypeAlias, compositionAliases.ToHashSet());
     }
 
+    public bool TryGetContentTypeCompositions(string? contentTypeAlias, out IEnumerable<string>? compositionAliases)
+    {
+        compositionAliases = null;
+        
+        if (contentTypeAlias != null && _contentTypeCompositions.TryGetValue(contentTypeAlias, out var compositions))
+        {
+            compositionAliases = compositions?.ToArray();
+        }
+
+        return compositionAliases != null;
+    }    
+    
     /// <summary>
     ///  add the path for a content item to context. 
     /// </summary>
@@ -311,6 +325,57 @@ public class SyncMigrationContext : IDisposable
     public void AddElementType(Guid key)
     {
         if (!_elementContentTypes.Contains(key)) _elementContentTypes.Add(key);
+    }
+
+    public void AddElementTypes(IEnumerable<Guid> contentTypeKeys, bool includeCompositions)
+    {
+        foreach(var contentTypeKey in contentTypeKeys)
+        {
+            AddElementType(contentTypeKey);
+
+            if (!includeCompositions)
+            {
+                continue;
+            }
+
+            var contentTypeAlias = GetContentTypeAlias(contentTypeKey);
+
+            if (!TryGetContentTypeCompositions(contentTypeAlias, out var compositionAliases))
+            {
+                continue;
+            }
+
+            if (compositionAliases?.Any() != true)
+            {
+                continue;
+            }
+
+            foreach (var compositionContentTypeAlias in compositionAliases)
+            {
+                var compositionContentTypeKey = GetContentTypeKey(compositionContentTypeAlias);
+                AddElementType(compositionContentTypeKey);
+            }
+        }
+    }
+
+    /// <summary>
+    ///  list of content types that need to be set as element types. 
+    /// </summary>
+    private Dictionary<Guid, string?> _additionalContentTypes { get; set; } = new();
+    
+    public void AddAdditionalContentType(Guid key, string? name)
+    {
+        if (!_additionalContentTypes.ContainsKey(key)) _additionalContentTypes.TryAdd(key, name);
+    }
+
+    public IReadOnlyDictionary<Guid, (string alias, string? name)> GetAdditionalContentTypes()
+    {
+        var additionalContentTypes = _additionalContentTypes
+            .Join(_contentTypeAliases, a => a.Key, b => b.Key, 
+                (a, b) => ( a.Key, (b.Value, a.Value) ) )
+            .ToDictionary(x => x.Key, x => x.Item2);
+        
+        return new ReadOnlyDictionary<Guid, (string, string?)>(additionalContentTypes);
     }
 
     public void Dispose()

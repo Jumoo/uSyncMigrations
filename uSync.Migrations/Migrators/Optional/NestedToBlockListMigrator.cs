@@ -49,7 +49,7 @@ public class NestedToBlockListMigrator : SyncPropertyMigratorBase
         if (dataTypeProperty.PreValues == null) 
             return new BlockListConfiguration();
 
-        var nestedConfig = (NestedContentConfiguration?)(new NestedContentConfiguration().MapPreValues(dataTypeProperty.PreValues));
+        var nestedConfig = new NestedContentConfiguration().MapPreValues(dataTypeProperty.PreValues);
         if (nestedConfig == null) return new BlockListConfiguration();
 
         return GetBlockListConfigFromNestedConfig(nestedConfig, context);
@@ -69,7 +69,7 @@ public class NestedToBlockListMigrator : SyncPropertyMigratorBase
 
     private object GetBlockListConfigFromNestedConfig(NestedContentConfiguration nestedConfig, SyncMigrationContext context)
     {
-        var config = new BlockListConfiguration()
+        var config = new BlockListConfiguration
         {
             ValidationLimit = new BlockListConfiguration.NumberRange
             {
@@ -80,6 +80,8 @@ public class NestedToBlockListMigrator : SyncPropertyMigratorBase
 
         if (nestedConfig.ContentTypes != null)
         {
+            var elementTypes = new List<Guid>();
+            
             var blocks = new List<BlockListConfiguration.BlockConfiguration>();
             foreach (var item in nestedConfig.ContentTypes)
             {
@@ -88,7 +90,7 @@ public class NestedToBlockListMigrator : SyncPropertyMigratorBase
                 var contentTypeKey = context.GetContentTypeKey(item.Alias);
 
                 // tell the process we need this to be an element type
-                context.AddElementType(contentTypeKey);
+                elementTypes.Add(contentTypeKey);
 
                 blocks.Add(new BlockListConfiguration.BlockConfiguration
                 {
@@ -96,6 +98,8 @@ public class NestedToBlockListMigrator : SyncPropertyMigratorBase
                     Label = item.Template
                 });
             }
+            
+            context.AddElementTypes(elementTypes, true);
 
             config.Blocks = blocks.ToArray();
         }
@@ -111,48 +115,50 @@ public class NestedToBlockListMigrator : SyncPropertyMigratorBase
         if (rowValues == null) return string.Empty;
 
         var blockValue = new BlockValue();
-        var contentData = new List<BlockItemData>();
-        var blockListLayout = new List<BlockListLayoutItem>();
+        var layoutItems = new List<BlockListLayoutItem>();
 
         foreach (var row in rowValues)
         {
             var contentTypeKey = context.GetContentTypeKey(row.ContentTypeAlias);
-            var blockUdi = Udi.Create(UdiEntityType.Element, row.Id);
 
             var block = new BlockItemData
             {
+                Udi = Udi.Create(UdiEntityType.Element, row.Id),
                 ContentTypeKey = contentTypeKey,
-                Udi = blockUdi
+                ContentTypeAlias = row.ContentTypeAlias,
             };
 
-            blockListLayout.Add(new BlockListLayoutItem
+            layoutItems.Add(new BlockListLayoutItem
             {
-                ContentUdi = blockUdi,
+                ContentUdi = block.Udi,
             });
 
-            foreach (var property in row.RawPropertyValues)
+            foreach (var (propertyAlias, propertyValue) in row.RawPropertyValues)
             {
-                var editorAlias = context.GetEditorAlias(row.ContentTypeAlias, property.Key);
+                if (propertyValue == null)
+                {
+                    continue;
+                }
+                
+                var editorAlias = context.GetEditorAlias(row.ContentTypeAlias, propertyAlias);
                 if (editorAlias == null) continue;
 
                 var migrator = context.TryGetMigrator(editorAlias.OriginalEditorAlias);
                 if (migrator != null)
                 {
-                    block.RawPropertyValues[property.Key] = migrator.GetContentValue(new SyncMigrationContentProperty(row.ContentTypeAlias, property.Value.ToString()), context);
-                }
-                else
-                {
-                    block.RawPropertyValues[property.Key] = property.Value;
+                    var value = propertyValue?.ToString() ?? string.Empty;
+                    var property = new SyncMigrationContentProperty(row.ContentTypeAlias, value);
+                    var migratedValue = migrator.GetContentValue(property, context);
+                    block.RawPropertyValues[propertyAlias] = migratedValue;
                 }
             }
 
-            contentData.Add(block);
+            blockValue.ContentData.Add(block);
         }
 
-        blockValue.ContentData = contentData;
-        blockValue.Layout = new Dictionary<string, JToken>()
+        blockValue.Layout = new Dictionary<string, JToken>
         {
-            { "Umbraco.BlockList", JToken.FromObject(blockListLayout) }
+            { PropertyEditors.Aliases.BlockList, JArray.FromObject(layoutItems) },
         };
 
         return JsonConvert.SerializeObject(blockValue, Formatting.Indented);
