@@ -897,7 +897,7 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
             return null;
         }
         
-        var id = control.Value.Value<string>("id")!;
+        //var id = control.Value.Value<string>("id")!;
 
         var data = new BlockItemData
         {
