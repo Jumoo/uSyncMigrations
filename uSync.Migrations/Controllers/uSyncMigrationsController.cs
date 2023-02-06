@@ -48,8 +48,8 @@ public class uSyncMigrationsController : UmbracoAuthorizedApiController
         => _migrationService.MigrateFiles(options);
 
     [HttpGet]
-    public MigrationProfileInfo GetProfiles()
-        => _profileConfigService.GetProfiles();
+    public IEnumerable<ISyncMigrationProfile> GetProfiles(string groupAlias)
+        => _profileConfigService.GetProfiles(groupAlias);
 
     [HttpGet]
     public string ValidateSource(int version, string source)

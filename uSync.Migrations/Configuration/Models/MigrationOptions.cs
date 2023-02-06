@@ -6,6 +6,7 @@ namespace uSync.Migrations.Configuration.Models;
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class MigrationOptions
 {
+    public string Group { get; set; } = "legacy";
     public string Source { get; set; } = "uSync/data";
     public string Target { get; set; } = "uSync/migrated";
 

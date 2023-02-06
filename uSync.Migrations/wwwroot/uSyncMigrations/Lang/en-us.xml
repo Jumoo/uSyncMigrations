@@ -10,7 +10,7 @@
 		
 		<key alias="title">uSync Migrations</key>
 		<key alias="intro">
-			<![CDATA[<p>uSync.Migrations is a tool to help you migrate your site settings and content from Umbraco 7.x to the latest and greatest versions of Umbraco.</p>]]>
+			<![CDATA[<p>you can migrate your own way</p>]]>
 		</key>
 
 		<key alias="customize">

@@ -4,5 +4,6 @@ namespace uSync.Migrations.Configuration;
 
 public interface ISyncMigrationConfigurationService
 {
-    MigrationProfileInfo GetProfiles();
+	MigrationProfileInfo GetProfiles();
+	IEnumerable<ISyncMigrationProfile> GetProfiles(string groupAlias);
 }
