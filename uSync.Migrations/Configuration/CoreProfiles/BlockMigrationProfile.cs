@@ -1,4 +1,6 @@
-﻿using Umbraco.Cms.Core.Composing;
+﻿using System.Text.RegularExpressions;
+
+using Umbraco.Cms.Core.Composing;
 
 using uSync.Migrations.Composing;
 using uSync.Migrations.Configuration.Models;
@@ -17,14 +19,15 @@ internal class BlockMigrationProfile : ISyncMigrationProfile
 
     public int Order => 200;
 
-    public string Name => "To Blocks";
+	public string Name => "Nested Content To BlockLists";
 
     public string Icon => "icon-brick color-green";
 
-    public string Description => "Convert to block list (Experimental!)";
+    public string Description => "Convert Nested content to BlockList (Experimental!)";
 
     public MigrationOptions Options => new MigrationOptions
     {
+        Group = "Convert",
         Source = "uSync/v9",
         Target = $"{uSyncMigrations.MigrationFolder}/{DateTime.Now:yyyyMMdd_HHmmss}",
         Handlers = _migrationHandlers.SelectGroup(8, string.Empty),
@@ -34,5 +37,4 @@ internal class BlockMigrationProfile : ISyncMigrationProfile
             { Umbraco.Cms.Core.Constants.PropertyEditors.Aliases.NestedContent, nameof(NestedToBlockListMigrator) }
         }
     };
-
 }

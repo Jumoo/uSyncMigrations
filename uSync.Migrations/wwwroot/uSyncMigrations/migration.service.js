@@ -26,8 +26,8 @@
             return $http.post(serviceRoot + "Migrate", options);
         }
 
-        function getProfiles() {
-            return $http.get(serviceRoot + "GetProfiles");
+        function getProfiles(groupAlias) {
+            return $http.get(serviceRoot + "GetProfiles/?groupAlias=" + groupAlias);
         }
 
         function validateSource(version, source) {

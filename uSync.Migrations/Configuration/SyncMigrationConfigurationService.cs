@@ -66,7 +66,10 @@ internal class SyncMigrationConfigurationService : ISyncMigrationConfigurationSe
         return info;
     }
 
-    private MigrationProfileInfo GetCoreInfo() => new MigrationProfileInfo
+	public IEnumerable<ISyncMigrationProfile> GetProfiles(string groupAlias)
+        => GetProfiles().Profiles.Where(x => x.Options.Group.Equals(groupAlias, StringComparison.OrdinalIgnoreCase));
+
+	private MigrationProfileInfo GetCoreInfo() => new MigrationProfileInfo
     {
         Profiles = _syncMigrationProfiles.ToList()
     };
