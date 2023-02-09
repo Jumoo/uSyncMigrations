@@ -53,8 +53,6 @@ internal class DocTypeGridEditorBlockMigrator : ISyncBlockMigrator
 			// if its blank we have to add all element types. ?
 			return _contentTypeService.GetAll().Where((x => x.IsElement == true)).Select(x => x.Alias);
 		}
-
-		return Enumerable.Empty<string>();
 	}
 
 

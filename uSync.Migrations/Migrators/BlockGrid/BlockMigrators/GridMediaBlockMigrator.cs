@@ -6,20 +6,15 @@ using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Strings;
 using Umbraco.Extensions;
 
-using uSync.Migrations.Composing;
 using uSync.Migrations.Context;
-using uSync.Migrations.Migrators.Models;
 
 namespace uSync.Migrations.Migrators.BlockGrid.BlockMigrators;
 
 public class GridMediaBlockMigrator : GridBlockMigratorSimpleBase, ISyncBlockMigrator
 {
-	private readonly SyncPropertyMigratorCollection _propertyMigrators;
-	public GridMediaBlockMigrator(IShortStringHelper shortStringHelper, SyncPropertyMigratorCollection propertyMigrators)
+	public GridMediaBlockMigrator(IShortStringHelper shortStringHelper)
 		 : base(shortStringHelper)
-	{
-		_propertyMigrators = propertyMigrators;
-	}
+	{}
 
 	public string[] Aliases => new[] { "media" };
 
@@ -30,8 +25,11 @@ public class GridMediaBlockMigrator : GridBlockMigratorSimpleBase, ISyncBlockMig
 		var properties = new Dictionary<string, object>();
 		if (control.Value == null) return properties;
 
+		var udiString = control.Value.Value<string>("udi");
+		if (udiString == null) return properties;
+
 		// 
-		if (UdiParser.TryParse(control.Value?.Value<string>("udi"), out Udi udi) && udi is GuidUdi guidUdi) {
+		if (UdiParser.TryParse(udiString, out Udi? udi) && udi is GuidUdi guidUdi) {
 
 			var values = new
 			{
@@ -42,25 +40,6 @@ public class GridMediaBlockMigrator : GridBlockMigratorSimpleBase, ISyncBlockMig
 			properties.Add("media", JsonConvert.SerializeObject(values));
 		}
 		return properties;
-
-		//var mediaPickerMigrator = _propertyMigrators.FirstOrDefault(x => x.Editors
-		//	.InvariantContains(UmbConstants.PropertyEditors.Aliases.MediaPicker));
-
-		//if (mediaPickerMigrator != null)
-		//{
-		//	var contentValue = mediaPickerMigrator.GetContentValue(new SyncMigrationContentProperty
-		//		(UmbConstants.PropertyEditors.Aliases.MediaPicker3, control.Value.ToString()), context);
-
-		//	properties.Add("media", contentValue);
-		//}
-		//else
-		//{
-		//	var mediaUdi = control.Value?.Value<string>("udi");
-		//	if (mediaUdi != null) properties.Add("media", mediaUdi);
-		//}
-
-		//return properties;
-
 	}
 }
 
