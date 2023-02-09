@@ -98,16 +98,37 @@ internal abstract class MigrationHandlerBase<TObject>
 
     public virtual IEnumerable<MigrationMessage> DoMigration(SyncMigrationContext context)
     {
-        return MigrateFolder(GetSourceFolder(context.SourceFolder), 0, context);
+        var messages = new List<MigrationMessage>();
+        messages.AddRange(PreDoMigration(context));
+        messages.AddRange(MigrateFolder(GetSourceFolder(context.SourceFolder), 0, context));
+        messages.AddRange(PostDoMigration(context));
+        return messages;
     }
 
+
     /// <summary>
-    ///  migrate a folder 
+    ///  so handlers can run things before main DoMigrationLoop
     /// </summary>
-    /// <remarks>
-    ///  We have to do it like this for v7 because it did level by folder structure.
-    /// </remarks>
-    private IEnumerable<MigrationMessage> MigrateFolder(string folder, int level, SyncMigrationContext context)
+    /// <param name="context"></param>
+    /// <returns></returns>
+	protected virtual IEnumerable<MigrationMessage> PreDoMigration(SyncMigrationContext context)
+		=> Enumerable.Empty<MigrationMessage>();
+
+    /// <summary>
+    ///  So Handlers can run things post main DoMigrationLoop
+    /// </summary>
+    /// <param name="context"></param>
+    /// <returns></returns>
+	protected virtual IEnumerable<MigrationMessage> PostDoMigration(SyncMigrationContext context)
+		=> Enumerable.Empty<MigrationMessage>();
+
+	/// <summary>
+	///  migrate a folder 
+	/// </summary>
+	/// <remarks>
+	///  We have to do it like this for v7 because it did level by folder structure.
+	/// </remarks>
+	private IEnumerable<MigrationMessage> MigrateFolder(string folder, int level, SyncMigrationContext context)
     {
         if (Directory.Exists(folder) == false)
         {

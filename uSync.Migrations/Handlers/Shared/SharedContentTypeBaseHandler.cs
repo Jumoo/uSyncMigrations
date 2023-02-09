@@ -4,23 +4,33 @@ using Microsoft.Extensions.Logging;
 
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
+using Umbraco.Cms.Core.Notifications;
+using Umbraco.Cms.Core.Services;
+using Umbraco.Extensions;
 
 using uSync.Core;
+using uSync.Migrations.Extensions;
 using uSync.Migrations.Models;
+using uSync.Migrations.Notifications;
 using uSync.Migrations.Services;
 
 namespace uSync.Migrations.Handlers.Shared;
 internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBase<TEntity>
     where TEntity : ContentTypeBase
 {
-    protected SharedContentTypeBaseHandler(
-        IEventAggregator eventAggregator,
-        ISyncMigrationFileService migrationFileService,
-        ILogger<SharedContentTypeBaseHandler<TEntity>> logger) 
-        : base(eventAggregator, migrationFileService, logger)
-    { }
+    private readonly IDataTypeService _dataTypeService;
 
-    protected override void PrepareFile(XElement source, SyncMigrationContext context)
+	protected SharedContentTypeBaseHandler(
+		IEventAggregator eventAggregator,
+		ISyncMigrationFileService migrationFileService,
+		ILogger<SharedContentTypeBaseHandler<TEntity>> logger,
+		IDataTypeService dataTypeService)
+		: base(eventAggregator, migrationFileService, logger)
+	{
+		_dataTypeService = dataTypeService;
+	}
+
+	protected override void PrepareFile(XElement source, SyncMigrationContext context)
     {
         var (contentTypeAlias, key) = GetAliasAndKey(source);
         context.AddContentTypeKey(contentTypeAlias, key);
@@ -155,5 +165,76 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
     }
     protected abstract void UpdatePropertyXml(XElement newProperty);
 
+
+    /// <summary>
+    ///  hook into the DoMigration loop so we can add additional doctypes
+    /// </summary>
+    /// <param name="context"></param>
+    /// <returns></returns>
+	protected override IEnumerable<MigrationMessage> PreDoMigration(SyncMigrationContext context)
+	{
+        var messages = new List<MigrationMessage>();
+        messages.AddRange(base.PreDoMigration(context));
+        messages.AddRange(CreateAdditional(context));
+        return messages;
+	}
+
+	/// <summary>
+	///  Add additional doctypes that might have been added by datatypes during the 
+	///  first part of the migration (i.e BlockGrid conversion)
+	/// </summary>
+	/// <param name="context"></param>
+	/// <returns></returns>
+	protected IEnumerable<MigrationMessage> CreateAdditional(SyncMigrationContext context) 
+    { 
+        // this only works on content types (for now)
+        if (typeof(TEntity) != typeof(ContentType)) return Enumerable.Empty<MigrationMessage>();
+
+        var messages = new List<MigrationMessage>();
+
+        foreach(var contentType in context.GetNewDocTypes())
+        {
+            // if this has been blocked don't add it. 
+			if (context.IsBlocked(this.ItemType, contentType.Alias)) continue;
+
+            var source = contentType.MakeXMLFromNewDocType(_dataTypeService);
+
+			var migratingNotification = new SyncMigratingNotification<TEntity>(source, context);
+			if (_eventAggregator.PublishCancelable(migratingNotification) == true)
+			{
+				continue;
+			}
+
+			var target = MigrateFile(source, 1, context);
+
+
+			context.AddContentTypeKey(contentType.Alias, contentType.Key);
+
+			AddAdditionaProperties(contentType, context);
+
+			if (target != null)
+			{
+				var migratedNotification =
+					new SyncMigratedNotification<TEntity>(target, context).WithStateFrom(migratingNotification);
+				_eventAggregator.Publish(migratedNotification);
+				messages.Add(SaveTargetXml(context.MigrationId, target));
+			}
+		}
+        return messages;
+    }
+
+    private void AddAdditionaProperties(NewContentTypeInfo contentType, SyncMigrationContext context)
+    {
+		foreach (var property in contentType.Properties)
+		{
+            var dataType = _dataTypeService.GetDataType(property.DataTypeAlias);
+
+            if (dataType != null)
+            {
+                context.AddContentProperty(contentType.Alias, property.Alias,
+                    dataType.EditorAlias, dataType.EditorAlias);
+            }
+		}
+	}
 
 }
