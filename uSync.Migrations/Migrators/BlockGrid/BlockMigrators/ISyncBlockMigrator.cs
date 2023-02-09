@@ -18,7 +18,6 @@ public interface ISyncBlockMigrator
 	string GetContentTypeAlias(IGridEditorConfig editorConfig);
 	string GetEditorAlias(IGridEditorConfig editor);
 
-
 	Dictionary<string, object> GetPropertyValues(GridValue.GridControl control, SyncMigrationContext context);
 }
 

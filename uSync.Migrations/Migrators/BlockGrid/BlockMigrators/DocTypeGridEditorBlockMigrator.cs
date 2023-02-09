@@ -6,6 +6,7 @@ using Polly;
 
 using Umbraco.Cms.Core.Configuration.Grid;
 using Umbraco.Cms.Core.Models;
+using Umbraco.Cms.Core.Services;
 using Umbraco.Extensions;
 
 using uSync.Migrations.Migrators.Models;
@@ -14,6 +15,13 @@ using uSync.Migrations.Models;
 namespace uSync.Migrations.Migrators.BlockGrid.BlockMigrators;
 internal class DocTypeGridEditorBlockMigrator : ISyncBlockMigrator
 {
+	private readonly IContentTypeService _contentTypeService;
+
+	public DocTypeGridEditorBlockMigrator(IContentTypeService contentTypeService)
+	{
+		_contentTypeService = contentTypeService;
+	}
+
 	public string[] Aliases => new[] { "docType" };
 
 	/// <summary>
@@ -39,6 +47,11 @@ internal class DocTypeGridEditorBlockMigrator : ISyncBlockMigrator
 					.Where(contentTypeAlias =>
 						allowedDocTypeExpressions.WhereNotNull()
 						.Any(allowedExpression => Regex.IsMatch(contentTypeAlias, allowedExpression, RegexOptions.IgnoreCase) == true));
+		}
+		else
+		{
+			// if its blank we have to add all element types. ?
+			return _contentTypeService.GetAll().Where((x => x.IsElement == true)).Select(x => x.Alias);
 		}
 
 		return Enumerable.Empty<string>();
