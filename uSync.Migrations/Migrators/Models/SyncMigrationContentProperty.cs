@@ -5,12 +5,12 @@
 /// </summary>
 public sealed class SyncMigrationContentProperty : SyncMigrationPropertyBase
 {
-    public SyncMigrationContentProperty(string editorAlias, string value)
+    public SyncMigrationContentProperty(string editorAlias, string? value)
         : base(editorAlias)
     {
         Value = value;
     }
 
-    public string Value { get; private set; }
+    public string? Value { get; private set; }
 
 }

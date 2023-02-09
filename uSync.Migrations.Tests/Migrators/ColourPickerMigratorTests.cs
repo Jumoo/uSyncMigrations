@@ -9,7 +9,7 @@ namespace uSync.Migrations.Tests.Migrators;
 [TestFixture]
 public class ColourPickerMigratorTests : MigratiorTestBase
 {
-    private IList<PreValue> _preValues;
+    private IList<PreValue> _preValues = new List<PreValue>();
 
     string _migratedValue = @"{
   ""Items"": [
@@ -34,7 +34,7 @@ public class ColourPickerMigratorTests : MigratiorTestBase
 }";
 
     [SetUp]
-    public void Setup()
+    public override void Setup()
     {
         base.Setup();
 

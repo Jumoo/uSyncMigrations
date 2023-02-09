@@ -22,10 +22,15 @@ public class NestedContentMigrator : SyncPropertyMigratorBase
 
     public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
-        var config = (NestedContentConfiguration)new NestedContentConfiguration().MapPreValues(dataTypeProperty.PreValues);
+        if (dataTypeProperty?.PreValues == null) return new NestedContentConfiguration();
+
+        var config = (NestedContentConfiguration?)new NestedContentConfiguration().MapPreValues(dataTypeProperty.PreValues);
+        if (config?.ContentTypes == null) return new NestedContentConfiguration();
 
         foreach(var contentTypeAlias in config.ContentTypes.Select(x => x.Alias))
         {
+            if (string.IsNullOrWhiteSpace(contentTypeAlias)) continue;
+
             var key = context.ContentTypes.GetKeyByAlias(contentTypeAlias);
             context.ContentTypes.AddElementType(key);
         }
@@ -39,6 +44,7 @@ public class NestedContentMigrator : SyncPropertyMigratorBase
         if (string.IsNullOrWhiteSpace(contentProperty.Value)) return string.Empty;
 
         var rowValues = JsonConvert.DeserializeObject<IList<NestedContentRowValue>>(contentProperty.Value);
+        if (rowValues == null) return string.Empty;
 
         foreach (var row in rowValues)
         {
@@ -46,8 +52,6 @@ public class NestedContentMigrator : SyncPropertyMigratorBase
             {
                 var editorAlias = context.ContentTypes.GetEditorAliasByTypeAndProperty(row.ContentTypeAlias, property.Key);
                 if (editorAlias == null) continue;
-
-                
                 
                 var migrator = context.Migrators.TryGetMigrator(editorAlias.OriginalEditorAlias);
                 if (migrator != null)
