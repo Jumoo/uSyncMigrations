@@ -6,10 +6,9 @@ using Umbraco.Cms.Core.Configuration.Grid;
 using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Cms.Core.Strings;
 using Umbraco.Extensions;
-
+using uSync.Migrations.Context;
 using uSync.Migrations.Migrators.BlockGrid.BlockMigrators;
 using uSync.Migrations.Migrators.BlockGrid.Models;
-using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Migrators.BlockGrid.Extensions;
 internal static class GridConfigurationExtensions
@@ -53,7 +52,7 @@ internal static class GridConfigurationExtensions
     {
         foreach (var allowedAlias in editorConfig.GetAllowedContentTypeAliasesForBlock(context, blockMigrators))
         {
-            var elementKey = context.GetContentTypeKey(allowedAlias);
+            var elementKey = context.ContentTypes.GetKeyByAlias(allowedAlias);
 
             yield return new BlockGridConfiguration.BlockGridBlockConfiguration
             {

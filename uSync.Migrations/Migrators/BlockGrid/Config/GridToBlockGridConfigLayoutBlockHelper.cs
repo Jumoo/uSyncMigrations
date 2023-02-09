@@ -4,7 +4,7 @@ using Newtonsoft.Json.Linq;
 
 using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Extensions;
-
+using uSync.Migrations.Context;
 using uSync.Migrations.Migrators.BlockGrid.Extensions;
 using uSync.Migrations.Migrators.BlockGrid.Models;
 using uSync.Migrations.Models;
@@ -110,7 +110,7 @@ internal class GridToBlockGridConfigLayoutBlockHelper
 
             gridBlockContext.LayoutBlocks.TryAdd(contentTypeAlias, layoutBlock);
 
-            context.AddNewDocType(new NewContentTypeInfo
+            context.ContentTypes.AddNewContentType(new NewContentTypeInfo
             {
                 Key = layoutBlock.ContentElementTypeKey,
                 Alias = contentTypeAlias,
@@ -187,7 +187,7 @@ internal class GridToBlockGridConfigLayoutBlockHelper
 
             gridBlockContext.LayoutBlocks.TryAdd(contentTypeAlias, layoutBlock);
 
-            context.AddNewDocType(new NewContentTypeInfo
+            context.ContentTypes.AddNewContentType(new NewContentTypeInfo
             {
                 Key = layoutBlock.ContentElementTypeKey,
                 Alias = contentTypeAlias,
@@ -225,7 +225,7 @@ internal class GridToBlockGridConfigLayoutBlockHelper
 
                 foreach (var layoutContentTypeAlias in layoutContentTypeAliases)
                 {
-                    var contentTypeKey = context.GetContentTypeKey(layoutContentTypeAlias);
+                    var contentTypeKey = context.ContentTypes.GetKeyByAlias(layoutContentTypeAlias);
                     if (contentTypeKey != Guid.Empty)
                     {
                         specificedAllowance.Add(new()
@@ -241,10 +241,10 @@ internal class GridToBlockGridConfigLayoutBlockHelper
             if (block.ContentElementTypeKey == Guid.Empty)
             {
                 block.ContentElementTypeKey = alias.ToGuid();
-                context.AddContentTypeKey(alias, block.ContentElementTypeKey);
+                context.ContentTypes.AddKey(alias, block.ContentElementTypeKey);
             }
 
-            context.AddElementType(block.ContentElementTypeKey);
+            context.ContentTypes.AddElementType(block.ContentElementTypeKey);
         }
     }
 

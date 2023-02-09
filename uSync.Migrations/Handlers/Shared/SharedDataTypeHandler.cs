@@ -9,9 +9,9 @@ using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Services;
 
 using uSync.Core;
+using uSync.Migrations.Context;
 using uSync.Migrations.Migrators;
 using uSync.Migrations.Migrators.Models;
-using uSync.Migrations.Models;
 using uSync.Migrations.Serialization;
 using uSync.Migrations.Services;
 
@@ -42,7 +42,7 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
     {
         foreach (var datatype in _dataTypeService.GetAll())
         {
-            context.AddDataTypeDefinition(datatype.Key, datatype.EditorAlias);
+            context.DataTypes.AddDefinition(datatype.Key, datatype.EditorAlias);
         }
     }
 
@@ -63,17 +63,17 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
 
         if (replacementInfo != null)
         {
-            context.AddReplacementDataType(dtd, replacementInfo.Key);
-            context.AddDataTypeDefinition(dtd, replacementInfo.EditorAlias);
+            context.DataTypes.AddReplacement(dtd, replacementInfo.Key);
+            context.DataTypes.AddDefinition(dtd, replacementInfo.EditorAlias);
 
             if (string.IsNullOrWhiteSpace(replacementInfo.Variation) == false)
             {
-                context.AddDataTypeVariation(dtd, replacementInfo.Variation);
+                context.DataTypes.AddVariation(dtd, replacementInfo.Variation);
             }
         }
 
         // add alias, (won't update if replacement was added)
-        context.AddDataTypeDefinition(dtd, editorAlias);
+        context.DataTypes.AddDefinition(dtd, editorAlias);
     }
 
     protected abstract string GetEditorAlias(XElement source);
@@ -94,7 +94,7 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
         var (alias, key) = GetAliasAndKey(source);
         var editorAlias = GetEditorAlias(source);   
 
-        if (context.GetReplacementDataType(key) != key)
+        if (context.DataTypes.GetReplacement(key) != key)
         {
             // this data type has been replaced and isn't to be migrated
             return null;
@@ -104,7 +104,7 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
         var folder = GetDataTypeFolder(source);
         var databaseType = GetDatabaseType(source);
 
-        var migrator = context.TryGetMigrator(editorAlias);
+        var migrator = context.Migrators.TryGetMigrator(editorAlias);
         if (migrator is null)
         {
             // no migrator. 

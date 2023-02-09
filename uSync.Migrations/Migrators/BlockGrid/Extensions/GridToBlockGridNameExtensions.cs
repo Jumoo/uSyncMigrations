@@ -6,8 +6,7 @@ using System.Threading.Tasks;
 
 using Umbraco.Cms.Core.Strings;
 using Umbraco.Extensions;
-
-using uSync.Migrations.Models;
+using uSync.Migrations.Context;
 
 namespace uSync.Migrations.Migrators.BlockGrid.Extensions;
 
@@ -32,10 +31,10 @@ internal static class GridToBlockGridNameExtensions
 
     public static Guid GetContentTypeKeyOrDefault(this SyncMigrationContext context, string alias, Guid defaultKey)
     {
-        var key = context.GetContentTypeKey(alias);
+        var key = context.ContentTypes.GetKeyByAlias(alias);
         if (key != Guid.Empty) return key;
 
-        context.AddContentKey(defaultKey, alias);
+        context.Content.AddKey(defaultKey, alias);
         return defaultKey;
     }
 

@@ -9,6 +9,7 @@ using Umbraco.Cms.Core.Services;
 using Umbraco.Extensions;
 
 using uSync.Core;
+using uSync.Migrations.Context;
 using uSync.Migrations.Extensions;
 using uSync.Migrations.Models;
 using uSync.Migrations.Notifications;
@@ -33,10 +34,10 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
 	protected override void PrepareFile(XElement source, SyncMigrationContext context)
     {
         var (contentTypeAlias, key) = GetAliasAndKey(source);
-        context.AddContentTypeKey(contentTypeAlias, key);
+        context.ContentTypes.AddKey(contentTypeAlias, key);
 
         var compositions = source.Element("Info")?.Element("Compositions")?.Elements("Composition")?.Select(x => x.Value) ?? Enumerable.Empty<string>();
-        context.AddContentTypeCompositions(contentTypeAlias, compositions);
+        context.ContentTypes.AddCompositions(contentTypeAlias, compositions);
 
         var properties = source.Element("GenericProperties")?.Elements("GenericProperty") ?? Enumerable.Empty<XElement>();
 
@@ -46,15 +47,15 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
             var definition = property.Element("Definition").ValueOrDefault(Guid.Empty);
             var alias = property.Element("Alias")?.ValueOrDefault(string.Empty) ?? string.Empty;
 
-            context.AddContentProperty(contentTypeAlias, alias,
-                    editorAlias, context.GetDataTypeFromDefinition(definition));
+            context.ContentTypes.AddProperty(contentTypeAlias, alias,
+                    editorAlias, context.DataTypes.GetByDefinition(definition));
 
             //
             // for now we are doing this just for media folders, but it might be
             // that all list view properties should be ignored ??
             if (contentTypeAlias.Equals("Folder") && editorAlias.Equals("Umbraco.ListView"))
             {
-                context.AddIgnoredProperty(contentTypeAlias, alias);
+                context.ContentTypes.AddIgnoredProperty(contentTypeAlias, alias);
             }
         }
     }
@@ -119,7 +120,7 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
             {
                 var name = property.Element("Name").ValueOrDefault(string.Empty);
 
-                if (context.IsIgnoredProperty(alias, name))
+                if (context.ContentTypes.IsIgnoredProperty(alias, name))
                 {
                     continue;
                 }
@@ -142,7 +143,7 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
     {
         var propertyAlias = newProperty.Element("Alias").ValueOrDefault(string.Empty);
 
-        var updatedType = context.GetEditorAlias(alias, propertyAlias)?.UpdatedEditorAlias ?? propertyAlias;
+        var updatedType = context.ContentTypes.GetEditorAliasByTypeAndProperty(alias, propertyAlias)?.UpdatedEditorAlias ?? propertyAlias;
         newProperty.CreateOrSetElement("Type", updatedType);
 
         var definitionElement = newProperty.Element("Definition");
@@ -153,8 +154,8 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
 
         if (definition != Guid.Empty)
         {
-            definitionElement.Value = context.GetReplacementDataType(definition).ToString();
-            variationValue = context.GetDataTypeVariation(definition);
+            definitionElement.Value = context.DataTypes.GetReplacement(definition).ToString();
+            variationValue = context.DataTypes.GetVariation(definition);
         }
 
         if (ItemType == nameof(ContentType))
@@ -192,7 +193,7 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
 
         var messages = new List<MigrationMessage>();
 
-        foreach(var contentType in context.GetNewDocTypes())
+        foreach(var contentType in context.ContentTypes.GetNewContentTypes())
         {
             // if this has been blocked don't add it. 
 			if (context.IsBlocked(this.ItemType, contentType.Alias)) continue;
@@ -208,7 +209,7 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
 			var target = MigrateFile(source, 1, context);
 
 
-			context.AddContentTypeKey(contentType.Alias, contentType.Key);
+			context.ContentTypes.AddKey(contentType.Alias, contentType.Key);
 
 			AddAdditionaProperties(contentType, context);
 
@@ -217,7 +218,7 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
 				var migratedNotification =
 					new SyncMigratedNotification<TEntity>(target, context).WithStateFrom(migratingNotification);
 				_eventAggregator.Publish(migratedNotification);
-				messages.Add(SaveTargetXml(context.MigrationId, target));
+				messages.Add(SaveTargetXml(context.Metadata.MigrationId, target));
 			}
 		}
         return messages;
@@ -231,7 +232,7 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
 
             if (dataType != null)
             {
-                context.AddContentProperty(contentType.Alias, property.Alias,
+                context.ContentTypes.AddProperty(contentType.Alias, property.Alias,
                     dataType.EditorAlias, dataType.EditorAlias);
             }
 		}

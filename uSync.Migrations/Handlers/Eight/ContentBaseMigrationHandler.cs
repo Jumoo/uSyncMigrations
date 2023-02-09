@@ -8,8 +8,8 @@ using Umbraco.Cms.Core.Strings;
 using Umbraco.Extensions;
 
 using uSync.Core;
+using uSync.Migrations.Context;
 using uSync.Migrations.Handlers.Shared;
-using uSync.Migrations.Models;
 using uSync.Migrations.Services;
 
 namespace uSync.Migrations.Handlers.Eight;
@@ -35,7 +35,7 @@ internal class ContentBaseMigrationHandler<TEntity> : SharedContentBaseHandler<T
         => source.Element("Info")?.Element("Parent")?.Attribute("Key").ValueOrDefault(Guid.Empty) ?? Guid.Empty;
 
     protected override string GetPath(string alias, Guid parent, SyncMigrationContext context)
-        => context.GetContentPath(parent) + "/" + alias.ToSafeAlias(_shortStringHelper);
+        => context.Content.GetContentPath(parent) + "/" + alias.ToSafeAlias(_shortStringHelper);
 
     protected override IEnumerable<XElement>? GetProperties(XElement source)
         => source.Element("Properties")?.Elements() ?? Enumerable.Empty<XElement>();

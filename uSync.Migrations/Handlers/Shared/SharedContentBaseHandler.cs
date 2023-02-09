@@ -7,9 +7,9 @@ using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Strings;
 
 using uSync.Core;
+using uSync.Migrations.Context;
 using uSync.Migrations.Migrators;
 using uSync.Migrations.Migrators.Models;
-using uSync.Migrations.Models;
 using uSync.Migrations.Services;
 
 namespace uSync.Migrations.Handlers.Shared;
@@ -47,7 +47,7 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
 
             if (string.IsNullOrWhiteSpace(alias) == false)
             {
-                context.AddContentKey(key, alias);
+                context.Content.AddKey(key, alias);
             }
         }
     }
@@ -72,7 +72,7 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
         var contentType = GetContentType(source);
 
         var path = GetPath(alias, parent, context);
-        context.AddContentPath(key, path);
+        context.Content.AddContentPath(key, path);
 
         // media might update this 
         contentType = GetNewContentType(contentType, source);
@@ -89,7 +89,7 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
                 continue;
             }
 
-            if (context.IsIgnoredProperty(contentType, property.Name.LocalName))
+            if (context.ContentTypes.IsIgnoredProperty(contentType, property.Name.LocalName))
             {
                 continue;
             }
@@ -111,12 +111,12 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
 
     protected virtual XElement ConvertPropertyValue(string itemType, string contentType, XElement property, SyncMigrationContext context)
     {
-        var editorAlias = context.GetEditorAlias(contentType, property.Name.LocalName)?.OriginalEditorAlias ?? string.Empty;
+        var editorAlias = context.ContentTypes.GetEditorAliasByTypeAndProperty(contentType, property.Name.LocalName)?.OriginalEditorAlias ?? string.Empty;
 
         // convert the property .
 
         var migrationProperty = new SyncMigrationContentProperty(editorAlias, property.Value);
-        var migrator = context.TryGetVariantMigrator(editorAlias);
+        var migrator = context.Migrators.TryGetVariantMigrator(editorAlias);
         if (migrator != null && itemType == "Content")
         {
             // it might be the case that the property needs to be split into variants. 
@@ -149,7 +149,7 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
             var newProperty = new XElement(propertyName);
 
             // get editor alias from dtdguid
-            var variantEditorAlias = context.GetDataTypeFromDefinition(attempt.Result.DtdGuid);
+            var variantEditorAlias = context.DataTypes.GetByDefinition(attempt.Result.DtdGuid);
             if (variantEditorAlias != null)
             {
                 foreach (var variation in attempt.Result.Values)
@@ -176,7 +176,7 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
 
         if (string.IsNullOrWhiteSpace(migrationProperty.EditorAlias)) return migrationProperty.Value;
 
-        var migrator = context.TryGetMigrator(migrationProperty.EditorAlias);
+        var migrator = context.Migrators.TryGetMigrator(migrationProperty.EditorAlias);
         if (migrator != null)
         {
             return migrator?.GetContentValue(migrationProperty, context) ?? migrationProperty.Value;

@@ -5,8 +5,7 @@ using Microsoft.Extensions.Logging;
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Services;
-
-using uSync.Migrations.Models;
+using uSync.Migrations.Context;
 using uSync.Migrations.Services;
 
 namespace uSync.Migrations.Handlers.Shared;
@@ -31,12 +30,12 @@ internal abstract class SharedTemplateHandler : SharedHandlerBase<Template>
     public override void Prepare(SyncMigrationContext context)
     {
         _fileService.GetTemplates().ToList()
-            .ForEach(template => context.AddTemplateKey(template.Alias, template.Key));
+            .ForEach(template => context.Templates.AddAlias(template.Alias, template.Key));
     }
 
     protected override void PrepareFile(XElement source, SyncMigrationContext context)
     {
         var (alias, key) = GetAliasAndKey(source);
-        context.AddTemplateKey(alias, key);
+        context.Templates.AddAlias(alias, key);
     }
 }

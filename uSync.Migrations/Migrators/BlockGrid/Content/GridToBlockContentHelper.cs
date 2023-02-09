@@ -6,12 +6,11 @@ using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Models.Blocks;
 using Umbraco.Extensions;
-
+using uSync.Migrations.Context;
 using uSync.Migrations.Migrators.BlockGrid.BlockMigrators;
 using uSync.Migrations.Migrators.BlockGrid.Extensions;
 using uSync.Migrations.Migrators.BlockGrid.Models;
 using uSync.Migrations.Migrators.Models;
-using uSync.Migrations.Models;
 
 using static Umbraco.Cms.Core.PropertyEditors.ListViewConfiguration;
 
@@ -191,7 +190,7 @@ internal class GridToBlockContentHelper
         var contentTypeAlias = blockMigrator.GetContentTypeAlias(control);
         if (contentTypeAlias == null) return null;
 
-        var contentTypeKey = context.GetContentTypeKey(contentTypeAlias);
+        var contentTypeKey = context.ContentTypes.GetKeyByAlias(contentTypeAlias);
         if (contentTypeKey == Guid.Empty) return null;
 
         var data = new BlockItemData
@@ -204,12 +203,12 @@ internal class GridToBlockContentHelper
 
         foreach (var (propertyAlias, value) in blockMigrator.GetPropertyValues(control, context))
         {
-            var editorAlias = context.GetEditorAlias(contentTypeAlias, propertyAlias);
+            var editorAlias = context.ContentTypes.GetEditorAliasByTypeAndProperty(contentTypeAlias, propertyAlias);
             var propertyValue = value;
             if (editorAlias != null)
             {
 
-                var migrator = context.TryGetMigrator(editorAlias.OriginalEditorAlias);
+                var migrator = context.Migrators.TryGetMigrator(editorAlias.OriginalEditorAlias);
                 if (migrator != null)
                 {
                     var property = new SyncMigrationContentProperty(editorAlias.OriginalEditorAlias, value?.ToString() ?? string.Empty);

@@ -1,8 +1,7 @@
 using Newtonsoft.Json.Linq;
-
+using uSync.Migrations.Context;
 using uSync.Migrations.Extensions;
 using uSync.Migrations.Migrators.Models;
-using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Migrators.Community
 {

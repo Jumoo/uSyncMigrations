@@ -8,6 +8,7 @@ using Umbraco.Cms.Core.Notifications;
 using Umbraco.Extensions;
 
 using uSync.Core;
+using uSync.Migrations.Context;
 using uSync.Migrations.Handlers.Shared;
 using uSync.Migrations.Models;
 using uSync.Migrations.Notifications;
@@ -45,7 +46,7 @@ internal class DictionaryMigrationHandler : SharedHandlerBase<DictionaryItem>, I
     /// </summary>
     public override IEnumerable<MigrationMessage> DoMigration(SyncMigrationContext context)
     {
-        var files = GetSourceFiles(context.SourceFolder);
+        var files = GetSourceFiles(context.Metadata.SourceFolder);
         if (files == null) { 
             return Enumerable.Empty<MigrationMessage>();
         }
@@ -70,7 +71,7 @@ internal class DictionaryMigrationHandler : SharedHandlerBase<DictionaryItem>, I
                 {
                     var migratedNotification = new SyncMigratedNotification<DictionaryItem>(target, context).WithStateFrom(migratingNotification);
                     _eventAggregator.Publish(migratedNotification);
-                    messages.Add(SaveTargetXml(context.MigrationId, target));
+                    messages.Add(SaveTargetXml(context.Metadata.MigrationId, target));
                 }
             }
         }

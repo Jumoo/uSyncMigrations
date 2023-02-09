@@ -5,9 +5,9 @@ using Umbraco.Cms.Core.Models.Blocks;
 using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Extensions;
 using uSync.Migrations.Composing;
+using uSync.Migrations.Context;
 using uSync.Migrations.Extensions;
 using uSync.Migrations.Migrators.Models;
-using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Migrators;
 
@@ -43,7 +43,7 @@ public class StackedContentToBlockListMigrator : SyncPropertyMigratorBase
         {
             foreach (var elementTypeKey in blocks.Select(x => x.ContentElementTypeKey))
             {
-                context.AddElementType(elementTypeKey);
+                context.ContentTypes.AddElementType(elementTypeKey);
             }
         }
 
@@ -77,11 +77,11 @@ public class StackedContentToBlockListMigrator : SyncPropertyMigratorBase
 
         foreach (var item in items)
         {
-            var contentTypeAlias = context.GetContentTypeAlias(item.ContentTypeKey);
+            var contentTypeAlias = context.ContentTypes.GetAliasByKey(item.ContentTypeKey);
 
             foreach (var (propertyAlias, value) in item.Values)
             {
-                var editorAlias = context.GetEditorAlias(contentTypeAlias, propertyAlias);
+                var editorAlias = context.ContentTypes.GetEditorAliasByTypeAndProperty(contentTypeAlias, propertyAlias);
 
                 if (editorAlias == null)
                 {

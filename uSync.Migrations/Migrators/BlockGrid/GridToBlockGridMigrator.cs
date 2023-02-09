@@ -10,7 +10,7 @@ using uSync.Migrations.Migrators.BlockGrid.Content;
 using uSync.Migrations.Migrators.BlockGrid.Config;
 using uSync.Migrations.Migrators.BlockGrid.Extensions;
 using uSync.Migrations.Migrators.Models;
-using uSync.Migrations.Models;
+using uSync.Migrations.Context;
 
 namespace uSync.Migrations.Migrators.BlockGrid;
 
@@ -68,7 +68,7 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
 		var result = gridToBlockContext.ConvertToBlockGridConfiguration();
 
 		// Make sure all the block elements have been added to the migration context.
-		context.AddElementTypes(result.Blocks.Select(x => x.ContentElementTypeKey), true);
+		context.ContentTypes.AddElementTypes(result.Blocks.Select(x => x.ContentElementTypeKey), true);
 
 		return result;
 	}

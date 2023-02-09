@@ -8,7 +8,7 @@ using Umbraco.Cms.Core.Configuration.Grid;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Extensions;
-
+using uSync.Migrations.Context;
 using uSync.Migrations.Migrators.Models;
 using uSync.Migrations.Models;
 
@@ -41,7 +41,7 @@ internal class DocTypeGridEditorBlockMigrator : ISyncBlockMigrator
 			var allowedDocTypeExpressions = allowedDocTypes.Values<string>().ToArray();
 			if (allowedDocTypeExpressions.Length == 0) return Enumerable.Empty<string>();
 
-			var allContentTypeAliases = context.GetContentTypeAliases();
+			var allContentTypeAliases = context.ContentTypes.GetAllAliases();
 
 			return allContentTypeAliases
 					.Where(contentTypeAlias =>
@@ -96,11 +96,11 @@ internal class DocTypeGridEditorBlockMigrator : ISyncBlockMigrator
 
 		foreach (var (propertyAlias, value) in elementValue)
 		{
-			var editorAlias = context.GetEditorAlias(contentTypeAlias, propertyAlias);
+			var editorAlias = context.ContentTypes.GetEditorAliasByTypeAndProperty(contentTypeAlias, propertyAlias);
 
 			if (editorAlias == null) continue;
 
-			var migrator = context.TryGetMigrator(editorAlias.OriginalEditorAlias);
+			var migrator = context.Migrators.TryGetMigrator(editorAlias.OriginalEditorAlias);
 			var propertyValue = value;
 
 			if (migrator != null) { 
