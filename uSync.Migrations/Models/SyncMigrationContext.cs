@@ -1,8 +1,4 @@
-﻿using CSharpTest.Net.Serialization;
-
-using Umbraco.Cms.Core.Composing;
-
-using uSync.Migrations.Migrators;
+﻿using uSync.Migrations.Migrators;
 
 namespace uSync.Migrations.Models;
 
@@ -70,7 +66,7 @@ public class SyncMigrationContext : IDisposable
     private Dictionary<int, Guid> _idKeyMap { get; set; } = new();
 
 
-  
+
     /// <summary>
     ///  Add a template key to the context.
     /// </summary>
@@ -100,6 +96,9 @@ public class SyncMigrationContext : IDisposable
     public string GetContentTypeAlias(Guid contentTypeKey)
         => _contentTypeAliases?.TryGetValue(contentTypeKey, out var alias) == true ? alias : string.Empty;
 
+    public string[] GetContentTypeAliases()
+        => _contentTypeAliases?.Values?.ToArray() ?? Array.Empty<string>();
+
     /// <summary>
     ///  get the key for a given content type alias from the context.
     /// </summary>
@@ -116,10 +115,23 @@ public class SyncMigrationContext : IDisposable
             _contentTypeCompositions.TryAdd(contentTypeAlias, compositionAliases.ToHashSet());
     }
 
-    /// <summary>
-    ///  add the path for a content item to context. 
-    /// </summary>
-    public void AddContentPath(Guid key, string path)
+	public bool TryGetContentTypeCompositions(string? contentTypeAlias, out IEnumerable<string>? compositionAliases)
+	{
+		compositionAliases = null;
+
+		if (contentTypeAlias != null && _contentTypeCompositions.TryGetValue(contentTypeAlias, out var compositions))
+		{
+			compositionAliases = compositions?.ToArray();
+		}
+
+		return compositionAliases != null;
+	}
+
+
+	/// <summary>
+	///  add the path for a content item to context. 
+	/// </summary>
+	public void AddContentPath(Guid key, string path)
          => _ = _contentPaths.TryAdd(key, path);
 
     /// <summary>
@@ -313,8 +325,64 @@ public class SyncMigrationContext : IDisposable
         if (!_elementContentTypes.Contains(key)) _elementContentTypes.Add(key);
     }
 
-    public void Dispose()
+	public void AddElementTypes(IEnumerable<Guid> contentTypeKeys, bool includeCompositions)
+	{
+		foreach (var contentTypeKey in contentTypeKeys)
+		{
+			AddElementType(contentTypeKey);
+
+			if (!includeCompositions)
+			{
+				continue;
+			}
+
+			var contentTypeAlias = GetContentTypeAlias(contentTypeKey);
+
+			if (!TryGetContentTypeCompositions(contentTypeAlias, out var compositionAliases))
+			{
+				continue;
+			}
+
+			if (compositionAliases?.Any() != true)
+			{
+				continue;
+			}
+
+			foreach (var compositionContentTypeAlias in compositionAliases)
+			{
+				var compositionContentTypeKey = GetContentTypeKey(compositionContentTypeAlias);
+				AddElementType(compositionContentTypeKey);
+			}
+		}
+	}
+
+	public void Dispose()
     { }
+
+
+    private Dictionary<string, NewContentTypeInfo> _newDocTypes
+        = new Dictionary<string, NewContentTypeInfo>(StringComparer.OrdinalIgnoreCase);
+
+    public void AddNewDocType(NewContentTypeInfo newDocTypeInfo)
+    {
+        if (!_newDocTypes.ContainsKey(newDocTypeInfo.Alias))
+            _newDocTypes.Add(newDocTypeInfo.Alias, newDocTypeInfo);
+    }
+
+    public IList<NewContentTypeInfo> GetNewDocTypes()
+        => _newDocTypes.Values.ToList();
+
+
+    private Dictionary<string, string> _blockAliases 
+        = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+    public void AddBlockEditor(string name, string alias)
+        => _blockAliases.TryAdd(name, alias);
+
+    public string GetBlockEditorAlias(string name)
+        => _blockAliases.TryGetValue(name, out var alias) == true 
+            ? alias
+            : name;
 }
 
 public class EditorAliasInfo
@@ -328,4 +396,25 @@ public class EditorAliasInfo
     public string OriginalEditorAlias { get; }
 
     public string UpdatedEditorAlias { get; }
+}
+
+public class NewContentTypeInfo
+{
+    public Guid Key { get; set; } = Guid.Empty;
+
+    public string Alias { get; set; }
+    public string Name { get; set; }
+    public string Icon { get; set; }
+    public string? Description { get; set; }
+    public bool IsElement { get; set; }
+
+    public string? Folder { get; set; }
+    public IList<NewContentTypeProperty> Properties { get; set; } = new List<NewContentTypeProperty>(); 
+}
+
+public class NewContentTypeProperty
+{
+    public string Name { get; set;  }
+    public string Alias { get; set; }
+    public string DataTypeAlias { get; set; }
 }

@@ -8,6 +8,8 @@ using uSync.Migrations.Configuration;
 using uSync.Migrations.Configuration.Models;
 using uSync.Migrations.Handlers;
 using uSync.Migrations.Migrators;
+using uSync.Migrations.Migrators.BlockGrid.BlockMigrators;
+using uSync.Migrations.Migrators.BlockGrid.Extensions;
 using uSync.Migrations.Notifications;
 using uSync.Migrations.Services;
 using uSync.Migrations.Validation;
@@ -38,9 +40,16 @@ public static class SyncMigrationsBuilderExtensions
             return builder;
         }
 
+        builder.Services.AddSingleton<GridConventions>();
+
         builder
             .WithCollectionBuilder<SyncPropertyMigratorCollectionBuilder>()
                 .Append(builder.TypeLoader.GetTypes<ISyncPropertyMigrator>());
+
+        builder
+            .WithCollectionBuilder<SyncBlockMigratorCollectionBuilder>()
+                .Add(() => builder.TypeLoader.GetTypes<ISyncBlockMigrator>());
+        
 
         builder.Services.AddTransient<ISyncMigrationFileService, SyncMigrationFileService>();
 

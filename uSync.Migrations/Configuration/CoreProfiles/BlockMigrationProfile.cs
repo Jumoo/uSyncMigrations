@@ -28,8 +28,8 @@ internal class BlockMigrationProfile : ISyncMigrationProfile
     public MigrationOptions Options => new MigrationOptions
     {
         Group = "Convert",
-        Source = "uSync/v9",
-        Target = $"{uSyncMigrations.MigrationFolder}/{DateTime.Now:yyyyMMdd_HHmmss}",
+        Source = "uSync/grid-v9",
+        Target = $"{uSyncMigrations.MigrationFolder}/blocks",
         Handlers = _migrationHandlers.SelectGroup(8, string.Empty),
         SourceVersion = 8,
         PreferredMigrators = new Dictionary<string, string>

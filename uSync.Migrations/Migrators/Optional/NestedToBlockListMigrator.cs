@@ -1,9 +1,5 @@
-﻿using Lucene.Net.Codecs;
-
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-
-using Polly;
 
 using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Models.Blocks;
