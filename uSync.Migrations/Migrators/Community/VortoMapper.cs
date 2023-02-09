@@ -5,7 +5,7 @@ using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Extensions;
-
+using uSync.Migrations.Context;
 using uSync.Migrations.Migrators.Models;
 using uSync.Migrations.Models;
 

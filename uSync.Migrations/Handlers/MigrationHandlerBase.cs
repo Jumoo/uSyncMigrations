@@ -9,6 +9,7 @@ using Umbraco.Cms.Core.Notifications;
 using Umbraco.Extensions;
 
 using uSync.Core;
+using uSync.Migrations.Context;
 using uSync.Migrations.Models;
 using uSync.Migrations.Notifications;
 using uSync.Migrations.Services;
@@ -80,7 +81,7 @@ internal abstract class MigrationHandlerBase<TObject>
 
     public virtual void PrepareMigrations(SyncMigrationContext context)
     {
-        var files = GetSourceFiles(context.SourceFolder);
+        var files = GetSourceFiles(context.Metadata.SourceFolder);
         if (files == null)
         {
             return;
@@ -100,7 +101,7 @@ internal abstract class MigrationHandlerBase<TObject>
     {
         var messages = new List<MigrationMessage>();
         messages.AddRange(PreDoMigration(context));
-        messages.AddRange(MigrateFolder(GetSourceFolder(context.SourceFolder), 0, context));
+        messages.AddRange(MigrateFolder(GetSourceFolder(context.Metadata.SourceFolder), 0, context));
         messages.AddRange(PostDoMigration(context));
         return messages;
     }
@@ -164,7 +165,7 @@ internal abstract class MigrationHandlerBase<TObject>
                 {
                     var migratedNotification = new SyncMigratedNotification<TObject>(target, context).WithStateFrom(migratingNotification);
                     _eventAggregator.Publish(migratedNotification);
-                    messages.Add(SaveTargetXml(context.MigrationId, target));
+                    messages.Add(SaveTargetXml(context.Metadata.MigrationId, target));
                 }
             }
             catch(Exception ex)

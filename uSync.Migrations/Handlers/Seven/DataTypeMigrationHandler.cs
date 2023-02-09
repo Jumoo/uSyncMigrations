@@ -10,6 +10,7 @@ using Umbraco.Extensions;
 using uSync.Core;
 using uSync.Migrations.Composing;
 using uSync.Migrations.Configuration.Models;
+using uSync.Migrations.Context;
 using uSync.Migrations.Extensions;
 using uSync.Migrations.Handlers.Shared;
 using uSync.Migrations.Migrators;
@@ -50,7 +51,7 @@ internal class DataTypeMigrationHandler : SharedDataTypeHandler, ISyncMigrationH
         //
         // replacements
         //
-        var migrator = context.TryGetMigrator(editorAlias);
+        var migrator = context.Migrators.TryGetMigrator(editorAlias);
         if (migrator != null && migrator is ISyncReplacablePropertyMigrator replacablePropertyMigrator)
         {
             return replacablePropertyMigrator.GetReplacementEditorId(

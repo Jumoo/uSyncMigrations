@@ -2,8 +2,7 @@
 
 using Umbraco.Cms.Core.Models.Entities;
 using Umbraco.Cms.Core.Notifications;
-
-using uSync.Migrations.Models;
+using uSync.Migrations.Context;
 
 namespace uSync.Migrations.Notifications;
 

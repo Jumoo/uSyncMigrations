@@ -7,6 +7,7 @@ using Umbraco.Extensions;
 using uSync.BackOffice.Configuration;
 using uSync.Migrations.Composing;
 using uSync.Migrations.Configuration.Models;
+using uSync.Migrations.Context;
 using uSync.Migrations.Handlers;
 using uSync.Migrations.Migrators;
 using uSync.Migrations.Models;
@@ -164,12 +165,12 @@ internal class SyncMigrationService : ISyncMigrationService
 
         // properties we ignore globally.
         options.IgnoredProperties?
-            .ForEach(x => context.AddIgnoredProperty(x));
+            .ForEach(x => context.ContentTypes.AddIgnoredProperty(x));
 
         // properties we ignore by content type
         options.IgnoredPropertiesByContentType?
             .ForEach(kvp =>
-                kvp.Value?.ForEach(value => context.AddIgnoredProperty(kvp.Key, value)));
+                kvp.Value?.ForEach(value => context.ContentTypes.AddIgnoredProperty(kvp.Key, value)));
 
         AddMigrators(context, options.PreferredMigrators);
 
@@ -187,9 +188,9 @@ internal class SyncMigrationService : ISyncMigrationService
         var preferredList = _migrators.GetPreferredMigratorList(preferredMigrators);
         if (preferredList != null)
         {
-            foreach (var item in preferredList.Where(x => x.Migrator.Versions.Contains(context.SourceVersion)))
+            foreach (var item in preferredList.Where(x => x.Migrator.Versions.Contains(context.Metadata.SourceVersion)))
             {
-                context.AddPropertyMigration(item.EditorAlias, item.Migrator);
+                context.Migrators.AddPropertyMigration(item.EditorAlias, item.Migrator);
             }
         }
     }

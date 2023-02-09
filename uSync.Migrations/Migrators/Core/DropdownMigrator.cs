@@ -2,9 +2,8 @@
 
 using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Extensions;
-
+using uSync.Migrations.Context;
 using uSync.Migrations.Migrators.Models;
-using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Migrators;
 

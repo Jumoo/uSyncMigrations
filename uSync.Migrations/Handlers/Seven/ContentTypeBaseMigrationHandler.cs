@@ -7,8 +7,8 @@ using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Services;
 
 using uSync.Core;
+using uSync.Migrations.Context;
 using uSync.Migrations.Handlers.Shared;
-using uSync.Migrations.Models;
 using uSync.Migrations.Services;
 
 namespace uSync.Migrations.Handlers.Seven;
@@ -69,7 +69,7 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : SharedContent
         targetInfo.Element("Alias")?.Remove();
 
         targetInfo.Add(new XElement("Variations", "Nothing"));
-        targetInfo.Add(new XElement("IsElement", context.IsElementType(key)));
+        targetInfo.Add(new XElement("IsElement", context.ContentTypes.IsElementType(key)));
 
         target.Add(targetInfo);
     }

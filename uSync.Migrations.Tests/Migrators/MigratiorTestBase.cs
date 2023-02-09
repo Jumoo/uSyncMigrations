@@ -4,10 +4,9 @@ global using UmbEditors = Umbraco.Cms.Core.Constants.PropertyEditors;
 using Newtonsoft.Json;
 
 using NUnit.Framework;
-
+using uSync.Migrations.Context;
 using uSync.Migrations.Migrators;
 using uSync.Migrations.Migrators.Models;
-using uSync.Migrations.Models;
 using uSync.Migrations.Serialization;
 
 namespace uSync.Migrations.Tests.Migrators;

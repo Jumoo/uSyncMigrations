@@ -1,5 +1,5 @@
 ﻿using Umbraco.Cms.Core.Composing;
-
+using uSync.Migrations.Context;
 using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Handlers;

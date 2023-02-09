@@ -5,9 +5,8 @@ using Microsoft.Extensions.Logging;
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Services;
-
+using uSync.Migrations.Context;
 using uSync.Migrations.Handlers.Shared;
-using uSync.Migrations.Models;
 using uSync.Migrations.Services;
 
 namespace uSync.Migrations.Handlers.Eight;

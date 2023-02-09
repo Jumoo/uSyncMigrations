@@ -1,10 +1,9 @@
 ﻿using Umbraco.Cms.Core.Configuration.Grid;
 using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Extensions;
-
+using uSync.Migrations.Context;
 using uSync.Migrations.Migrators.BlockGrid.BlockMigrators;
 using uSync.Migrations.Migrators.BlockGrid.Extensions;
-using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Migrators.BlockGrid.Config;
 internal class GridToBlockGridConfigBlockHelper
@@ -37,8 +36,8 @@ internal class GridToBlockGridConfigBlockHelper
 
             foreach(var newContentType in additionalContentTypes)
             {
-                context.AddNewDocType(newContentType);
-                context.AddContentTypeKey(newContentType.Alias, newContentType.Key);
+                context.ContentTypes.AddNewContentType(newContentType);
+                context.ContentTypes.AddAliasAndKey(newContentType.Alias, newContentType.Key);
             }
         }
     }

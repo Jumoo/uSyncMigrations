@@ -7,8 +7,8 @@ using Umbraco.Cms.Core.Strings;
 using Umbraco.Extensions;
 
 using uSync.Migrations.Composing;
+using uSync.Migrations.Context;
 using uSync.Migrations.Migrators.Models;
-using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Migrators.BlockGrid.BlockMigrators;
 

@@ -8,8 +8,8 @@ using Umbraco.Cms.Core.Strings;
 using Umbraco.Extensions;
 
 using uSync.Core;
+using uSync.Migrations.Context;
 using uSync.Migrations.Handlers.Shared;
-using uSync.Migrations.Models;
 using uSync.Migrations.Services;
 
 namespace uSync.Migrations.Handlers.Seven;
@@ -41,7 +41,7 @@ internal abstract class ContentBaseMigrationHandler<TEntity> : SharedContentBase
         => source.Attribute("nodeTypeAlias").ValueOrDefault(string.Empty);
 
     protected override string GetPath(string alias, Guid parent, SyncMigrationContext context)
-        => context.GetContentPath(parent) + "/" + alias.ToSafeAlias(_shortStringHelper);
+        => context.Content.GetContentPath(parent) + "/" + alias.ToSafeAlias(_shortStringHelper);
 
     protected override IEnumerable<XElement>? GetProperties(XElement source)
         => source.Elements();
@@ -77,7 +77,7 @@ internal abstract class ContentBaseMigrationHandler<TEntity> : SharedContentBase
                         new XAttribute("Alias", alias),
                         new XAttribute("Level", level),
                         new XElement("Info",
-                            new XElement("Parent", new XAttribute("Key", parent), context.GetContentAlias(parent)),
+                            new XElement("Parent", new XAttribute("Key", parent), context.Content.GetAliasByKey(parent)),
                             new XElement("Path", path),
                             new XElement("Trashed", false),
                             new XElement("ContentType", contentType),
@@ -97,7 +97,7 @@ internal abstract class ContentBaseMigrationHandler<TEntity> : SharedContentBase
 
                 if (string.IsNullOrWhiteSpace(template) == false)
                 {
-                    info.Add(new XElement("Template", new XAttribute("Key", context.GetTemplateKey(template)), template));
+                    info.Add(new XElement("Template", new XAttribute("Key", context.Templates.GetKeyByAlias(template)), template));
                 }
                 else
                 {

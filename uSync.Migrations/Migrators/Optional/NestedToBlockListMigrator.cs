@@ -4,10 +4,9 @@ using Newtonsoft.Json.Linq;
 using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Models.Blocks;
 using Umbraco.Cms.Core.PropertyEditors;
-
+using uSync.Migrations.Context;
 using uSync.Migrations.Extensions;
 using uSync.Migrations.Migrators.Models;
-using uSync.Migrations.Models;
 
 using static Umbraco.Cms.Core.Constants;
 
@@ -29,7 +28,7 @@ public class NestedToBlockListMigrator : SyncPropertyMigratorBase
     /// </summary>
     public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
-        switch (context.SourceVersion)
+        switch (context.Metadata.SourceVersion)
         {
             case 7:
                 return GetVersionSevenConfigValues(dataTypeProperty, context);
@@ -81,10 +80,10 @@ public class NestedToBlockListMigrator : SyncPropertyMigratorBase
             {
                 if (string.IsNullOrWhiteSpace(item.Alias)) continue;
 
-                var contentTypeKey = context.GetContentTypeKey(item.Alias);
+                var contentTypeKey = context.ContentTypes.GetKeyByAlias(item.Alias);
 
                 // tell the process we need this to be an element type
-                context.AddElementType(contentTypeKey);
+                context.ContentTypes.AddElementType(contentTypeKey);
 
                 blocks.Add(new BlockListConfiguration.BlockConfiguration
                 {
@@ -112,7 +111,7 @@ public class NestedToBlockListMigrator : SyncPropertyMigratorBase
 
         foreach (var row in rowValues)
         {
-            var contentTypeKey = context.GetContentTypeKey(row.ContentTypeAlias);
+            var contentTypeKey = context.ContentTypes.GetKeyByAlias(row.ContentTypeAlias);
             var blockUdi = Udi.Create(UdiEntityType.Element, row.Id);
 
             var block = new BlockItemData
@@ -128,10 +127,10 @@ public class NestedToBlockListMigrator : SyncPropertyMigratorBase
 
             foreach (var property in row.RawPropertyValues)
             {
-                var editorAlias = context.GetEditorAlias(row.ContentTypeAlias, property.Key);
+                var editorAlias = context.ContentTypes.GetEditorAliasByTypeAndProperty(row.ContentTypeAlias, property.Key);
                 if (editorAlias == null) continue;
 
-                var migrator = context.TryGetMigrator(editorAlias.OriginalEditorAlias);
+                var migrator = context.Migrators.TryGetMigrator(editorAlias.OriginalEditorAlias);
                 if (migrator != null)
                 {
                     block.RawPropertyValues[property.Key] = migrator.GetContentValue(new SyncMigrationContentProperty(row.ContentTypeAlias, property.Value.ToString()), context);

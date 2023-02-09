@@ -2,7 +2,7 @@
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Strings;
 using Umbraco.Extensions;
-
+using uSync.Migrations.Context;
 using uSync.Migrations.Migrators.BlockGrid.Extensions;
 using uSync.Migrations.Models;
 

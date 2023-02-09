@@ -3,9 +3,9 @@
 using Umbraco.Cms.Core.PropertyEditors;
 
 using uSync.Migrations.Composing;
+using uSync.Migrations.Context;
 using uSync.Migrations.Extensions;
 using uSync.Migrations.Migrators.Models;
-using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Migrators;
 
@@ -26,8 +26,8 @@ public class NestedContentMigrator : SyncPropertyMigratorBase
 
         foreach(var contentTypeAlias in config.ContentTypes.Select(x => x.Alias))
         {
-            var key = context.GetContentTypeKey(contentTypeAlias);
-            context.AddElementType(key);
+            var key = context.ContentTypes.GetKeyByAlias(contentTypeAlias);
+            context.ContentTypes.AddElementType(key);
         }
 
         return config;
@@ -44,12 +44,12 @@ public class NestedContentMigrator : SyncPropertyMigratorBase
         {
             foreach (var property in row.RawPropertyValues)
             {
-                var editorAlias = context.GetEditorAlias(row.ContentTypeAlias, property.Key);
+                var editorAlias = context.ContentTypes.GetEditorAliasByTypeAndProperty(row.ContentTypeAlias, property.Key);
                 if (editorAlias == null) continue;
 
                 
                 
-                var migrator = context.TryGetMigrator(editorAlias.OriginalEditorAlias);
+                var migrator = context.Migrators.TryGetMigrator(editorAlias.OriginalEditorAlias);
                 if (migrator != null)
                 {
                     row.RawPropertyValues[property.Key] = migrator.GetContentValue(new SyncMigrationContentProperty(row.ContentTypeAlias, property.Value?.ToString()), context);

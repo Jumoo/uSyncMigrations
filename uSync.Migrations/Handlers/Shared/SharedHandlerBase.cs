@@ -11,7 +11,7 @@ using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models.Entities;
 
 using uSync.Core;
-using uSync.Migrations.Models;
+using uSync.Migrations.Context;
 using uSync.Migrations.Services;
 
 namespace uSync.Migrations.Handlers.Shared;
