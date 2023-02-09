@@ -34,7 +34,7 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
 	protected override void PrepareFile(XElement source, SyncMigrationContext context)
     {
         var (contentTypeAlias, key) = GetAliasAndKey(source);
-        context.ContentTypes.AddKey(contentTypeAlias, key);
+        context.ContentTypes.AddAliasAndKey(contentTypeAlias, key);
 
         var compositions = source.Element("Info")?.Element("Compositions")?.Elements("Composition")?.Select(x => x.Value) ?? Enumerable.Empty<string>();
         context.ContentTypes.AddCompositions(contentTypeAlias, compositions);
@@ -209,7 +209,7 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
 			var target = MigrateFile(source, 1, context);
 
 
-			context.ContentTypes.AddKey(contentType.Alias, contentType.Key);
+			context.ContentTypes.AddAliasAndKey(contentType.Alias, contentType.Key);
 
 			AddAdditionaProperties(contentType, context);
 

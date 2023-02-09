@@ -37,7 +37,7 @@ internal class GridToBlockGridConfigBlockHelper
             foreach(var newContentType in additionalContentTypes)
             {
                 context.ContentTypes.AddNewContentType(newContentType);
-                context.ContentTypes.AddKey(newContentType.Alias, newContentType.Key);
+                context.ContentTypes.AddAliasAndKey(newContentType.Alias, newContentType.Key);
             }
         }
     }

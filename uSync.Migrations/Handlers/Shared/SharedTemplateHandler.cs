@@ -30,12 +30,12 @@ internal abstract class SharedTemplateHandler : SharedHandlerBase<Template>
     public override void Prepare(SyncMigrationContext context)
     {
         _fileService.GetTemplates().ToList()
-            .ForEach(template => context.Templates.AddAlias(template.Alias, template.Key));
+            .ForEach(template => context.Templates.AddAliasKeyLookup(template.Alias, template.Key));
     }
 
     protected override void PrepareFile(XElement source, SyncMigrationContext context)
     {
         var (alias, key) = GetAliasAndKey(source);
-        context.Templates.AddAlias(alias, key);
+        context.Templates.AddAliasKeyLookup(alias, key);
     }
 }

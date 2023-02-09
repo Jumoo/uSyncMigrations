@@ -13,7 +13,7 @@ public class TemplateMigratorContext
 	/// <summary>
 	///  Add a template key to the context.
 	/// </summary>
-	public void AddAlias(string templateAlias, Guid templateKey)
+	public void AddAliasKeyLookup(string templateAlias, Guid templateKey)
 		 => _ = _templateKeys.TryAdd(templateAlias, templateKey);
 
 	/// <summary>

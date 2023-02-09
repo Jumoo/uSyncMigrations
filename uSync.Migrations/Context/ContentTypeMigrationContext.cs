@@ -31,7 +31,7 @@ public class ContentTypeMigrationContext
 	/// <param name="contentTypeAlias"></param>
 	/// <param name="contentTypeKey"></param>
 
-	public void AddKey(string? contentTypeAlias, Guid? contentTypeKey)
+	public void AddAliasAndKey(string? contentTypeAlias, Guid? contentTypeKey)
 	{
 		_ = string.IsNullOrWhiteSpace(contentTypeAlias) == false &&
 			contentTypeKey.HasValue == true &&
@@ -39,17 +39,22 @@ public class ContentTypeMigrationContext
 			_contentTypeKeys.TryAdd(contentTypeAlias, contentTypeKey.Value);
 	}
 
+	/// <summary>
+	///  get the alias of a content type by providing the key value 
+	/// </summary>
+	/// <param name="contentTypeKey"></param>
+	/// <returns></returns>
 	public string GetAliasByKey(Guid contentTypeKey)
 		=> _contentTypeAliases?.TryGetValue(contentTypeKey, out var alias) == true ? alias : string.Empty;
-
-	public string[] GetAllAliases()
-		=> _contentTypeAliases?.Values?.ToArray() ?? Array.Empty<string>();
 
 	/// <summary>
 	///  get the key for a given content type alias from the context.
 	/// </summary>
 	public Guid GetKeyByAlias(string contentTypeAlias)
 		=> _contentTypeKeys?.TryGetValue(contentTypeAlias, out var key) == true ? key : Guid.Empty;
+
+	public string[] GetAllAliases()
+	=> _contentTypeAliases?.Values?.ToArray() ?? Array.Empty<string>();
 
 	/// <summary>
 	///  add content type compositions to the context

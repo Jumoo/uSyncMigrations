@@ -241,7 +241,7 @@ internal class GridToBlockGridConfigLayoutBlockHelper
             if (block.ContentElementTypeKey == Guid.Empty)
             {
                 block.ContentElementTypeKey = alias.ToGuid();
-                context.ContentTypes.AddKey(alias, block.ContentElementTypeKey);
+                context.ContentTypes.AddAliasAndKey(alias, block.ContentElementTypeKey);
             }
 
             context.ContentTypes.AddElementType(block.ContentElementTypeKey);
