@@ -19,6 +19,8 @@ namespace uSync.Migrations.Migrators;
 ///  and then in the mapping if you have custom things (like DTGE) it will need a migrator too.
 /// </remarks>
 [SyncMigrator(UmbConstants.PropertyEditors.Aliases.Grid, typeof(GridConfiguration), IsDefaultAlias = true)]
+[SyncDefaultMigrator]
+
 public class GridMigrator : SyncPropertyMigratorBase
 {
     // TODO: [KJ] This only really matters if there are custom things and they need config.
