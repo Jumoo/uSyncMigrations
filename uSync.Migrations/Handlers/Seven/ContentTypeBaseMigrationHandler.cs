@@ -80,8 +80,23 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : SharedContent
     protected override void UpdateStructure(XElement source, XElement target)
     {
         var sourceStructure = source.Element("Structure");
+
         if (sourceStructure != null)
-            target.Add(XElement.Parse(sourceStructure.ToString()));
+        {
+            var i = 0;
+            var transformedStructure = new XElement("Structure");
+            foreach (var element in sourceStructure.Elements())
+            {
+                var contentType = new XElement("ContentType");
+                contentType.SetAttributeValue("Key", element?.Attribute("Key")?.Value);
+                contentType.SetAttributeValue("SortOrder", i);
+                contentType.Value = element.Value;
+
+                transformedStructure.Add(contentType);
+                i++;
+            }
+            target.Add(XElement.Parse(transformedStructure.ToString()));
+        }
     }
 
     protected override void CheckVariations(XElement target)
