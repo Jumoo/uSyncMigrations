@@ -48,8 +48,8 @@ public class SyncMigrationContext : IDisposable
     private HashSet<string> _blockedTypes = new(StringComparer.OrdinalIgnoreCase);
     private Dictionary<int, Guid> _idKeyMap { get; set; } = new();
 
-    // tabs that are to be manipulated
-    private List<TabOptions> _renamedTabs { get; set; } = new List<TabOptions>();
+    // tabs that are to be changed
+    private List<TabOptions> _changedTabs { get; set; } = new List<TabOptions>();
 
     /// <summary>
     ///  is this item blocked based on alias and type. 
@@ -78,10 +78,10 @@ public class SyncMigrationContext : IDisposable
     /// Add changed tabs to the context.
     /// </summary>
     public void AddChangedTabs(TabOptions tab)
-        => _renamedTabs.Add(tab);
+        => _changedTabs.Add(tab);
 
     public List<TabOptions> GetChangedTabs()
-        => _renamedTabs;
+        => _changedTabs;
     
     public void Dispose()
     { }

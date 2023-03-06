@@ -3,7 +3,7 @@
     public class TabOptions
     {
         /// <summary>
-        /// The name of the tab you want to rename/delete.  This is the name NOT the alias.
+        /// The name of the tab you want to change.  This is the name NOT the alias.
         /// </summary>
         public string OriginalName { get; set; }
         /// <summary>
