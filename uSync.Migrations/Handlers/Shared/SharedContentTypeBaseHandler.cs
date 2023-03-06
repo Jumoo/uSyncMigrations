@@ -93,7 +93,7 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
 
 
         // tabs
-        UpdateTabs(source, target);
+        UpdateTabs(source, target, context);
 
         if (ItemType == nameof(ContentType))
         {
@@ -106,7 +106,7 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
 
     protected abstract void UpdateInfoSection(XElement? info, XElement target, Guid key, SyncMigrationContext context);
     protected abstract void UpdateStructure(XElement source, XElement target);
-    protected abstract void UpdateTabs(XElement source, XElement target);
+    protected abstract void UpdateTabs(XElement source, XElement target, SyncMigrationContext context);
     protected abstract void CheckVariations(XElement target);
 
     protected virtual void UpdateProperties(XElement source, XElement target, string alias, SyncMigrationContext context)
@@ -130,7 +130,7 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
                 // update the datatype we are using (this might be new). 
                 UpdatePropertyEditor(alias, newProperty, context);
 
-                UpdatePropertyXml(newProperty);
+                UpdatePropertyXml(newProperty, context);
 
                 newProperties.Add(newProperty);
             }
@@ -164,7 +164,7 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
         }
 
     }
-    protected abstract void UpdatePropertyXml(XElement newProperty);
+    protected abstract void UpdatePropertyXml(XElement newProperty, SyncMigrationContext context);
 
 
     /// <summary>

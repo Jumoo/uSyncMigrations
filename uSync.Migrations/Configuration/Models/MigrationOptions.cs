@@ -33,6 +33,11 @@ public class MigrationOptions
     public List<string>? IgnoredProperties { get; set; }
 
     public Dictionary<string, List<string>>? IgnoredPropertiesByContentType { get; set; }
+
+    /// <summary>
+    /// List of tabs that will be renamed
+    /// </summary>
+    public List<TabOptions>? RenamedTabs { get; set; }
 }
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]

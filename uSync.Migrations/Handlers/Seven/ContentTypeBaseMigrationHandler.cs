@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Services;
-
+using Umbraco.Extensions;
 using uSync.Core;
 using uSync.Migrations.Context;
 using uSync.Migrations.Handlers.Shared;
@@ -30,8 +30,10 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : SharedContent
             key: source.Element("Info")?.Element("Key")?.ValueOrDefault(Guid.Empty) ?? Guid.Empty
         );
 
-    protected override void UpdateTabs(XElement source, XElement target)
+    protected override void UpdateTabs(XElement source, XElement target, SyncMigrationContext context)
     {
+        var renamedTabs = context.GetRenamedTabs();
+
         var tabs = source.Element("Tabs");
         if (tabs != null)
         {
@@ -39,22 +41,56 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : SharedContent
             foreach (var tab in tabs.Elements("Tab"))
             {
                 var newTab = XElement.Parse(tab.ToString());
-                newTab.Add(new XElement("Alias", tab.Element("Caption").ValueOrDefault(string.Empty)));
-                newTab.Add(new XElement("Type", "Group"));
-                newTabs.Add(newTab);
+                var caption = tab.Element("Caption").ValueOrDefault(string.Empty);
+                var alias = caption.Replace(" ", "").ToFirstLower();
+                var deleteTab = false;
+
+                if (renamedTabs.Select(x => x.OriginalName).Contains(caption))
+                {
+                    var tabMatch = renamedTabs.Where(x => x.OriginalName == caption).FirstOrDefault();
+                    if (tabMatch != null)
+                    {
+                        if (string.IsNullOrWhiteSpace(tabMatch.NewName)) deleteTab = true;
+                        alias = !string.IsNullOrWhiteSpace(tabMatch.Alias) ? tabMatch.Alias : tabMatch.NewName;
+                        caption = tabMatch.NewName;
+                    }
+                }
+
+                if (!deleteTab)
+                {
+                    newTab.Element("Caption").Value = caption;
+                    newTab.SetAttributeValue("Alias", alias);
+                    newTab.SetAttributeValue("Type", "Group");
+                    newTabs.Add(newTab);
+                }
             }
             target.Add(newTabs);
         }
     }
 
-    protected override void UpdatePropertyXml(XElement newProperty)
+    protected override void UpdatePropertyXml(XElement newProperty, SyncMigrationContext context)
     {
         newProperty.Add(new XElement("MandatoryMessage", string.Empty));
         newProperty.Add(new XElement("ValidationRegExpMessage", string.Empty));
         newProperty.Add(new XElement("LabelOnTop", false));
 
         var tabNode = newProperty.Element("Tab");
-        tabNode?.Add(new XAttribute("Alias", tabNode.ValueOrDefault(string.Empty)));
+        var caption = tabNode.ValueOrDefault(string.Empty);
+        var alias = tabNode.ValueOrDefault(string.Empty).Replace(" ", "").ToFirstLower();
+        var renamedTabs = context.GetRenamedTabs();
+
+        if (renamedTabs.Select(x => x.OriginalName).Contains(caption))
+        {
+            var tabMatch = renamedTabs.Where(x => x.OriginalName == caption).FirstOrDefault();
+            if (tabMatch != null)
+            {
+                alias = !string.IsNullOrWhiteSpace(tabMatch.Alias) ? tabMatch.Alias: tabMatch.NewName;
+                caption = tabMatch.NewName;
+            }
+        }
+
+        tabNode.Value = caption;
+        tabNode?.SetAttributeValue("Alias", alias);
     }
 
     /// <summary>
