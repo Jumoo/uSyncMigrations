@@ -173,8 +173,8 @@ internal class SyncMigrationService : ISyncMigrationService
                 kvp.Value?.ForEach(value => context.ContentTypes.AddIgnoredProperty(kvp.Key, value)));
 
         // tabs that we might want to rename, delete or move properties from/to
-        options.RenamedTabs?
-            .ForEach(x => context.AddRenamedTabs(x));
+        options.ChangeTabs?
+            .ForEach(x => context.AddChangedTabs(x));
 
         AddMigrators(context, options.PreferredMigrators);
 

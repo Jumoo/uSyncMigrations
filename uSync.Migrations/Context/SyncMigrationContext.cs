@@ -75,12 +75,12 @@ public class SyncMigrationContext : IDisposable
     public Guid GetKey(int id)
         => _idKeyMap?.TryGetValue(id, out var key) == true ? key : Guid.Empty;
     /// <summary>
-    /// Add renamed tabs to the context.
+    /// Add changed tabs to the context.
     /// </summary>
-    public void AddRenamedTabs(TabOptions tab)
+    public void AddChangedTabs(TabOptions tab)
         => _renamedTabs.Add(tab);
 
-    public List<TabOptions> GetRenamedTabs()
+    public List<TabOptions> GetChangedTabs()
         => _renamedTabs;
     
     public void Dispose()

@@ -81,7 +81,7 @@ public class MyMigrationProfile : ISyncMigrationProfile
         },
 
         // change the tabs around a bit if needed/
-        RenamedTabs = new List<TabOptions>
+        ChangeTabs = new List<TabOptions>
         {
             {
                 //Rename the Meta Data tab to SEO with the alias of seo

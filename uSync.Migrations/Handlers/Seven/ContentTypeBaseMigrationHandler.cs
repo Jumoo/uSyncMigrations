@@ -32,7 +32,7 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : SharedContent
 
     protected override void UpdateTabs(XElement source, XElement target, SyncMigrationContext context)
     {
-        var renamedTabs = context.GetRenamedTabs();
+        var renamedTabs = context.GetChangedTabs();
 
         var tabs = source.Element("Tabs");
         if (tabs != null)
@@ -77,7 +77,7 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : SharedContent
         var tabNode = newProperty.Element("Tab");
         var caption = tabNode.ValueOrDefault(string.Empty);
         var alias = tabNode.ValueOrDefault(string.Empty).Replace(" ", "").ToFirstLower();
-        var renamedTabs = context.GetRenamedTabs();
+        var renamedTabs = context.GetChangedTabs();
 
         if (renamedTabs.Select(x => x.OriginalName).Contains(caption))
         {
