@@ -1,4 +1,5 @@
 ﻿using Umbraco.Cms.Core;
+using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Extensions;
 using uSync.Migrations.Context;
@@ -11,6 +12,9 @@ namespace uSync.Migrations.Migrators;
 [SyncMigrator("Umbraco.MultiNodeTreePicker2")]
 public class MultiNodeTreePickerMigrator : SyncPropertyMigratorBase
 {
+    public override string GetDatabaseType(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
+=> nameof(ValueStorageType.Ntext);
+
     public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
         var config = new MultiNodePickerConfiguration();
