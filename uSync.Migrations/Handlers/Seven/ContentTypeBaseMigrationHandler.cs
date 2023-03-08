@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Services;
-
+using Umbraco.Extensions;
 using uSync.Core;
 using uSync.Migrations.Context;
 using uSync.Migrations.Handlers.Shared;
@@ -30,7 +30,7 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : SharedContent
             key: source.Element("Info")?.Element("Key")?.ValueOrDefault(Guid.Empty) ?? Guid.Empty
         );
 
-    protected override void UpdateTabs(XElement source, XElement target)
+    protected override void UpdateTabs(XElement source, XElement target, SyncMigrationContext context)
     {
         var tabs = source.Element("Tabs");
         if (tabs != null)
@@ -39,22 +39,57 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : SharedContent
             foreach (var tab in tabs.Elements("Tab"))
             {
                 var newTab = XElement.Parse(tab.ToString());
-                newTab.Add(new XElement("Alias", tab.Element("Caption").ValueOrDefault(string.Empty)));
-                newTab.Add(new XElement("Type", "Group"));
-                newTabs.Add(newTab);
+                newTab = UpdateTab(newTab, context);
+                if (newTab != null) newTabs.Add(newTab);
             }
             target.Add(newTabs);
         }
     }
 
-    protected override void UpdatePropertyXml(XElement newProperty)
+    protected override void UpdatePropertyXml(XElement newProperty, SyncMigrationContext context)
     {
         newProperty.Add(new XElement("MandatoryMessage", string.Empty));
         newProperty.Add(new XElement("ValidationRegExpMessage", string.Empty));
         newProperty.Add(new XElement("LabelOnTop", false));
 
         var tabNode = newProperty.Element("Tab");
-        tabNode?.Add(new XAttribute("Alias", tabNode.ValueOrDefault(string.Empty)));
+        UpdateTab(tabNode, context);
+    }
+
+    internal XElement? UpdateTab(XElement tab, SyncMigrationContext context)
+    {
+        var renamedTabs = context.GetChangedTabs();
+
+        var caption = tab.Element("Caption").ValueOrDefault(tab.ValueOrDefault(string.Empty));
+        var alias = caption.Replace(" ", "").ToFirstLower();
+        var deleteTab = false;
+
+        if (renamedTabs.Select(x => x.OriginalName).Contains(caption))
+        {
+            var tabMatch = renamedTabs.Where(x => x.OriginalName == caption).FirstOrDefault();
+            if (tabMatch != null)
+            {
+                if (string.IsNullOrWhiteSpace(tabMatch.NewName)) deleteTab = true;
+                alias = !string.IsNullOrWhiteSpace(tabMatch.Alias) ? tabMatch.Alias : tabMatch.NewName;
+                caption = tabMatch.NewName;
+            }
+        }
+
+        if (!deleteTab)
+        {
+            if (tab.Element("Caption") != null)
+            {
+                tab.Element("Caption").Value = caption;
+            }
+            else
+            {
+                tab.Value = caption;
+            }
+            tab.SetAttributeValue("Alias", alias);
+            tab.SetAttributeValue("Type", "Group");
+            return tab;
+        }
+        return null;
     }
 
     /// <summary>

@@ -172,6 +172,10 @@ internal class SyncMigrationService : ISyncMigrationService
             .ForEach(kvp =>
                 kvp.Value?.ForEach(value => context.ContentTypes.AddIgnoredProperty(kvp.Key, value)));
 
+        // tabs that we might want to rename, delete or move properties from/to
+        options.ChangeTabs?
+            .ForEach(x => context.AddChangedTabs(x));
+
         AddMigrators(context, options.PreferredMigrators);
 
         // let the handlers run through their prep (populate all the lookups)

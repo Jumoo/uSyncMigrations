@@ -1,4 +1,6 @@
-﻿namespace uSync.Migrations.Context;
+﻿using uSync.Migrations.Configuration.Models;
+
+namespace uSync.Migrations.Context;
 
 /// <summary>
 ///  A uSync migration context, lets us keep a whole list of things in memory while we do the migration.
@@ -46,6 +48,9 @@ public class SyncMigrationContext : IDisposable
     private HashSet<string> _blockedTypes = new(StringComparer.OrdinalIgnoreCase);
     private Dictionary<int, Guid> _idKeyMap { get; set; } = new();
 
+    // tabs that are to be changed
+    private List<TabOptions> _changedTabs { get; set; } = new List<TabOptions>();
+
     /// <summary>
     ///  is this item blocked based on alias and type. 
     /// </summary>
@@ -69,7 +74,15 @@ public class SyncMigrationContext : IDisposable
     /// </summary>
     public Guid GetKey(int id)
         => _idKeyMap?.TryGetValue(id, out var key) == true ? key : Guid.Empty;
+    /// <summary>
+    /// Add changed tabs to the context.
+    /// </summary>
+    public void AddChangedTabs(TabOptions tab)
+        => _changedTabs.Add(tab);
 
+    public List<TabOptions> GetChangedTabs()
+        => _changedTabs;
+    
     public void Dispose()
     { }
 
