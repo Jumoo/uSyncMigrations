@@ -77,6 +77,10 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : SharedContent
 
         if (!deleteTab)
         {
+            if (tab.Element("Key") == null)
+            {
+                tab.Add(new XElement("Key", alias.ToGuid().ToString()));
+            }
             if (tab.Element("Caption") != null)
             {
                 tab.Element("Caption").Value = caption;
@@ -86,7 +90,7 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : SharedContent
                 tab.Value = caption;
             }
             tab.SetAttributeValue("Alias", alias);
-            tab.SetAttributeValue("Type", "Group");
+            tab.SetAttributeValue("Type", "Tab");
             return tab;
         }
         return null;
