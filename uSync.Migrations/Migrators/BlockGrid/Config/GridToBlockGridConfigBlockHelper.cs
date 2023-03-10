@@ -1,4 +1,6 @@
-﻿using Umbraco.Cms.Core.Configuration.Grid;
+﻿using Microsoft.Extensions.Logging;
+
+using Umbraco.Cms.Core.Configuration.Grid;
 using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Extensions;
 using uSync.Migrations.Context;
@@ -9,33 +11,50 @@ namespace uSync.Migrations.Migrators.BlockGrid.Config;
 internal class GridToBlockGridConfigBlockHelper
 {
     private readonly SyncBlockMigratorCollection _syncBlockMigrators;
+    private readonly ILogger<GridToBlockGridConfigBlockHelper> _logger;
 
-	public GridToBlockGridConfigBlockHelper(
-		SyncBlockMigratorCollection syncBlockMigrators)
-	{
-		_syncBlockMigrators = syncBlockMigrators;
-	}
+    public GridToBlockGridConfigBlockHelper(
+        SyncBlockMigratorCollection syncBlockMigrators,
+        ILogger<GridToBlockGridConfigBlockHelper> logger)
+    {
+        _syncBlockMigrators = syncBlockMigrators;
+        _logger = logger;
+    }
 
-	/// <summary>
-	///  adds any datatypes we need to make the grid. 
-	/// </summary>
-	/// <param name="context"></param>
-	public void AddConfigDataTypes(GridToBlockGridConfigContext gridToBlockContext, SyncMigrationContext context)
+    /// <summary>
+    ///  adds any datatypes we need to make the grid. 
+    /// </summary>
+    /// <param name="context"></param>
+    public void AddConfigDataTypes(GridToBlockGridConfigContext gridToBlockContext, SyncMigrationContext context)
     {
         // add each thing in the config, as a 'new' doctype
         // the content handler will then either create or ignore these if they are already there. 
         foreach (var editor in gridToBlockContext.GridConfig.EditorsConfig.Editors)
         {
-            if (editor.View == null) continue;
+            if (editor.View == null)
+            {
+                continue;
+            }
 
             var blockMigrator = _syncBlockMigrators.GetMigrator(editor);
-            if (blockMigrator == null) continue;
+            if (blockMigrator == null)
+            {
+                _logger.LogDebug("{editor}/{view} doesn't have a migrator", editor.Alias, editor.View);
+                continue;
+            }
+
+            _logger.LogDebug("{editor}/{view} has migrator {migrator}", editor.Alias, editor.View, blockMigrator.GetType().Name);
 
             var additionalContentTypes = blockMigrator.AdditionalContentTypes(editor);
-            if (additionalContentTypes == null) continue;
+            if (additionalContentTypes == null)
+            {
+                _logger.LogDebug("Migrator {migrator} does not require additional doctypes", blockMigrator.GetType().Name);
+                continue;
+            }
 
             foreach(var newContentType in additionalContentTypes)
             {
+                _logger.LogDebug("Adding new doctype [{alias}] for blockgrid", newContentType.Alias);
                 context.ContentTypes.AddNewContentType(newContentType);
                 context.ContentTypes.AddAliasAndKey(newContentType.Alias, newContentType.Key);
             }
@@ -62,6 +81,7 @@ internal class GridToBlockGridConfigBlockHelper
             {
                 if (gridContentTypeKeys.ContainsKey(gridEditorAlias))
                 {
+                    _logger.LogDebug("Adding {alias} to allowedElementTypes for {area}", gridEditorAlias, area.Alias);
                     allowedElementTypes.AddRange(gridContentTypeKeys[gridEditorAlias]);
                 }
             }
@@ -76,6 +96,7 @@ internal class GridToBlockGridConfigBlockHelper
             {
                 foreach (var block in allowedBlocks)
                 {
+                    _logger.LogDebug("Allowing {block} at root", block.View);
                     block.AllowAtRoot = true;
                 }
                 continue;
@@ -104,7 +125,9 @@ internal class GridToBlockGridConfigBlockHelper
         {
             var blocks = editor.ConvertToBlockGridBlocks(context, 
                 _syncBlockMigrators,
-                gridBlockContext.GridBlocksGroup.Key);
+                gridBlockContext.GridBlocksGroup.Key).ToList();
+
+            _logger.LogDebug("Adding {editor} to block config for {count} blocks", editor.Alias, blocks.Count);
 
             gridBlockContext.ContentBlocks.AddRange(blocks);
 

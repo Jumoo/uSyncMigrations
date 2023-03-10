@@ -1,18 +1,17 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Microsoft.Extensions.Logging;
 
-using NUglify.Helpers;
+using Newtonsoft.Json.Linq;
 
 using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Models.Blocks;
 using Umbraco.Extensions;
+
 using uSync.Migrations.Context;
 using uSync.Migrations.Migrators.BlockGrid.BlockMigrators;
 using uSync.Migrations.Migrators.BlockGrid.Extensions;
 using uSync.Migrations.Migrators.BlockGrid.Models;
 using uSync.Migrations.Migrators.Models;
-
-using static Umbraco.Cms.Core.PropertyEditors.ListViewConfiguration;
 
 namespace uSync.Migrations.Migrators.BlockGrid.Content;
 
@@ -23,13 +22,16 @@ internal class GridToBlockContentHelper
 {
     private readonly SyncBlockMigratorCollection _blockMigrators;
     private readonly GridConventions _conventions;
+    private readonly ILogger<GridToBlockContentHelper> _logger;
 
     public GridToBlockContentHelper(
         GridConventions gridConventions,
-        SyncBlockMigratorCollection blockMigrators)
+        SyncBlockMigratorCollection blockMigrators,
+        ILogger<GridToBlockContentHelper> logger)
     {
         _blockMigrators = blockMigrators;
         _conventions = gridConventions;
+        _logger = logger;
     }
 
     /// <summary>
@@ -39,7 +41,6 @@ internal class GridToBlockContentHelper
     {
         // empty grid check
         if (source.Sections.Any() != true) return null;
-
 
         var sectionContentTypeAlias = _conventions.SectionContentTypeAlias(source.Name);
 
@@ -185,13 +186,25 @@ internal class GridToBlockContentHelper
         if (control.Value == null) return null;
 
         var blockMigrator = _blockMigrators.GetMigrator(control.Editor);
-        if (blockMigrator == null) return null;
+        if (blockMigrator == null)
+        {
+            _logger.LogWarning("No Block Migrator for [{editor}/{view}]", control.Editor.Alias, control.Editor.View);
+            return null;
+        }
 
         var contentTypeAlias = blockMigrator.GetContentTypeAlias(control);
-        if (contentTypeAlias == null) return null;
+        if (contentTypeAlias == null)
+        {
+            _logger.LogWarning("No contentTypeAlias from migrator {migrator}", blockMigrator.GetType().Name);
+            return null;
+        }
 
         var contentTypeKey = context.ContentTypes.GetKeyByAlias(contentTypeAlias);
-        if (contentTypeKey == Guid.Empty) return null;
+        if (contentTypeKey == Guid.Empty)
+        {
+            _logger.LogWarning("Cannot find content type key from alias {alias}", contentTypeAlias);
+            return null;
+        }
 
         var data = new BlockItemData
         {
@@ -213,6 +226,11 @@ internal class GridToBlockContentHelper
                 {
                     var property = new SyncMigrationContentProperty(editorAlias.OriginalEditorAlias, value?.ToString() ?? string.Empty);
                     propertyValue = migrator.GetContentValue(property, context);
+                    _logger.LogDebug("Migrator: {migrator} returned {value}", migrator.GetType().Name, propertyValue); 
+                }
+                else
+                {
+                    _logger.LogDebug("No Block Migrator found for [{alias}] (value will be passed through)", editorAlias.OriginalEditorAlias);
                 }
             }
 

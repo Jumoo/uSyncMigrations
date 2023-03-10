@@ -1,5 +1,7 @@
 ﻿using System.Data;
 
+using Microsoft.Extensions.Logging;
+
 using Newtonsoft.Json.Linq;
 
 using Umbraco.Cms.Core.PropertyEditors;
@@ -15,10 +17,14 @@ namespace uSync.Migrations.Migrators.BlockGrid.Config;
 internal class GridToBlockGridConfigLayoutBlockHelper
 {
     private readonly GridConventions _conventions;
+    private readonly ILogger<GridToBlockGridConfigLayoutBlockHelper> _logger;
 
-    public GridToBlockGridConfigLayoutBlockHelper(GridConventions conventions)
+    public GridToBlockGridConfigLayoutBlockHelper(
+        GridConventions conventions,
+        ILogger<GridToBlockGridConfigLayoutBlockHelper> logger)
     {
         _conventions = conventions;
+        _logger = logger;
     }
 
     public void AddLayoutBlocks(GridToBlockGridConfigContext gridBlockContext, SyncMigrationContext context)
@@ -38,6 +44,8 @@ internal class GridToBlockGridConfigLayoutBlockHelper
 
         var gridTemplateConfiguration = templates
                 .ToObject<IEnumerable<GridTemplateConfiguration>>() ?? Enumerable.Empty<GridTemplateConfiguration>();
+
+        _logger.LogDebug("Processing Template Layouts for grid to blockgrid");
 
         foreach (var template in gridTemplateConfiguration)
         {
@@ -59,6 +67,7 @@ internal class GridToBlockGridConfigLayoutBlockHelper
 
                 if (section.Grid == gridBlockContext.GridColumns)
                 {
+                    _logger.LogDebug("Adding [{allowed}] to section", string.Join(",", allowed));
                     gridBlockContext.AppendToRootLayouts(allowed);
                     continue;
                 }
@@ -80,7 +89,11 @@ internal class GridToBlockGridConfigLayoutBlockHelper
                 }
             }
 
-            if (areas.Count == 0) continue;
+            if (areas.Count == 0)
+            {
+                _logger.LogDebug("No areas added");
+                continue;
+            }
 
             if (gridBlockContext.GridColumns == template.Sections.Sum(x => x.Grid))
             {
