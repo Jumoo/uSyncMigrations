@@ -79,7 +79,7 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : SharedContent
         {
             if (tab.Element("Key") == null)
             {
-                tab.Add(new XElement("Key", Guid.NewGuid().ToString()));
+                tab.Add(new XElement("Key", alias.ToGuid().ToString()));
             }
             if (tab.Element("Caption") != null)
             {
