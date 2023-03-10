@@ -11,6 +11,7 @@ using uSync.Migrations.Migrators.BlockGrid.Config;
 using uSync.Migrations.Migrators.BlockGrid.Extensions;
 using uSync.Migrations.Migrators.Models;
 using uSync.Migrations.Context;
+using Microsoft.Extensions.Logging;
 
 namespace uSync.Migrations.Migrators.BlockGrid;
 
@@ -20,20 +21,25 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
 {
 	private readonly IGridConfig _gridConfig;
 	private readonly SyncBlockMigratorCollection _blockMigrators;
+	private readonly ILoggerFactory _loggerFactory;
+	private readonly ILogger<GridToBlockGridMigrator> _logger;
 
 	private readonly GridConventions _conventions;
 
-	public GridToBlockGridMigrator(
-		IGridConfig gridConfig,
-		SyncBlockMigratorCollection blockMigrators,
-		IShortStringHelper shortStringHelper)
-	{
-		_gridConfig = gridConfig;
-		_blockMigrators = blockMigrators;
-		_conventions = new GridConventions(shortStringHelper);
-	}
+    public GridToBlockGridMigrator(
+        IGridConfig gridConfig,
+        SyncBlockMigratorCollection blockMigrators,
+        IShortStringHelper shortStringHelper,
+        ILoggerFactory loggerFactory)
+    {
+        _gridConfig = gridConfig;
+        _blockMigrators = blockMigrators;
+        _conventions = new GridConventions(shortStringHelper);
+        _loggerFactory = loggerFactory;
+		_logger = loggerFactory.CreateLogger<GridToBlockGridMigrator>();	
+    }
 
-	public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
+    public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
 		=> UmbConstants.PropertyEditors.Aliases.BlockGrid;
 
 	public override string GetDatabaseType(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
@@ -52,8 +58,8 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
 
 		var gridToBlockContext = new GridToBlockGridConfigContext(gridConfiguration, _gridConfig);
 
-		var contentBlockHelper = new GridToBlockGridConfigBlockHelper(_blockMigrators);
-		var layoutBlockHelper = new GridToBlockGridConfigLayoutBlockHelper(_conventions);
+		var contentBlockHelper = new GridToBlockGridConfigBlockHelper(_blockMigrators, _loggerFactory.CreateLogger<GridToBlockGridConfigBlockHelper>());
+		var layoutBlockHelper = new GridToBlockGridConfigLayoutBlockHelper(_conventions, _loggerFactory.CreateLogger<GridToBlockGridConfigLayoutBlockHelper>());
 
 		// adds content types for the core elements (headline, rte, etc)
 		contentBlockHelper.AddConfigDataTypes(gridToBlockContext, context);
@@ -79,16 +85,28 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
 			return string.Empty;
 
 		// has already been converted. 
-		if(contentProperty.Value.Contains("\"Umbraco.BlockGrid\"")) 
+		if (contentProperty.Value.Contains("\"Umbraco.BlockGrid\""))
+		{
+			_logger.LogDebug("Property [{name}] is already BlockGrid", contentProperty.EditorAlias);
 			return contentProperty.Value;
+		}
 
 		var source = JsonConvert.DeserializeObject<GridValue>(contentProperty.Value);
-		if (source == null) return string.Empty;
+		if (source == null)
+		{
+			_logger.LogDebug("Property {alias} is empty", contentProperty.EditorAlias);
+			return string.Empty;
+		}
 
-		var helper = new GridToBlockContentHelper(_conventions, _blockMigrators);
+		var helper = new GridToBlockContentHelper(_conventions, _blockMigrators,
+			_loggerFactory.CreateLogger<GridToBlockContentHelper>());
+		
 		var blockValue = helper.ConvertToBlockValue(source, context);
-
-		if (blockValue == null) return string.Empty;
+		if (blockValue == null)
+		{
+			_logger.LogDebug("Converted value for {alias} is empty", contentProperty.EditorAlias);
+			return string.Empty;
+		}
 
 		return JsonConvert.SerializeObject(blockValue, Formatting.Indented);
 	}
