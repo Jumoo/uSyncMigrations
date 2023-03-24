@@ -22,7 +22,7 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : SharedContent
     where TEntity : ContentTypeBase
 {
 
-    private IShortStringHelper _shortStringHelper;
+    private readonly IShortStringHelper _shortStringHelper;
 
     public ContentTypeBaseMigrationHandler(
         IEventAggregator eventAggregator,
@@ -85,7 +85,7 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : SharedContent
         // add key if its missing 
         if (tab.Element("Key") == null)
         {
-            var (sourceAlias, sourceKey) = GetAliasAndKey(source);
+            var (sourceAlias, _) = GetAliasAndKey(source);
             var newAlias = sourceAlias + alias;
             tab.Add(new XElement("Key", newAlias.ToGuid().ToString()));
         }
@@ -148,13 +148,16 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : SharedContent
         if (info == null) return;
 
         var targetInfo = info.Clone();
-        targetInfo.Element("Key")?.Remove();
-        targetInfo.Element("Alias")?.Remove();
+        if (targetInfo != null)
+        {
+            targetInfo.Element("Key")?.Remove();
+            targetInfo.Element("Alias")?.Remove();
 
-        targetInfo.Add(new XElement("Variations", "Nothing"));
-        targetInfo.Add(new XElement("IsElement", context.ContentTypes.IsElementType(key)));
+            targetInfo.Add(new XElement("Variations", "Nothing"));
+            targetInfo.Add(new XElement("IsElement", context.ContentTypes.IsElementType(key)));
 
-        target.Add(targetInfo);
+            target.Add(targetInfo);
+        }
     }
 
     /// <summary>
@@ -173,7 +176,7 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : SharedContent
                 var contentType = new XElement("ContentType");
                 contentType.SetAttributeValue("Key", element?.Attribute("Key")?.Value);
                 contentType.SetAttributeValue("SortOrder", i);
-                contentType.Value = element.Value;
+                contentType.Value = element!.Value;
 
                 transformedStructure.Add(contentType);
                 i++;
