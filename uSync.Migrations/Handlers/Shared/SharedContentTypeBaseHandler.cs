@@ -125,14 +125,14 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
                     continue;
                 }
 
-                var newProperty = XElement.Parse(property.ToString());
-
-                // update the datatype we are using (this might be new). 
-                UpdatePropertyEditor(alias, newProperty, context);
-
-                UpdatePropertyXml(source, newProperty, context);
-
-                newProperties.Add(newProperty);
+                var newProperty = property.Clone();
+                if (newProperty != null)
+                {
+                    // update the datatype we are using (this might be new). 
+                    UpdatePropertyEditor(alias, newProperty, context);
+                    UpdatePropertyXml(source, newProperty, context);
+                    newProperties.Add(newProperty);
+                }
             }
         }
 

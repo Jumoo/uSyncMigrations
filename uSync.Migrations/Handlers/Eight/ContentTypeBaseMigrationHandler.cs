@@ -6,6 +6,7 @@ using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Services;
 using uSync.Migrations.Context;
+using uSync.Migrations.Extensions;
 using uSync.Migrations.Handlers.Shared;
 using uSync.Migrations.Services;
 
@@ -32,7 +33,7 @@ internal class ContentTypeBaseMigrationHandler<TEntity> : SharedContentTypeBaseH
     protected override void UpdateInfoSection(XElement? info, XElement target, Guid key, SyncMigrationContext context)
     {
         if (info == null) return;
-        target.Add(XElement.Parse(info.ToString()));
+        target.Add(info.Clone());
     }
 
 
@@ -40,14 +41,14 @@ internal class ContentTypeBaseMigrationHandler<TEntity> : SharedContentTypeBaseH
     {
         var sourceStructure = source.Element("Structure");
         if (sourceStructure != null)
-            target.Add(XElement.Parse(sourceStructure.ToString()));
+            target.Add(sourceStructure.Clone());
     }
 
     protected override void UpdateTabs(XElement source, XElement target, SyncMigrationContext context)
     {
         var sourceTabs = source.Element("Tabs");
         if (sourceTabs != null)
-            target.Add(XElement.Parse(sourceTabs.ToString()));
+            target.Add(sourceTabs.Clone());
     }
 
     protected override void CheckVariations(XElement target)

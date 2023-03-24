@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using uSync.Migrations.Configuration.Models;
 using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Context;
@@ -20,10 +21,14 @@ public class ContentTypeMigrationContext
 	private Dictionary<string, NewContentTypeInfo> _newDocTypes
 			= new Dictionary<string, NewContentTypeInfo>(StringComparer.OrdinalIgnoreCase);
 
-	/// <summary>
-	///  list of content types that need to be set as element types. 
-	/// </summary>
-	private HashSet<Guid> _elementContentTypes = new HashSet<Guid>();
+
+    // tabs that are to be changed
+    private List<TabOptions> _changedTabs { get; set; } = new List<TabOptions>();
+
+    /// <summary>
+    ///  list of content types that need to be set as element types. 
+    /// </summary>
+    private HashSet<Guid> _elementContentTypes = new HashSet<Guid>();
 
 	/// <summary>
 	///  Add a ccontent type key to the context.
@@ -205,6 +210,15 @@ public class ContentTypeMigrationContext
 		=> _blockAliases.TryGetValue(name, out var alias) == true
 			? alias
 			: name;
+
+    /// <summary>
+    /// Add changed tabs to the context.
+    /// </summary>
+    public void AddChangedTabs(TabOptions tab)
+        => _changedTabs.Add(tab);
+
+    public List<TabOptions> GetChangedTabs()
+        => _changedTabs;
 
 
 

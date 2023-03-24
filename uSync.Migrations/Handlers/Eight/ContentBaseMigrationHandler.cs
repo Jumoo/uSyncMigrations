@@ -9,6 +9,7 @@ using Umbraco.Extensions;
 
 using uSync.Core;
 using uSync.Migrations.Context;
+using uSync.Migrations.Extensions;
 using uSync.Migrations.Handlers.Shared;
 using uSync.Migrations.Services;
 
@@ -50,7 +51,7 @@ internal class ContentBaseMigrationHandler<TEntity> : SharedContentBaseHandler<T
         var sourceInfo = source.Element("Info");
         if (sourceInfo != null)
         {
-            var targetInfo = XElement.Parse(sourceInfo.ToString());
+            var targetInfo = sourceInfo.Clone();
             target.Add(targetInfo);
         }
 

@@ -2,12 +2,17 @@
 
 using Microsoft.Extensions.Logging;
 
+using NPoco;
+
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Services;
+using Umbraco.Cms.Core.Strings;
 using Umbraco.Extensions;
+
 using uSync.Core;
 using uSync.Migrations.Context;
+using uSync.Migrations.Extensions;
 using uSync.Migrations.Handlers.Shared;
 using uSync.Migrations.Services;
 
@@ -16,13 +21,19 @@ namespace uSync.Migrations.Handlers.Seven;
 internal abstract class ContentTypeBaseMigrationHandler<TEntity> : SharedContentTypeBaseHandler<TEntity>
     where TEntity : ContentTypeBase
 {
+
+    private readonly IShortStringHelper _shortStringHelper;
+
     public ContentTypeBaseMigrationHandler(
         IEventAggregator eventAggregator,
         ISyncMigrationFileService migrationFileService,
         ILogger<ContentTypeBaseMigrationHandler<TEntity>> logger,
-        IDataTypeService dataTypeService)
+        IDataTypeService dataTypeService,
+        IShortStringHelper shortStringHelper)
         : base(eventAggregator, migrationFileService, logger, dataTypeService)
-    { }
+    {
+        _shortStringHelper = shortStringHelper;
+    }
 
     protected override (string alias, Guid key) GetAliasAndKey(XElement source)
         => (
@@ -38,8 +49,7 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : SharedContent
             var newTabs = new XElement("Tabs");
             foreach (var tab in tabs.Elements("Tab"))
             {
-                var newTab = XElement.Parse(tab.ToString());
-                newTab = UpdateTab(source, newTab, context);
+                var newTab = UpdateTab(source, tab.Clone(), context);
                 if (newTab != null) newTabs.Add(newTab);
             }
             target.Add(newTabs);
@@ -56,46 +66,77 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : SharedContent
         UpdateTab(source, tabNode, context);
     }
 
-    internal XElement? UpdateTab(XElement source, XElement tab, SyncMigrationContext context)
+    /// <summary>
+    ///  Updates a tab to the new format.
+    /// </summary>
+    /// <remarks>   
+    ///  Tabs in v8 have a key, alias and a type that doesn't exist in v7
+    ///  
+    ///  we also can rename and remove tabs by setting adding a ChangedTab to the context. 
+    /// </remarks>
+    internal XElement? UpdateTab(XElement source, XElement? tab, SyncMigrationContext context)
     {
-        var renamedTabs = context.GetChangedTabs();
+        if (tab == null) return null;
+
+        // get what the caption and alias will be for this tab. 
+        var (caption, alias) = GetTabCaptionAndAlias(tab, context);
+        if (string.IsNullOrWhiteSpace(caption) || string.IsNullOrWhiteSpace(alias)) return null;
+
+        // add key if its missing 
+        if (tab.Element("Key") == null)
+        {
+            var (sourceAlias, _) = GetAliasAndKey(source);
+            tab.Add(new XElement("Key", $"{sourceAlias}{alias}".ToGuid()));
+        }
+
+        // add caption if the value is there 
+        if (tab.Element("Caption") != null)
+        {
+            tab.Element("Caption")!.Value = caption;
+        }
+        else
+        {
+            tab.Value = caption;
+        }
+
+        // set alias, and type (always tab?)
+        tab.SetAttributeValue("Alias", alias);
+        tab.SetAttributeValue("Type", "Tab");
+
+        return tab;
+    }
+
+    /// <summary>
+    ///  works out what the tab name and alias should be. 
+    /// </summary>
+    /// <remarks>
+    ///  if the context contains something saying we want to rename the tabs then we 
+    ///  use that. 
+    ///  
+    ///  if a tab has been added to the rename, with a blank NewName - that is a delete
+    ///  as we won't set any tabs blank captions/alias values. 
+    /// </remarks>
+    private (string? caption, string? alias) GetTabCaptionAndAlias(XElement tab, SyncMigrationContext context)
+    {
+        var renamedTabs = context.ContentTypes.GetChangedTabs();
 
         var caption = tab.Element("Caption").ValueOrDefault(tab.ValueOrDefault(string.Empty));
-        var alias = caption.Replace(" ", "").ToFirstLower();
-        var deleteTab = false;
+        var alias = caption.ToSafeAlias(_shortStringHelper);
 
         if (renamedTabs.Select(x => x.OriginalName).Contains(caption))
         {
             var tabMatch = renamedTabs.Where(x => x.OriginalName == caption).FirstOrDefault();
             if (tabMatch != null)
             {
-                if (string.IsNullOrWhiteSpace(tabMatch.NewName)) deleteTab = true;
+                // if the new tabName is null, we are effecitfly deleting this by retuening null.
+                if (tabMatch.DeleteTab || string.IsNullOrWhiteSpace(tabMatch.NewName)) return (null, null);
+
                 alias = !string.IsNullOrWhiteSpace(tabMatch.Alias) ? tabMatch.Alias : tabMatch.NewName;
                 caption = tabMatch.NewName;
             }
         }
 
-        if (!deleteTab)
-        {
-            if (tab.Element("Key") == null)
-            {
-                var (sourceAlias, sourceKey) = GetAliasAndKey(source);
-                var newAlias = sourceAlias + alias;
-                tab.Add(new XElement("Key", newAlias.ToGuid().ToString()));
-            }
-            if (tab.Element("Caption") != null)
-            {
-                tab.Element("Caption").Value = caption;
-            }
-            else
-            {
-                tab.Value = caption;
-            }
-            tab.SetAttributeValue("Alias", alias);
-            tab.SetAttributeValue("Type", "Tab");
-            return tab;
-        }
-        return null;
+        return (caption, alias);
     }
 
     /// <summary>
@@ -105,14 +146,17 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : SharedContent
     {
         if (info == null) return;
 
-        var targetInfo = XElement.Parse(info.ToString());
-        targetInfo.Element("Key")?.Remove();
-        targetInfo.Element("Alias")?.Remove();
+        var targetInfo = info.Clone();
+        if (targetInfo != null)
+        {
+            targetInfo.Element("Key")?.Remove();
+            targetInfo.Element("Alias")?.Remove();
 
-        targetInfo.Add(new XElement("Variations", "Nothing"));
-        targetInfo.Add(new XElement("IsElement", context.ContentTypes.IsElementType(key)));
+            targetInfo.Add(new XElement("Variations", "Nothing"));
+            targetInfo.Add(new XElement("IsElement", context.ContentTypes.IsElementType(key)));
 
-        target.Add(targetInfo);
+            target.Add(targetInfo);
+        }
     }
 
     /// <summary>
@@ -131,12 +175,12 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : SharedContent
                 var contentType = new XElement("ContentType");
                 contentType.SetAttributeValue("Key", element?.Attribute("Key")?.Value);
                 contentType.SetAttributeValue("SortOrder", i);
-                contentType.Value = element.Value;
+                contentType.Value = element!.Value;
 
                 transformedStructure.Add(contentType);
                 i++;
             }
-            target.Add(XElement.Parse(transformedStructure.ToString()));
+            target.Add(transformedStructure.Clone());
         }
     }
 
