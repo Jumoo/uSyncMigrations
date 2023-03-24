@@ -174,7 +174,7 @@ internal class SyncMigrationService : ISyncMigrationService
 
         // tabs that we might want to rename, delete or move properties from/to
         options.ChangeTabs?
-            .ForEach(x => context.AddChangedTabs(x));
+            .ForEach(x => context.ContentTypes.AddChangedTabs(x));
 
         AddMigrators(context, options.PreferredMigrators);
 

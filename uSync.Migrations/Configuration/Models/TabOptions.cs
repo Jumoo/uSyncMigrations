@@ -14,5 +14,13 @@
         /// An alias for the tab.  If none is set, the alias will default to the new name in camel case.
         /// </summary>
         public string Alias { get; set; }
+
+        /// <summary>
+        ///  remove the tab. 
+        /// </summary>
+        /// <remarks>
+        ///  tabs will also be removed if the newName is blank, but this is more explicit.
+        /// </remarks>
+        public bool DeleteTab { get; set; }
     }
 }

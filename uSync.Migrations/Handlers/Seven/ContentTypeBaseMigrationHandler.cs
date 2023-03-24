@@ -119,7 +119,7 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : SharedContent
     /// </remarks>
     private (string? caption, string? alias) GetTabCaptionAndAlias(XElement tab, SyncMigrationContext context)
     {
-        var renamedTabs = context.GetChangedTabs();
+        var renamedTabs = context.ContentTypes.GetChangedTabs();
 
         var caption = tab.Element("Caption").ValueOrDefault(tab.ValueOrDefault(string.Empty));
         var alias = caption.ToSafeAlias(_shortStringHelper);
@@ -130,7 +130,7 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : SharedContent
             if (tabMatch != null)
             {
                 // if the new tabName is null, we are effecitfly deleting this by retuening null.
-                if (string.IsNullOrWhiteSpace(tabMatch.NewName)) return (null, null);
+                if (tabMatch.DeleteTab || string.IsNullOrWhiteSpace(tabMatch.NewName)) return (null, null);
 
                 alias = !string.IsNullOrWhiteSpace(tabMatch.Alias) ? tabMatch.Alias : tabMatch.NewName;
                 caption = tabMatch.NewName;
