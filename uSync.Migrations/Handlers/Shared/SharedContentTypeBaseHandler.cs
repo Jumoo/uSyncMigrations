@@ -130,7 +130,7 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
                 // update the datatype we are using (this might be new). 
                 UpdatePropertyEditor(alias, newProperty, context);
 
-                UpdatePropertyXml(newProperty, context);
+                UpdatePropertyXml(source, newProperty, context);
 
                 newProperties.Add(newProperty);
             }
@@ -164,7 +164,7 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
         }
 
     }
-    protected abstract void UpdatePropertyXml(XElement newProperty, SyncMigrationContext context);
+    protected abstract void UpdatePropertyXml(XElement source, XElement newProperty, SyncMigrationContext context);
 
 
     /// <summary>
