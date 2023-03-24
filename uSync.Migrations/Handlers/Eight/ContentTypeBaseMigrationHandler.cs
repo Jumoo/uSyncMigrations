@@ -21,7 +21,7 @@ internal class ContentTypeBaseMigrationHandler<TEntity> : SharedContentTypeBaseH
         : base(eventAggregator, migrationFileService, logger, dataTypeService)
     { }
 
-    protected override void UpdatePropertyXml(XElement newProperty, SyncMigrationContext context)
+    protected override void UpdatePropertyXml(XElement source, XElement newProperty, SyncMigrationContext context)
     {
         // for v8 the properties should match what we are expecting ?
     }

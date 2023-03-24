@@ -39,24 +39,24 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : SharedContent
             foreach (var tab in tabs.Elements("Tab"))
             {
                 var newTab = XElement.Parse(tab.ToString());
-                newTab = UpdateTab(newTab, context);
+                newTab = UpdateTab(source, newTab, context);
                 if (newTab != null) newTabs.Add(newTab);
             }
             target.Add(newTabs);
         }
     }
 
-    protected override void UpdatePropertyXml(XElement newProperty, SyncMigrationContext context)
+    protected override void UpdatePropertyXml(XElement source, XElement newProperty, SyncMigrationContext context)
     {
         newProperty.Add(new XElement("MandatoryMessage", string.Empty));
         newProperty.Add(new XElement("ValidationRegExpMessage", string.Empty));
         newProperty.Add(new XElement("LabelOnTop", false));
 
         var tabNode = newProperty.Element("Tab");
-        UpdateTab(tabNode, context);
+        UpdateTab(source, tabNode, context);
     }
 
-    internal XElement? UpdateTab(XElement tab, SyncMigrationContext context)
+    internal XElement? UpdateTab(XElement source, XElement tab, SyncMigrationContext context)
     {
         var renamedTabs = context.GetChangedTabs();
 
@@ -79,7 +79,8 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : SharedContent
         {
             if (tab.Element("Key") == null)
             {
-                tab.Add(new XElement("Key", alias.ToGuid().ToString()));
+                var (sourceAlias, sourceKey) = GetAliasAndKey(source);
+                tab.Add(new XElement("Key", sourceAlias.ToGuid().ToString()));
             }
             if (tab.Element("Caption") != null)
             {
