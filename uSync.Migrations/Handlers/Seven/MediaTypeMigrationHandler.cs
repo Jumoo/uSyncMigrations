@@ -3,6 +3,7 @@
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Services;
+using Umbraco.Cms.Core.Strings;
 
 using uSync.Migrations.Services;
 
@@ -18,7 +19,8 @@ internal class MediaTypeMigrationHandler : ContentTypeBaseMigrationHandler<Media
         IEventAggregator eventAggregator,
         ISyncMigrationFileService migrationFileService,
         ILogger<MediaTypeMigrationHandler> logger,
-		IDataTypeService dataTypeService)
-		: base(eventAggregator, migrationFileService, logger, dataTypeService)
+		IDataTypeService dataTypeService,
+        IShortStringHelper shortStringHelper)
+		: base(eventAggregator, migrationFileService, logger, dataTypeService, shortStringHelper)
 	{ }
 }

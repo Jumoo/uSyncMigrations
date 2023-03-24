@@ -7,6 +7,7 @@ using NPoco;
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Services;
+using Umbraco.Cms.Core.Strings;
 using Umbraco.Extensions;
 
 using uSync.Core;
@@ -20,13 +21,19 @@ namespace uSync.Migrations.Handlers.Seven;
 internal abstract class ContentTypeBaseMigrationHandler<TEntity> : SharedContentTypeBaseHandler<TEntity>
     where TEntity : ContentTypeBase
 {
+
+    private IShortStringHelper _shortStringHelper;
+
     public ContentTypeBaseMigrationHandler(
         IEventAggregator eventAggregator,
         ISyncMigrationFileService migrationFileService,
         ILogger<ContentTypeBaseMigrationHandler<TEntity>> logger,
-        IDataTypeService dataTypeService)
+        IDataTypeService dataTypeService,
+        IShortStringHelper shortStringHelper)
         : base(eventAggregator, migrationFileService, logger, dataTypeService)
-    { }
+    {
+        _shortStringHelper = shortStringHelper;
+    }
 
     protected override (string alias, Guid key) GetAliasAndKey(XElement source)
         => (
@@ -56,32 +63,26 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : SharedContent
         newProperty.Add(new XElement("LabelOnTop", false));
 
         var tabNode = newProperty.Element("Tab");
-        if (tabNode != null)
-        {
-            UpdateTab(source, tabNode, context);
-        }
+        UpdateTab(source, tabNode, context);
     }
 
-    internal XElement? UpdateTab(XElement source, XElement tab, SyncMigrationContext context)
+    /// <summary>
+    ///  Updates a tab to the new format.
+    /// </summary>
+    /// <remarks>   
+    ///  Tabs in v8 have a key, alias and a type that doesn't exist in v7
+    ///  
+    ///  we also can rename and remove tabs by setting adding a ChangedTab to the context. 
+    /// </remarks>
+    internal XElement? UpdateTab(XElement source, XElement? tab, SyncMigrationContext context)
     {
-        var renamedTabs = context.GetChangedTabs();
+        if (tab == null) return null;
 
-        var caption = tab.Element("Caption").ValueOrDefault(tab.ValueOrDefault(string.Empty));
-        var alias = caption.Replace(" ", "").ToFirstLower();
+        // get what the caption and alias will be for this tab. 
+        var (caption, alias) = GetTabCaptionAndAlias(tab, context);
+        if (string.IsNullOrWhiteSpace(caption) || string.IsNullOrWhiteSpace(alias)) return null;
 
-        if (renamedTabs.Select(x => x.OriginalName).Contains(caption))
-        {
-            var tabMatch = renamedTabs.Where(x => x.OriginalName == caption).FirstOrDefault();
-            if (tabMatch != null)
-            {
-                // if the new tabName is null, we are effecitfly deleting this by retuening null.
-                if (string.IsNullOrWhiteSpace(tabMatch.NewName)) return null;
-
-                alias = !string.IsNullOrWhiteSpace(tabMatch.Alias) ? tabMatch.Alias : tabMatch.NewName;
-                caption = tabMatch.NewName;
-            }
-        }
-
+        // add key if its missing 
         if (tab.Element("Key") == null)
         {
             var (sourceAlias, sourceKey) = GetAliasAndKey(source);
@@ -89,6 +90,7 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : SharedContent
             tab.Add(new XElement("Key", newAlias.ToGuid().ToString()));
         }
 
+        // add caption if the value is there 
         if (tab.Element("Caption") != null)
         {
             tab.Element("Caption")!.Value = caption;
@@ -97,9 +99,45 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : SharedContent
         {
             tab.Value = caption;
         }
+
+        // set alias, and type (always tab?)
         tab.SetAttributeValue("Alias", alias);
         tab.SetAttributeValue("Type", "Tab");
+
         return tab;
+    }
+
+    /// <summary>
+    ///  works out what the tab name and alias should be. 
+    /// </summary>
+    /// <remarks>
+    ///  if the context contains something saying we want to rename the tabs then we 
+    ///  use that. 
+    ///  
+    ///  if a tab has been added to the rename, with a blank NewName - that is a delete
+    ///  as we won't set any tabs blank captions/alias values. 
+    /// </remarks>
+    private (string? caption, string? alias) GetTabCaptionAndAlias(XElement tab, SyncMigrationContext context)
+    {
+        var renamedTabs = context.GetChangedTabs();
+
+        var caption = tab.Element("Caption").ValueOrDefault(tab.ValueOrDefault(string.Empty));
+        var alias = caption.ToSafeAlias(_shortStringHelper);
+
+        if (renamedTabs.Select(x => x.OriginalName).Contains(caption))
+        {
+            var tabMatch = renamedTabs.Where(x => x.OriginalName == caption).FirstOrDefault();
+            if (tabMatch != null)
+            {
+                // if the new tabName is null, we are effecitfly deleting this by retuening null.
+                if (string.IsNullOrWhiteSpace(tabMatch.NewName)) return (null, null);
+
+                alias = !string.IsNullOrWhiteSpace(tabMatch.Alias) ? tabMatch.Alias : tabMatch.NewName;
+                caption = tabMatch.NewName;
+            }
+        }
+
+        return (caption, alias);
     }
 
     /// <summary>
