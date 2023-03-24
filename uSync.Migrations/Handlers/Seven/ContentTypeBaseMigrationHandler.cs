@@ -86,8 +86,7 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : SharedContent
         if (tab.Element("Key") == null)
         {
             var (sourceAlias, _) = GetAliasAndKey(source);
-            var newAlias = sourceAlias + alias;
-            tab.Add(new XElement("Key", newAlias.ToGuid().ToString()));
+            tab.Add(new XElement("Key", $"{sourceAlias}{alias}".ToGuid()));
         }
 
         // add caption if the value is there 
