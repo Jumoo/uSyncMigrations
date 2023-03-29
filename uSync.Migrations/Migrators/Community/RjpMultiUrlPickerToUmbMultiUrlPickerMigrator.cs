@@ -7,6 +7,7 @@ using uSync.Migrations.Context;
 using uSync.Migrations.Migrators.Models;
 using uSync.Migrations.Extensions;
 using Umbraco.Extensions;
+using Polly;
 
 namespace uSync.Migrations.Migrators.Community;
 
@@ -50,12 +51,12 @@ public class RjpMultiUrlPickerToUmbMultiUrlPickerMigrator : SyncPropertyMigrator
             return string.Empty;
         }
 
-        var destinationLinks = ConvertLinkDto(sourceLinks);
+        var destinationLinks = ConvertLinkDto(sourceLinks, context);
 
         return JsonConvert.SerializeObject(destinationLinks, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
     }
 
-    private static IEnumerable<MultiUrlPickerValueEditor.LinkDto> ConvertLinkDto (IEnumerable<RjpLinkDto> sourceLinks)
+    private static IEnumerable<MultiUrlPickerValueEditor.LinkDto> ConvertLinkDto (IEnumerable<RjpLinkDto> sourceLinks, SyncMigrationContext context)
     {
         foreach (var sourceDto in sourceLinks)
         {
@@ -70,20 +71,35 @@ public class RjpMultiUrlPickerToUmbMultiUrlPickerMigrator : SyncPropertyMigrator
                 umbLinkDto.Udi = sourceDto.Udi;
             }
             // In some versions of RJP.MultiUrlPicker, the Id is a Guid
-            else if (Guid.TryParse(sourceDto.Id, out var guid))
-            {
-                var entityType = sourceDto.IsMedia == true ?
-                    UmbConstants.UdiEntityType.Media :
-                    UmbConstants.UdiEntityType.Document;
-                umbLinkDto.Udi = new GuidUdi(entityType, guid);
-            }
             else
             {
-                // The Id can apparently be an int.
-                // I'm not clear if this is an IPublishedContent.Id, but those will be different so a fallback to the Url is probably best
-                // (also external urls)
-                umbLinkDto.Url = sourceDto.Url.IfNullOrWhiteSpace(null);
+                Guid? key = null;
+
+                if (Guid.TryParse(sourceDto.Id, out var guid))
+                {
+                    key = guid;
+                }
+                // The Id can also be an int.
+                else if (int.TryParse(sourceDto.Id, out var contentId))
+                {
+                    // Attempt to get the Guid of that if it is known
+                    var contentGuid = context.GetKey(contentId);
+                    if (contentGuid != default)
+                    {
+                        key = contentGuid;
+                    }
+                }
+
+                if (key is not null)
+                {
+                    var entityType = sourceDto.IsMedia == true ?
+                        UmbConstants.UdiEntityType.Media :
+                        UmbConstants.UdiEntityType.Document;
+                    umbLinkDto.Udi = new GuidUdi(entityType, key.Value);
+                }
             }
+
+            umbLinkDto.Url = sourceDto.Url.IfNullOrWhiteSpace(null);
 
             yield return umbLinkDto;
         }
