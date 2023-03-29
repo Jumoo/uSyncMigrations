@@ -115,14 +115,16 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
 
         // convert the property .
 
-        var migrationProperty = new SyncMigrationContentProperty(editorAlias, property.Value);
+        var migrationProperty = new SyncMigrationContentProperty(
+            contentType, property.Name.LocalName, editorAlias, property.Value);
+
         var migrator = context.Migrators.TryGetVariantMigrator(editorAlias);
         if (migrator != null && itemType == "Content")
         {
             // it might be the case that the property needs to be split into variants. 
             // if this is the case a ISyncVariationPropertyEditor will exist and it can 
             // split a single value into a collection split by culture
-            var vortoElement = GetVariedValueNode(migrator, property.Name.LocalName, migrationProperty, context);
+            var vortoElement = GetVariedValueNode(migrator, contentType, property.Name.LocalName, migrationProperty, context);
             if (vortoElement != null) return vortoElement;
         }
 
@@ -137,7 +139,7 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
     ///  special case, spit a vorto value into multiple cultures, 
     ///  and return them back as a blob of xml values
     /// </summary>
-    protected virtual XElement? GetVariedValueNode(ISyncVariationPropertyMigrator migrator, string propertyName, SyncMigrationContentProperty migrationProperty, SyncMigrationContext context)
+    protected virtual XElement? GetVariedValueNode(ISyncVariationPropertyMigrator migrator, string contentTypeAlias, string propertyName, SyncMigrationContentProperty migrationProperty, SyncMigrationContext context)
     {
         // Get varied elements from the migrator.
         var attempt = migrator.GetVariedElements(migrationProperty, context);
@@ -154,7 +156,9 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
             {
                 foreach (var variation in attempt.Result.Values)
                 {
-                    var variationProperty = new SyncMigrationContentProperty(variantEditorAlias, variation.Value);
+                    var variationProperty = new SyncMigrationContentProperty(
+                        contentTypeAlias, propertyName,
+                        variantEditorAlias, variation.Value);
 
                     var migratedValue = MigrateContentValue(variationProperty, context);
 

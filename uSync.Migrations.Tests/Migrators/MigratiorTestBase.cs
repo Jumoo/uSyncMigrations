@@ -14,7 +14,7 @@ namespace uSync.Migrations.Tests.Migrators;
 public abstract class MigratiorTestBase
 {
     protected SyncMigrationContext _context;
-    protected ISyncPropertyMigrator _migrator;
+    protected ISyncPropertyMigrator  _migrator;
 
     [SetUp]
     public virtual void Setup()

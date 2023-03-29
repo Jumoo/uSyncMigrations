@@ -21,6 +21,10 @@ public class ContentTypeMigrationContext
 	private Dictionary<string, NewContentTypeInfo> _newDocTypes
 			= new Dictionary<string, NewContentTypeInfo>(StringComparer.OrdinalIgnoreCase);
 
+	/// <summary>
+	///  allows you to map property aliases in a content type to the specific datatype
+	/// </summary>
+	private Dictionary<string, string> _dataTypeAliases = new (StringComparer.OrdinalIgnoreCase);
 
     // tabs that are to be changed
     private List<TabOptions> _changedTabs { get; set; } = new List<TabOptions>();
@@ -220,6 +224,15 @@ public class ContentTypeMigrationContext
     public List<TabOptions> GetChangedTabs()
         => _changedTabs;
 
+	/// <summary>
+	///  add a mapping for a content types property to the named datatype.
+	/// </summary>
+	public void AddDataTypeAlias(string contentTypeAlias, string propertyAlias, string dataTypeAlias)
+		=> _ = _dataTypeAliases.TryAdd($"{contentTypeAlias}_{propertyAlias}", dataTypeAlias);
+
+	public string GetDataTypeAlias(string contentTypeAlias, string propertyAlias)
+		=> _dataTypeAliases.TryGetValue($"{contentTypeAlias}_{propertyAlias}", out var alias) == true
+			? alias : string.Empty;
 
 
 }

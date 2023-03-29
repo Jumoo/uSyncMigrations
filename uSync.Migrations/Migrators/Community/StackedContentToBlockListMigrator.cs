@@ -97,6 +97,7 @@ public class StackedContentToBlockListMigrator : SyncPropertyMigratorBase
                 }
 
                 var childProperty = new SyncMigrationContentProperty(editorAlias.OriginalEditorAlias,
+                    contentTypeAlias, propertyAlias,
                     value?.ToString() ?? string.Empty);
 
                 item.Values[propertyAlias] = migrator.GetContentValue(childProperty, context);
