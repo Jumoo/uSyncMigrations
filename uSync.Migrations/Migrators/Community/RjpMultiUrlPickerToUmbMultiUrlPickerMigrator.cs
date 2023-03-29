@@ -7,7 +7,6 @@ using uSync.Migrations.Context;
 using uSync.Migrations.Migrators.Models;
 using uSync.Migrations.Extensions;
 using Umbraco.Extensions;
-using Polly;
 
 namespace uSync.Migrations.Migrators.Community;
 
