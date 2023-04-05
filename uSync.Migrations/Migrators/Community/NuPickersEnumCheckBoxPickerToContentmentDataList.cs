@@ -5,6 +5,7 @@ using uSync.Migrations.Extensions;
 using uSync.Migrations.Migrators.Models;
 using uSync.Migrations.Models;
 using uSync.Migrations.Migrators.Models.NuPickers;
+using Umbraco.Extensions;
 
 namespace uSync.Migrations.Migrators.Community
 {
@@ -26,7 +27,7 @@ namespace uSync.Migrations.Migrators.Community
                 { key = "Umbraco.Community.Contentment.DataEditors.EnumDataListSource, Umbraco.Community.Contentment",
                     value = new
                     {
-                        EnumType = new [] { nuPickersConfig?.AssemblyName }
+                        enumType = new [] { nuPickersConfig?.AssemblyName.TrimEnd(".dll"), nuPickersConfig?.EnumName }
                     }
                 }
             }.ToList();
