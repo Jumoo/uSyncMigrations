@@ -7,6 +7,8 @@ using uSync.Migrations.Migrators;
 using uSync.Migrations.Migrators.Models;
 using uSync.Migrations.Migrators.Models.NuPickers;
 
+namespace uSync.Migrations.Migrators.Community;
+
 [SyncMigrator("nuPickers.EnumDropDownPicker")]
 public class NuPickersEnumDropDownPickerToContentmentDataList : SyncPropertyMigratorBase
 {
