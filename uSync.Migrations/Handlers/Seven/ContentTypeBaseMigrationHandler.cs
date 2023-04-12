@@ -49,7 +49,7 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : SharedContent
             var newTabs = new XElement("Tabs");
             foreach (var tab in tabs.Elements("Tab"))
             {
-                var newTab = UpdateTab(source, tab.Clone(), context);
+                var newTab = UpdateTab(source, tab.Clone(), context, false);
                 if (newTab != null) newTabs.Add(newTab);
             }
             target.Add(newTabs);
@@ -63,7 +63,7 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : SharedContent
         newProperty.Add(new XElement("LabelOnTop", false));
 
         var tabNode = newProperty.Element("Tab");
-        UpdateTab(source, tabNode, context);
+        UpdateTab(source, tabNode, context, true);
     }
 
     /// <summary>
@@ -74,7 +74,7 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : SharedContent
     ///  
     ///  we also can rename and remove tabs by setting adding a ChangedTab to the context. 
     /// </remarks>
-    internal XElement? UpdateTab(XElement source, XElement? tab, SyncMigrationContext context)
+    internal XElement? UpdateTab(XElement source, XElement? tab, SyncMigrationContext context, bool useAttributes)
     {
         if (tab == null) return null;
 
@@ -100,8 +100,19 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : SharedContent
         }
 
         // set alias, and type (always tab?)
-        tab.SetAttributeValue("Alias", alias);
-        tab.SetAttributeValue("Type", "Tab");
+        // add caption if the value is there 
+        if (useAttributes)
+        {
+            tab.SetAttributeValue("Alias", alias);
+            tab.SetAttributeValue("Type", "Tab");
+        }
+        else
+        {
+            tab.Elements("Alias").Remove();
+            tab.Add(new XElement("Alias", alias));
+            tab.Elements("Type").Remove();
+            tab.Add(new XElement("Type", "Tab"));
+        }
 
         return tab;
     }
