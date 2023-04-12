@@ -48,6 +48,11 @@ public class NestedContentMigrator : SyncPropertyMigratorBase
 
         foreach (var row in rowValues)
         {
+            if (row.Id == default)
+            {
+                row.Id = Guid.NewGuid();
+            }
+
             foreach (var property in row.RawPropertyValues)
             {
                 var editorAlias = context.ContentTypes.GetEditorAliasByTypeAndProperty(row.ContentTypeAlias, property.Key);
