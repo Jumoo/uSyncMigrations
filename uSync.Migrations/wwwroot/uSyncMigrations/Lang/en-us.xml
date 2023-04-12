@@ -13,6 +13,8 @@
 			<![CDATA[<p>you can migrate your own way</p>]]>
 		</key>
 
+		<key alias="v8warn"><![CDATA[<strong>You don't need to Migrate uSync v8 files to uSync v9/10+ - simply copy or rename the uSync/v8 folder to uSync/v9</strong>]]></key>
+
 		<key alias="customize">
 			<![CDATA[You can customize this list with your own `ISyncMigrationProfile` or remove and add simple configs with a '/usync/profiles.json' file.]]>
 		</key>
