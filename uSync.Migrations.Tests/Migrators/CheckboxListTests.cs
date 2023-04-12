@@ -36,10 +36,10 @@ public class CheckboxListTests : MigratiorTestBase
         => EditorAliasAsExpectedbase(UmbConstants.PropertyEditors.Aliases.CheckBoxList);
 
     protected override SyncMigrationContentProperty GetMigrationContentProperty(string value)
-        => new SyncMigrationContentProperty(UmbConstants.PropertyEditors.Aliases.CheckBoxList, value);
+        => new SyncMigrationContentProperty("Test", "Checkbox list", UmbConstants.PropertyEditors.Aliases.CheckBoxList, value);
 
     protected override SyncMigrationDataTypeProperty GetMigrationDataTypeProperty()
-        => new SyncMigrationDataTypeProperty(UmbConstants.PropertyEditors.Aliases.CheckBoxList,
+        => new SyncMigrationDataTypeProperty("Checkbox", UmbConstants.PropertyEditors.Aliases.CheckBoxList,
             "Nvarchar",
             new List<PreValue>
             {

@@ -133,7 +133,11 @@ public class NestedToBlockListMigrator : SyncPropertyMigratorBase
                 var migrator = context.Migrators.TryGetMigrator(editorAlias.OriginalEditorAlias);
                 if (migrator != null)
                 {
-                    block.RawPropertyValues[property.Key] = migrator.GetContentValue(new SyncMigrationContentProperty(row.ContentTypeAlias, property.Value.ToString()), context);
+                    block.RawPropertyValues[property.Key] = migrator.GetContentValue(
+                        new SyncMigrationContentProperty(
+                            row.ContentTypeAlias,
+                            property.Key,
+                            row.ContentTypeAlias, property.Value.ToString()), context);
                 }
                 else
                 {

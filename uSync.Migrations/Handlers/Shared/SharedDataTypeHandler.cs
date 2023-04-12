@@ -1,5 +1,7 @@
 ﻿using System.Xml.Linq;
 
+using Lucene.Net.Documents;
+
 using Microsoft.Extensions.Logging;
 
 using Newtonsoft.Json;
@@ -47,7 +49,8 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
     }
 
     protected abstract string GetDatabaseType(XElement source);
-    protected abstract ReplacementDataTypeInfo? GetReplacementInfo(string editorAlias, string databaseType, XElement source, SyncMigrationContext context);
+    protected abstract ReplacementDataTypeInfo? GetReplacementInfo(
+        string dataTypeAlias, string editorAlias, string databaseType, XElement source, SyncMigrationContext context);
 
     protected override void PrepareFile(XElement source, SyncMigrationContext context)
     {
@@ -59,8 +62,7 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
         var databaseType = GetDatabaseType(source);
 
         // replacements
-        var replacementInfo = GetReplacementInfo(editorAlias, databaseType, source, context);
-
+        var replacementInfo = GetReplacementInfo(alias, editorAlias, databaseType, source, context);
         if (replacementInfo != null)
         {
             context.DataTypes.AddReplacement(dtd, replacementInfo.Key);
@@ -74,13 +76,16 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
 
         // add alias, (won't update if replacement was added)
         context.DataTypes.AddDefinition(dtd, editorAlias);
+        context.DataTypes.AddAlias(dtd, alias);
     }
 
     protected abstract string GetEditorAlias(XElement source);
     protected abstract string GetDataTypeName(XElement source);
     protected abstract string GetDataTypeFolder(XElement source);
 
-    protected abstract SyncMigrationDataTypeProperty GetMigrationDataTypeProperty(string editorAlias, string database, XElement source);
+    protected abstract SyncMigrationDataTypeProperty GetMigrationDataTypeProperty(
+        string dataTypeAlias, string editorAlias, string database, XElement source);
+
     protected abstract object? GetDataTypeConfig(ISyncPropertyMigrator? migrator, SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context);
     protected abstract object? MakeEmptyLabelConfig(SyncMigrationDataTypeProperty dataTypeProperty);
 
@@ -110,7 +115,7 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
             // no migrator. 
         }
 
-        var dataTypeProperty = GetMigrationDataTypeProperty(editorAlias, databaseType, source);
+        var dataTypeProperty = GetMigrationDataTypeProperty(alias, editorAlias, databaseType, source);
         var newEditorAlias = GetNewEditorAlias(migrator, dataTypeProperty, context);
         var newDatabaseType = GetNewDatabaseType(migrator, dataTypeProperty, context);
         var newConfig = GetDataTypeConfig(migrator, dataTypeProperty, context) ?? MakeEmptyLabelConfig(dataTypeProperty);

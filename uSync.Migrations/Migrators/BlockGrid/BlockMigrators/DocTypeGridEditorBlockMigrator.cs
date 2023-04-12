@@ -103,6 +103,8 @@ internal class DocTypeGridEditorBlockMigrator : ISyncBlockMigrator
 
 			if (migrator != null) { 
 				var property = new SyncMigrationContentProperty(
+					$"Grid.{editorAlias.OriginalEditorAlias}",
+					propertyAlias,
 					editorAlias.OriginalEditorAlias,
 					value?.ToString() ?? string.Empty);
 

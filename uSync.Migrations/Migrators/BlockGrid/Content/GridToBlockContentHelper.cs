@@ -224,7 +224,9 @@ internal class GridToBlockContentHelper
                 var migrator = context.Migrators.TryGetMigrator(editorAlias.OriginalEditorAlias);
                 if (migrator != null)
                 {
-                    var property = new SyncMigrationContentProperty(editorAlias.OriginalEditorAlias, value?.ToString() ?? string.Empty);
+                    var property = new SyncMigrationContentProperty(
+                        contentTypeAlias, propertyAlias,
+                        editorAlias.OriginalEditorAlias, value?.ToString() ?? string.Empty);
                     propertyValue = migrator.GetContentValue(property, context);
                     _logger.LogDebug("Migrator: {migrator} returned {value}", migrator.GetType().Name, propertyValue); 
                 }

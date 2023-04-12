@@ -41,10 +41,11 @@ internal class DataTypeMigrationHandler : SharedDataTypeHandler, ISyncMigrationH
     protected override string GetDataTypeName(XElement source)
         => source.Element("Info")?.Element(uSyncConstants.Xml.Name).ValueOrDefault(string.Empty) ?? string.Empty;
 
-    protected override SyncMigrationDataTypeProperty GetMigrationDataTypeProperty(string editorAlias, string database, XElement source)
-        => new SyncMigrationDataTypeProperty(editorAlias, database, GetXmlConfig(source));
+    protected override SyncMigrationDataTypeProperty GetMigrationDataTypeProperty(
+        string alias, string editorAlias, string database, XElement source)
+        => new SyncMigrationDataTypeProperty(alias, editorAlias, database, GetXmlConfig(source));
 
-    protected override ReplacementDataTypeInfo? GetReplacementInfo(string editorAlias, string databaseType, XElement source, SyncMigrationContext context)
+    protected override ReplacementDataTypeInfo? GetReplacementInfo(string dataTypeAlias, string editorAlias, string databaseType, XElement source, SyncMigrationContext context)
     {
         // replacements
         //
@@ -52,7 +53,7 @@ internal class DataTypeMigrationHandler : SharedDataTypeHandler, ISyncMigrationH
         if (migrator != null && migrator is ISyncReplacablePropertyMigrator replacablePropertyMigrator)
         {
             return replacablePropertyMigrator.GetReplacementEditorId(
-                new SyncMigrationDataTypeProperty(editorAlias, databaseType, GetXmlConfig(source)),
+                new SyncMigrationDataTypeProperty(dataTypeAlias, editorAlias, databaseType, GetXmlConfig(source)),
                 context);
         }
 

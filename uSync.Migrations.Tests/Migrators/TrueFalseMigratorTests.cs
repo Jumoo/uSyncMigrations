@@ -19,10 +19,11 @@ internal class TrueFalseMigratorTests : MigratiorTestBase
     }
 
     protected override SyncMigrationContentProperty GetMigrationContentProperty(string value)
-        => new SyncMigrationContentProperty(UmbConstants.PropertyEditors.Aliases.Boolean, value);
+        => new SyncMigrationContentProperty("Test", "True/False", UmbConstants.PropertyEditors.Aliases.Boolean, value);
 
     protected override SyncMigrationDataTypeProperty GetMigrationDataTypeProperty()
         => new SyncMigrationDataTypeProperty(
+            "True/False",
             UmbConstants.PropertyEditors.Aliases.Boolean,
             "Integer",
             new List<PreValue>());

@@ -40,10 +40,10 @@ internal class TextBoxMigratorTests : MigratiorTestBase
         => EditorAliasAsExpectedbase(UmbEditors.Aliases.TextBox);
 
     protected override SyncMigrationContentProperty GetMigrationContentProperty(string value)
-        => new SyncMigrationContentProperty(UmbEditors.Aliases.TextBox, value);
+        => new SyncMigrationContentProperty("Test", "Textbox", UmbEditors.Aliases.TextBox, value);
 
     protected override SyncMigrationDataTypeProperty GetMigrationDataTypeProperty()
-        => new SyncMigrationDataTypeProperty(UmbEditors.Aliases.TextBox, "Nvarchar",
+        => new SyncMigrationDataTypeProperty("Textstring", UmbEditors.Aliases.TextBox, "Nvarchar",
             new List<PreValue>
             {
                 new PreValue { SortOrder = 1, Alias = "maxChars", Value = "128" }

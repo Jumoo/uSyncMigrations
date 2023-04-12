@@ -28,6 +28,28 @@ public class DataTypeMigrationContext
 
 
 	/// <summary>
+	///  contains a lookup from defition (guid) to alias, so we can pass that along. 
+	/// </summary>
+	private Dictionary<Guid, string> _dataTypeAliases { get; set; } = new();	
+
+	/// <summary>
+	///  add a datatype alias to the lookup
+	/// </summary>
+	/// <param name="dtd"></param>
+	/// <param name="alias"></param>
+	public void AddAlias(Guid dtd, string alias)
+		=> _ = _dataTypeAliases.TryAdd(dtd, alias);
+
+	/// <summary>
+	///  get the alias based on the DTD value (which we have in contenttype).
+	/// </summary>
+	/// <param name="dtd"></param>
+	/// <returns></returns>
+	public string GetAlias(Guid dtd)
+		=> _dataTypeAliases?.TryGetValue(dtd, out var alias) == true
+			? alias : string.Empty;
+
+	/// <summary>
 	///  add a datatypedefinion (aka datatype key) to the context.
 	/// </summary>
 	public void AddDefinition(Guid dtd, string editorAlias)

@@ -50,6 +50,9 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
             context.ContentTypes.AddProperty(contentTypeAlias, alias,
                     editorAlias, context.DataTypes.GetByDefinition(definition));
 
+            context.ContentTypes.AddDataTypeAlias(contentTypeAlias, alias,
+                context.DataTypes.GetAlias(definition));
+
             //
             // for now we are doing this just for media folders, but it might be
             // that all list view properties should be ignored ??

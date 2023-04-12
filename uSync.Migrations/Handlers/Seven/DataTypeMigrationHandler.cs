@@ -46,7 +46,7 @@ internal class DataTypeMigrationHandler : SharedDataTypeHandler, ISyncMigrationH
             key: source.Attribute("Key").ValueOrDefault(Guid.Empty)
         );
 
-    protected override ReplacementDataTypeInfo? GetReplacementInfo(string editorAlias, string databaseType, XElement source, SyncMigrationContext context)
+    protected override ReplacementDataTypeInfo? GetReplacementInfo(string dataTypeAlias, string editorAlias, string databaseType, XElement source, SyncMigrationContext context)
     {
         //
         // replacements
@@ -55,7 +55,7 @@ internal class DataTypeMigrationHandler : SharedDataTypeHandler, ISyncMigrationH
         if (migrator != null && migrator is ISyncReplacablePropertyMigrator replacablePropertyMigrator)
         {
             return replacablePropertyMigrator.GetReplacementEditorId(
-                new SyncMigrationDataTypeProperty(editorAlias, databaseType, GetPreValues(source)),
+                new SyncMigrationDataTypeProperty(dataTypeAlias, editorAlias, databaseType, GetPreValues(source)),
                 context);
         }
 
@@ -76,10 +76,11 @@ internal class DataTypeMigrationHandler : SharedDataTypeHandler, ISyncMigrationH
 
     protected override int GetLevel(XElement source, int level) => level;
 
-    protected override SyncMigrationDataTypeProperty GetMigrationDataTypeProperty(string editorAlias, string database, XElement source)
+    protected override SyncMigrationDataTypeProperty GetMigrationDataTypeProperty(
+        string dataTypeAlias, string editorAlias, string database, XElement source)
     {
         var preValues = GetPreValues(source);
-        return new SyncMigrationDataTypeProperty(editorAlias, database, preValues);
+        return new SyncMigrationDataTypeProperty(dataTypeAlias, editorAlias, database, preValues);
     }
 
     private static IList<PreValue> GetPreValues(XElement source)
