@@ -31,7 +31,7 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
 		_dataTypeService = dataTypeService;
 	}
 
-	protected override void PrepareFile(XElement source, SyncMigrationContext context)
+    protected override void PrepareFile(XElement source, SyncMigrationContext context)
     {
         var (contentTypeAlias, key) = GetAliasAndKey(source);
         context.ContentTypes.AddAliasAndKey(contentTypeAlias, key);

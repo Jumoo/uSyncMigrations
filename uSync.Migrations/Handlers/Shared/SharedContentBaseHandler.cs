@@ -4,12 +4,14 @@ using Microsoft.Extensions.Logging;
 
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
+using Umbraco.Cms.Core.Services;
 using Umbraco.Cms.Core.Strings;
 
 using uSync.Core;
 using uSync.Migrations.Context;
 using uSync.Migrations.Migrators;
 using uSync.Migrations.Migrators.Models;
+using uSync.Migrations.Models;
 using uSync.Migrations.Services;
 
 namespace uSync.Migrations.Handlers.Shared;
@@ -17,7 +19,8 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
     where TEntity : ContentBase
 {
     protected readonly IShortStringHelper _shortStringHelper;
-    
+    private readonly IContentTypeService _contentTypeService;
+    private readonly IDataTypeService _dataTypeService;
     protected readonly HashSet<string> _ignoredProperties = new(StringComparer.OrdinalIgnoreCase);
     protected readonly Dictionary<string, string> _mediaTypeAliasForFileExtension = new(StringComparer.OrdinalIgnoreCase);
 
@@ -25,10 +28,41 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
         IEventAggregator eventAggregator,
         ISyncMigrationFileService migrationFileService,
         IShortStringHelper shortStringHelper,
+        IContentTypeService contentTypeService,
+        IDataTypeService dataTypeService,
         ILogger<SharedContentBaseHandler<TEntity>> logger) 
         : base(eventAggregator, migrationFileService, logger)
     {
         _shortStringHelper = shortStringHelper;
+        _contentTypeService = contentTypeService;
+        _dataTypeService = dataTypeService;
+    }
+
+    protected override IEnumerable<MigrationMessage> PreDoMigration(SyncMigrationContext context)
+    {
+        foreach (var contentType in _contentTypeService.GetAll())
+        {
+            context.ContentTypes.AddAliasAndKey(contentType.Alias, contentType.Key);
+            context.ContentTypes.AddCompositions(contentType.Alias, contentType.CompositionAliases());
+            if (contentType.IsElement)
+            {
+                context.ContentTypes.AddElementType(contentType.Key);
+            }
+
+            foreach (var property in contentType.PropertyGroups.SelectMany(pg => pg.PropertyTypes))
+            {
+                var dataType = _dataTypeService.GetDataType(property.DataTypeId);
+                context.ContentTypes.AddProperty(contentType.Alias, property.Alias, dataType.EditorAlias, dataType.EditorAlias);
+                context.ContentTypes.AddDataTypeAlias(contentType.Alias, property.Alias, context.DataTypes.GetAlias(dataType.Key));
+
+                if (contentType.Alias.Equals("Folder") && dataType.EditorAlias.Equals("Umbraco.ListView"))
+                {
+                    context.ContentTypes.AddIgnoredProperty(contentType.Alias, property.Alias);
+                }
+            }
+        }
+
+        return Enumerable.Empty<MigrationMessage>();
     }
 
     protected abstract int GetId(XElement source);
