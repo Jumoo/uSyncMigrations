@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Services;
+using uSync.Migrations.Composing;
 using uSync.Migrations.Context;
 using uSync.Migrations.Extensions;
 using uSync.Migrations.Handlers.Shared;
@@ -18,8 +19,9 @@ internal class ContentTypeBaseMigrationHandler<TEntity> : SharedContentTypeBaseH
         IEventAggregator eventAggregator,
         ISyncMigrationFileService migrationFileService,
         ILogger<ContentTypeBaseMigrationHandler<TEntity>> logger,
-        IDataTypeService dataTypeService) 
-        : base(eventAggregator, migrationFileService, logger, dataTypeService)
+        IDataTypeService dataTypeService,
+        Lazy<SyncMigrationHandlerCollection> migrationHandlers) 
+        : base(eventAggregator, migrationFileService, logger, dataTypeService, migrationHandlers)
     { }
 
     protected override void UpdatePropertyXml(XElement source, XElement newProperty, SyncMigrationContext context)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Context;
 
@@ -14,7 +15,7 @@ public class DataTypeMigrationContext
 	/// <summary>
 	///  list of keys to editor aliases used to lookup datatypes in content types !
 	/// </summary>
-	private Dictionary<Guid, string> _dataTypeDefinitions { get; set; } = new();
+	private Dictionary<Guid, DataTypeInfo> _dataTypeDefinitions { get; set; } = new();
 
 	/// <summary>
 	///  when we replace an datatype with something else .
@@ -52,16 +53,16 @@ public class DataTypeMigrationContext
 	/// <summary>
 	///  add a datatypedefinion (aka datatype key) to the context.
 	/// </summary>
-	public void AddDefinition(Guid dtd, string editorAlias)
-		=> _ = _dataTypeDefinitions.TryAdd(dtd, editorAlias);
+	public void AddDefinition(Guid dtd, DataTypeInfo def)
+		=> _ = _dataTypeDefinitions.TryAdd(dtd, def);
 
 	/// <summary>
 	///  get a datatype definiton from the context.
 	/// </summary>
-	public string GetByDefinition(Guid guid)
-		=> _dataTypeDefinitions?.TryGetValue(guid, out var editorAlias) == true
-			? editorAlias
-			: string.Empty;
+	public DataTypeInfo? GetByDefinition(Guid guid)
+		=> _dataTypeDefinitions?.TryGetValue(guid, out var def) == true
+			? def
+			: null;
 
 	/// <summary>
 	///  add the key that replaces a datatype to the context.

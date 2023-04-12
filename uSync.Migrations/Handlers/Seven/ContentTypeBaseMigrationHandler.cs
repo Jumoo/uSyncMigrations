@@ -11,6 +11,7 @@ using Umbraco.Cms.Core.Strings;
 using Umbraco.Extensions;
 
 using uSync.Core;
+using uSync.Migrations.Composing;
 using uSync.Migrations.Context;
 using uSync.Migrations.Extensions;
 using uSync.Migrations.Handlers.Shared;
@@ -29,8 +30,9 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : SharedContent
         ISyncMigrationFileService migrationFileService,
         ILogger<ContentTypeBaseMigrationHandler<TEntity>> logger,
         IDataTypeService dataTypeService,
-        IShortStringHelper shortStringHelper)
-        : base(eventAggregator, migrationFileService, logger, dataTypeService)
+        IShortStringHelper shortStringHelper,
+        Lazy<SyncMigrationHandlerCollection> migrationHandlers)
+        : base(eventAggregator, migrationFileService, logger, dataTypeService, migrationHandlers)
     {
         _shortStringHelper = shortStringHelper;
     }

@@ -1,4 +1,5 @@
 ﻿using uSync.Migrations.Configuration.Models;
+using uSync.Migrations.Migrators.Community.Archetype;
 
 namespace uSync.Migrations.Context;
 
@@ -47,6 +48,7 @@ public class SyncMigrationContext : IDisposable
 
     private HashSet<string> _blockedTypes = new(StringComparer.OrdinalIgnoreCase);
     private Dictionary<int, Guid> _idKeyMap { get; set; } = new();
+    public IArchetypeMigrationConfigurer ArchetypeMigrationConfigurer { get; set; } = new DefaultArchetypeMigrationConfigurer();
 
     /// <summary>
     ///  is this item blocked based on alias and type. 
