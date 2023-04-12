@@ -18,7 +18,7 @@ public class CheckboxListMigrator : SyncPropertyMigratorBase
     {
         var config = new ValueListConfiguration();
 
-        foreach (var item in dataTypeProperty.PreValues)
+        foreach (var item in dataTypeProperty.PreValues ?? Enumerable.Empty<Migrations.Models.PreValue>())
         {
             config.Items.Add(new ValueListConfiguration.ValueListItem
             {
