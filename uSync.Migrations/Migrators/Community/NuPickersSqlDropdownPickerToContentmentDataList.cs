@@ -8,10 +8,8 @@ using uSync.Migrations.Migrators.Models.NuPickers;
 namespace uSync.Migrations.Migrators.Community
 {
     [SyncMigrator("nuPickers.SqlDropdownPicker")]
-    public class NuPickersSqlDropdownPickerToContentmentDataList : SyncPropertyMigratorBase
+    public class NuPickersSqlDropdownPickerToContentmentDataList : NuPickersToContentmentDataListBase
     {
-        public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
-      => "Umbraco.Community.Contentment.DataList";
         public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
         {
             var nuPickersConfig = JsonConvert.DeserializeObject<NuPickersSqlConfig>(dataTypeProperty.PreValues?.GetPreValueOrDefault("dataSource", string.Empty));
