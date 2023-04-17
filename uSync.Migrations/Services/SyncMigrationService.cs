@@ -189,7 +189,7 @@ internal class SyncMigrationService : ISyncMigrationService
             .ForEach(x => x.PrepareMigrations(context));
 
         // add configurer for Archetype migrations
-        context.ArchetypeMigrationConfigurer = _archetypeConfigurers.FirstOrDefault(c => c.GetType().Name == options.ArchetypeMigrationConfigurer) 
+        context.ContentTypes.ArchetypeMigrationConfigurer = _archetypeConfigurers.FirstOrDefault(c => c.GetType().Name == options.ArchetypeMigrationConfigurer) 
             ?? new DefaultArchetypeMigrationConfigurer();
 
         return context;

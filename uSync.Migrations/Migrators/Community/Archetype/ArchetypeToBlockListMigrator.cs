@@ -51,7 +51,7 @@ public class ArchetypeToBlockListMigrator : SyncPropertyMigratorBase
 
         foreach (var fieldset in archetypeConfiguration.Fieldsets)
         {
-            var alias = context.ArchetypeMigrationConfigurer.GetBlockElementAlias(fieldset.Alias, context);
+            var alias = context.ContentTypes.ArchetypeMigrationConfigurer.GetBlockElementAlias(fieldset.Alias, context);
             var newContentType = new NewContentTypeInfo
             {
                 Key = alias.ToGuid(),
@@ -123,7 +123,7 @@ public class ArchetypeToBlockListMigrator : SyncPropertyMigratorBase
 
         foreach (var item in items)
         {
-            var blockElementAlias = context.ArchetypeMigrationConfigurer.GetBlockElementAlias(item.Alias, context);
+            var blockElementAlias = context.ContentTypes.ArchetypeMigrationConfigurer.GetBlockElementAlias(item.Alias, context);
             var rawValues = new Dictionary<string, object?>();
             foreach (var property in item.Properties)
             {

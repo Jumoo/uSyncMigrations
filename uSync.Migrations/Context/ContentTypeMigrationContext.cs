@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using uSync.Migrations.Configuration.Models;
+using uSync.Migrations.Migrators.Community.Archetype;
 using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Context;
@@ -33,14 +34,15 @@ public class ContentTypeMigrationContext
     ///  list of content types that need to be set as element types. 
     /// </summary>
     private HashSet<Guid> _elementContentTypes = new HashSet<Guid>();
+    public IArchetypeMigrationConfigurer ArchetypeMigrationConfigurer { get; set; } = new DefaultArchetypeMigrationConfigurer();
 
-	/// <summary>
-	///  Add a ccontent type key to the context.
-	/// </summary>
-	/// <param name="contentTypeAlias"></param>
-	/// <param name="contentTypeKey"></param>
+    /// <summary>
+    ///  Add a ccontent type key to the context.
+    /// </summary>
+    /// <param name="contentTypeAlias"></param>
+    /// <param name="contentTypeKey"></param>
 
-	public void AddAliasAndKey(string? contentTypeAlias, Guid? contentTypeKey)
+    public void AddAliasAndKey(string? contentTypeAlias, Guid? contentTypeKey)
 	{
 		_ = string.IsNullOrWhiteSpace(contentTypeAlias) == false &&
 			contentTypeKey.HasValue == true &&
