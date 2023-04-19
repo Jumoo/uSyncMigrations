@@ -95,14 +95,14 @@ public class ContentTypeMigrationContext
 	///  allows you to track when the editor alias of a property changes from original to a new value
 	/// </remarks>
 
-	public void AddProperty(string? contentTypeAlias, string? propertyAlias, string? originalAlias, string? newAlias)
+	public void AddProperty(string? contentTypeAlias, string? propertyAlias, string? originalAlias, string? newAlias, Guid? dataTypeDefinition = default)
 	{
 		_ = string.IsNullOrWhiteSpace(contentTypeAlias) == false &&
 			string.IsNullOrWhiteSpace(propertyAlias) == false &&
 			string.IsNullOrWhiteSpace(originalAlias) == false &&
 			string.IsNullOrWhiteSpace(newAlias) == false &&
 			_propertyTypes.TryAdd($"{contentTypeAlias}_{propertyAlias}",
-			new EditorAliasInfo(originalAlias, newAlias));
+			new EditorAliasInfo(originalAlias, newAlias, dataTypeDefinition));
 	}
 
 	/// <summary>

@@ -36,13 +36,27 @@ public class MigratorsContext
 		}
 
 		return null;
-	}
+    }
 
 	/// <summary>
-	/// A cache of dictionary items that can be used if you need to store/retrieve custom data between 
-	/// config and content mappings
+	/// gets the property splitting version of a migrator (if there is one)
 	/// </summary>
-	private Dictionary<string, Dictionary<string, object>> _migratorCache = new(StringComparer.OrdinalIgnoreCase);
+    public ISyncPropertySplittingMigrator TryGetPropertySplittingMigrator(string editorAlias)
+    {
+        if (_migrators.TryGetValue(editorAlias, out var migrator)
+            && migrator is ISyncPropertySplittingMigrator propertySplittingMigrator)
+        {
+            return propertySplittingMigrator;
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// A cache of dictionary items that can be used if you need to store/retrieve custom data between 
+    /// config and content mappings
+    /// </summary>
+    private Dictionary<string, Dictionary<string, object>> _migratorCache = new(StringComparer.OrdinalIgnoreCase);
 
 	/// <summary>
 	///  add a dictionary of custom values for this datatype alias.
@@ -62,5 +76,4 @@ public class MigratorsContext
 	public Dictionary<string, object> GetCustomValues(string alias)
 		=> _migratorCache.TryGetValue(alias, out Dictionary<string, object>? values)
 			? values : new Dictionary<string, object>();
-
 }

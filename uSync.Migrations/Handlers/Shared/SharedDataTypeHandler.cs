@@ -52,6 +52,19 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
     protected abstract ReplacementDataTypeInfo? GetReplacementInfo(
         string dataTypeAlias, string editorAlias, string databaseType, XElement source, SyncMigrationContext context);
 
+    /// <summary>
+    /// Whether properties using this property editor should be split into multiple properties
+    /// </summary>
+    protected bool IsSplitPropertyEditor(string editorAlias, SyncMigrationContext context)
+    {
+        //
+        // replacements
+        //
+        var migrator = context.Migrators.TryGetPropertySplittingMigrator(editorAlias);
+
+        return migrator != null;
+    }
+
     protected override void PrepareFile(XElement source, SyncMigrationContext context)
     {
         var (alias, dtd) = GetAliasAndKey(source);
@@ -72,6 +85,13 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
             {
                 context.DataTypes.AddVariation(dtd, replacementInfo.Variation);
             }
+        }
+
+        var isSplitPropertyEditor = IsSplitPropertyEditor(editorAlias, context);
+        if (isSplitPropertyEditor)
+        {
+            // if this editor is to be split, then by default we won't migrate the data type
+            return;
         }
 
         // add alias, (won't update if replacement was added)

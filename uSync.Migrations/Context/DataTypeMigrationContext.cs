@@ -90,4 +90,7 @@ public class DataTypeMigrationContext
 		=> _dataTypeVariations?.TryGetValue(guid, out var variation) == true
 			? variation : "Nothing";
 
+    public Guid? GetFirstDefinition(string alias)
+		=> _dataTypeDefinitions?.FirstOrDefault(x => x.Value == alias).Key;
+
 }
