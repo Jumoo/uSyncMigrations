@@ -4,8 +4,7 @@ using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Cms.Core.Strings;
-
-using uSync.Migrations.Handlers.Seven;
+using uSync.Migrations.Composing;
 using uSync.Migrations.Services;
 
 namespace uSync.Migrations.Handlers.Seven;
@@ -21,7 +20,8 @@ internal class ContentTypeMigrationHandler : ContentTypeBaseMigrationHandler<Con
         ISyncMigrationFileService migrationFileService,
         ILogger<ContentTypeMigrationHandler> logger,
 		IDataTypeService dataTypeService,
-        IShortStringHelper shortStringHelper)
-		: base(eventAggregator, migrationFileService, logger, dataTypeService, shortStringHelper)
+        IShortStringHelper shortStringHelper, 
+        Lazy<SyncMigrationHandlerCollection> migrationHandlers)
+		: base(eventAggregator, migrationFileService, logger, dataTypeService, shortStringHelper, migrationHandlers)
 	{ }
 }

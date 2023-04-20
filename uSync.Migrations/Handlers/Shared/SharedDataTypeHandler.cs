@@ -44,7 +44,7 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
     {
         foreach (var datatype in _dataTypeService.GetAll())
         {
-            context.DataTypes.AddDefinition(datatype.Key, datatype.EditorAlias);
+            context.DataTypes.AddDefinition(datatype.Key, new Models.DataTypeInfo(datatype.EditorAlias, datatype.Name ?? datatype.EditorAlias));
         }
     }
 
@@ -60,13 +60,14 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
         if (dtd == Guid.Empty || string.IsNullOrEmpty(editorAlias)) return;
 
         var databaseType = GetDatabaseType(source);
+        var dataTypeName = GetDataTypeName(source);
 
         // replacements
         var replacementInfo = GetReplacementInfo(alias, editorAlias, databaseType, source, context);
         if (replacementInfo != null)
         {
             context.DataTypes.AddReplacement(dtd, replacementInfo.Key);
-            context.DataTypes.AddDefinition(dtd, replacementInfo.EditorAlias);
+            context.DataTypes.AddDefinition(dtd, new Models.DataTypeInfo(replacementInfo.EditorAlias, dataTypeName));
 
             if (string.IsNullOrWhiteSpace(replacementInfo.Variation) == false)
             {
@@ -75,7 +76,7 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
         }
 
         // add alias, (won't update if replacement was added)
-        context.DataTypes.AddDefinition(dtd, editorAlias);
+        context.DataTypes.AddDefinition(dtd, new Models.DataTypeInfo(editorAlias, dataTypeName));
         context.DataTypes.AddAlias(dtd, alias);
     }
 
