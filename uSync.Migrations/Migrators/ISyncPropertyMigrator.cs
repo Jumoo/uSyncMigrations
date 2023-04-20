@@ -42,3 +42,17 @@ public interface ISyncVariationPropertyMigrator
 {
     public Attempt<CulturedPropertyValue> GetVariedElements(SyncMigrationContentProperty contentProperty, SyncMigrationContext context);
 }
+
+/// <summary>
+/// interface to implemenet if your property splits up a value into separate properties
+/// </summary>
+public interface ISyncPropertySplittingMigrator
+{
+    /// <summary>
+    /// gets a dictionary of alias/value pairs of new properties to map to
+    /// </summary>
+    IEnumerable<SplitPropertyContent> GetContentValues(SyncMigrationContentProperty migrationProperty, SyncMigrationContext context);
+
+
+    IEnumerable<SplitPropertyInfo> GetSplitProperties(string contentTypeAlias, string propertyAlias, string propertyName, SyncMigrationContext context);
+}

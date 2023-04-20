@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Strings;
-
+using Umbraco.Extensions;
 using uSync.Core;
 using uSync.Migrations.Context;
 using uSync.Migrations.Migrators;
@@ -109,7 +109,7 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
         return target;
     }
 
-    protected virtual XElement ConvertPropertyValue(string itemType, string contentType, XElement property, SyncMigrationContext context)
+    protected virtual IEnumerable<XElement> ConvertPropertyValue(string itemType, string contentType, XElement property, SyncMigrationContext context)
     {
         var editorAlias = context.ContentTypes.GetEditorAliasByTypeAndProperty(contentType, property.Name.LocalName)?.OriginalEditorAlias ?? string.Empty;
 
@@ -125,14 +125,33 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
             // if this is the case a ISyncVariationPropertyEditor will exist and it can 
             // split a single value into a collection split by culture
             var vortoElement = GetVariedValueNode(migrator, contentType, property.Name.LocalName, migrationProperty, context);
-            if (vortoElement != null) return vortoElement;
+            if (vortoElement != null) return vortoElement.AsEnumerableOfOne();
         }
 
-        // or this value doesn't need to be split by variation
+        // we might want to split this property into multiple properties
+        var propertySplittingMigrator = context.Migrators.TryGetPropertySplittingMigrator(editorAlias);
+        if (propertySplittingMigrator != null)
+        {
+            var splitElements = GetSplitPropertyValueNodes(propertySplittingMigrator, contentType, property.Name.LocalName, migrationProperty, context);
+            return splitElements;
+        }
+        
+        // or this value doesn't need to be split
         // and we can 'just' migrate it on its own.
         var migratedValue = MigrateContentValue(migrationProperty, context);
         return new XElement(property.Name.LocalName,
-                    new XElement("Value", new XCData(migratedValue)));
+                    new XElement("Value", new XCData(migratedValue))).AsEnumerableOfOne();
+    }
+
+    protected virtual IEnumerable<XElement> GetSplitPropertyValueNodes(ISyncPropertySplittingMigrator propertySplittingMigrator, string contentType, string propertyAlias, SyncMigrationContentProperty migrationProperty, SyncMigrationContext context)
+    {
+        var values = propertySplittingMigrator.GetContentValues(migrationProperty, context);
+        foreach (var value in values)
+        {
+            var element = new XElement(value.Alias, new XElement("Value", value.Value));
+
+            yield return element;
+        }
     }
 
     /// <summary>

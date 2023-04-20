@@ -50,12 +50,32 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
             var editorAlias = property.Element("Type").ValueOrDefault(string.Empty);
             var definition = property.Element("Definition").ValueOrDefault(Guid.Empty);
             var alias = property.Element("Alias")?.ValueOrDefault(string.Empty) ?? string.Empty;
+            var propertyName = property.Element("Name")?.ValueOrDefault(string.Empty) ?? string.Empty;
 
-            context.ContentTypes.AddProperty(contentTypeAlias, alias,
+            // if this is a property splitting editor, we need to add the split properties
+            var propertySplittingMigrator = context.Migrators.TryGetPropertySplittingMigrator(editorAlias);
+            if (propertySplittingMigrator != null)
+            {
+                context.ContentTypes.AddProperty(contentTypeAlias, alias, editorAlias, "none"); // add the original property so we can reference the original EditorAlias later
+
+                var splitProperties = propertySplittingMigrator.GetSplitProperties(contentTypeAlias, alias, propertyName, context);
+                foreach (var splitProperty in splitProperties)
+                {
+                    context.ContentTypes.AddProperty(contentTypeAlias, splitProperty.Alias,
+                                               editorAlias, splitProperty.DataTypeAlias, splitProperty.DataTypeDefinition);
+
+                    context.ContentTypes.AddDataTypeAlias(contentTypeAlias, alias, splitProperty.DataTypeAlias);
+                }
+            }
+            else
+            {
+                context.ContentTypes.AddProperty(contentTypeAlias, alias,
                     editorAlias, context.DataTypes.GetByDefinition(definition)?.EditorAlias);
 
-            context.ContentTypes.AddDataTypeAlias(contentTypeAlias, alias,
-                context.DataTypes.GetAlias(definition));
+                context.ContentTypes.AddDataTypeAlias(contentTypeAlias, alias,
+                    context.DataTypes.GetAlias(definition));
+            }
+
 
             //
             // for now we are doing this just for media folders, but it might be
@@ -132,18 +152,61 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
                     continue;
                 }
 
-                var newProperty = property.Clone();
-                if (newProperty != null)
-                {
-                    // update the datatype we are using (this might be new). 
-                    UpdatePropertyEditor(alias, newProperty, context);
-                    UpdatePropertyXml(source, newProperty, context);
-                    newProperties.Add(newProperty);
-                }
+                var updatedProperties = GetUpdatedProperties(source, alias, property, context);
+                newProperties.Add(updatedProperties);
             }
         }
 
         target.Add(newProperties);
+    }
+
+    protected virtual IEnumerable<XElement> GetUpdatedProperties(XElement source, string contentTypeAlias, XElement property, SyncMigrationContext context)
+    {
+        var editorAlias = property.Element("Type").ValueOrDefault(string.Empty);
+
+        var propertySplittingMigrator = context.Migrators.TryGetPropertySplittingMigrator(editorAlias);
+        if (propertySplittingMigrator == null)
+        {
+            var updatedProperty = GetUpdatedProperty(source, contentTypeAlias, property, context);
+            if (updatedProperty != null)
+            {
+                yield return updatedProperty;
+            }
+
+            yield break;
+        }
+        
+        // if we have a property splitting migrator, we need to get the split properties
+        var propertyAlias = property.Element("Alias")?.ValueOrDefault(string.Empty) ?? string.Empty;
+        var propertyName = property.Element("Name")?.ValueOrDefault(string.Empty) ?? string.Empty;
+        var splitProperties = propertySplittingMigrator.GetSplitProperties(contentTypeAlias, propertyAlias, propertyName, context);
+        
+        foreach (var splitProperty in splitProperties)
+        {
+            var updatedProperty = GetUpdatedProperty(source, contentTypeAlias, property, context);
+            if (updatedProperty != null)
+            {
+                updatedProperty.CreateOrSetElement("Alias", splitProperty.Alias);
+                updatedProperty.CreateOrSetElement("Name", splitProperty.Name);
+                updatedProperty.CreateOrSetElement("Type", splitProperty.DataTypeAlias);
+                updatedProperty.CreateOrSetElement("Definition", splitProperty.DataTypeDefinition);
+                yield return updatedProperty;
+            }
+        }
+    }
+
+    protected virtual XElement? GetUpdatedProperty(XElement source, string alias, XElement property, SyncMigrationContext context)
+    {
+        var newProperty = property.Clone();
+        if (newProperty != null)
+        {
+            // update the datatype we are using (this might be new). 
+            UpdatePropertyEditor(alias, newProperty, context);
+            UpdatePropertyXml(source, newProperty, context);
+            return newProperty;
+        }
+
+        return null;
     }
 
     protected virtual void UpdatePropertyEditor(string alias, XElement newProperty, SyncMigrationContext context)
