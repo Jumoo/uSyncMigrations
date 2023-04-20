@@ -92,6 +92,6 @@ public class DataTypeMigrationContext
 			? variation : "Nothing";
 
     public Guid? GetFirstDefinition(string alias)
-		=> _dataTypeDefinitions?.FirstOrDefault(x => x.Value == alias).Key;
+		=> _dataTypeDefinitions?.FirstOrDefault(x => x.Value.EditorAlias == alias).Key;
 
 }
