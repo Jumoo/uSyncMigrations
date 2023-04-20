@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
-
+using System.Text.RegularExpressions;
 using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.PropertyEditors;
@@ -28,6 +28,20 @@ public class RelatedLinksMigrator : SyncPropertyMigratorBase
         };
     }
 
+    private string WrapGuidsWithQuotes(string value)
+    {       
+      string guidRegEx = @"\b[A-Fa-f0-9]{8}(?:-[A-Fa-f0-9]{4}){3}-[A-Fa-f0-9]{12}\b";
+        HashSet<string> uniqueMatches = new HashSet<string>();
+
+        foreach (Match m in Regex.Matches(value, guidRegEx)) {
+            uniqueMatches.Add(m.Value);
+        }
+        foreach (var guid in uniqueMatches) { 
+          value = value.Replace(guid, "\"" + guid + "\"");
+        }
+        return value;
+    }
+
     public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
         => UmbConstants.PropertyEditors.Aliases.MultiUrlPicker;
 
@@ -47,7 +61,10 @@ public class RelatedLinksMigrator : SyncPropertyMigratorBase
 
         if (string.IsNullOrWhiteSpace(contentProperty.Value) == false)
         {
-            var items = JsonConvert.DeserializeObject<List<RelatedLink>>(contentProperty.Value);
+            //uSync Content edition turns RelatedLinks Ids into Guids for syncing between environments, but they are not wrapped in double quotes, and so in this context can't be deserialized
+            //so we need to 'fangle' the Value here to wrap any guids in the json in double quotes before it's parsed.
+            var wrappedValue = WrapGuidsWithQuotes(contentProperty.Value);
+            var items = JsonConvert.DeserializeObject<List<RelatedLink>>(wrappedValue);
             if (items?.Any() == true)
             {
                 foreach (var item in items)
