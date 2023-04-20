@@ -1,6 +1,6 @@
 ﻿namespace uSync.Migrations.Migrators.Models.NuPickers
 {
-    internal class NuPickersXmlConfig
+    public class NuPickersXmlConfig
     {
         public string ApiController { get; set; }
         public string XmlData { get; set; }

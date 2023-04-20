@@ -170,14 +170,14 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
             var newProperty = new XElement(propertyName);
 
             // get editor alias from dtdguid
-            var variantEditorAlias = context.DataTypes.GetByDefinition(attempt.Result.DtdGuid);
-            if (variantEditorAlias != null)
+            var variantDataType = context.DataTypes.GetByDefinition(attempt.Result.DtdGuid);
+            if (variantDataType != null)
             {
                 foreach (var variation in attempt.Result.Values)
                 {
                     var variationProperty = new SyncMigrationContentProperty(
                         contentTypeAlias, propertyName,
-                        variantEditorAlias, variation.Value);
+                        variantDataType.EditorAlias, variation.Value);
 
                     var migratedValue = MigrateContentValue(variationProperty, context);
 

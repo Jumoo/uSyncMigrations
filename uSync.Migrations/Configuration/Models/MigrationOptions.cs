@@ -38,6 +38,8 @@ public class MigrationOptions
     /// List of tabs that will be changed
     /// </summary>
     public List<TabOptions>? ChangeTabs { get; set; }
+
+    public string? ArchetypeMigrationConfigurer { get; set; }
 }
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]

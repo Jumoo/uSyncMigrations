@@ -1,4 +1,4 @@
-﻿using NUglify.Helpers;
+using NUglify.Helpers;
 
 using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Models;
@@ -10,6 +10,7 @@ using uSync.Migrations.Configuration.Models;
 using uSync.Migrations.Context;
 using uSync.Migrations.Handlers;
 using uSync.Migrations.Migrators;
+using uSync.Migrations.Migrators.Community.Archetype;
 using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Services;
@@ -21,19 +22,22 @@ internal class SyncMigrationService : ISyncMigrationService
     private readonly SyncMigrationValidatorCollection _migrationValidators;
     private readonly uSyncConfigService _usyncConfig;
     private readonly SyncPropertyMigratorCollection _migrators;
+    private readonly ArchetypeMigrationConfigurerCollection _archetypeConfigurers;
 
     public SyncMigrationService(
         ISyncMigrationFileService migrationFileService,
         SyncMigrationHandlerCollection migrationHandlers,
         uSyncConfigService usyncConfig,
         SyncMigrationValidatorCollection migrationValidators,
-        SyncPropertyMigratorCollection migrators)
+        SyncPropertyMigratorCollection migrators,
+        ArchetypeMigrationConfigurerCollection archetypeConfigurers)
     {
         _migrationFileService = migrationFileService;
         _migrationHandlers = migrationHandlers;
         _usyncConfig = usyncConfig;
         _migrationValidators = migrationValidators;
         _migrators = migrators;
+        _archetypeConfigurers = archetypeConfigurers;
     }
 
     public IEnumerable<string> HandlerTypes(int version)
@@ -183,6 +187,10 @@ internal class SyncMigrationService : ISyncMigrationService
             .OrderBy(x => x.Priority)
             .ToList()
             .ForEach(x => x.PrepareMigrations(context));
+
+        // add configurer for Archetype migrations
+        context.ContentTypes.ArchetypeMigrationConfigurer = _archetypeConfigurers.FirstOrDefault(c => c.GetType().Name == options.ArchetypeMigrationConfigurer) 
+            ?? new DefaultArchetypeMigrationConfigurer();
 
         return context;
     }

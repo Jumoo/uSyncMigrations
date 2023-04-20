@@ -3,17 +3,14 @@ using Newtonsoft.Json.Linq;
 using Umbraco.Extensions;
 using uSync.Migrations.Context;
 using uSync.Migrations.Extensions;
-using uSync.Migrations.Migrators;
 using uSync.Migrations.Migrators.Models;
 using uSync.Migrations.Migrators.Models.NuPickers;
 
 namespace uSync.Migrations.Migrators.Community;
 
 [SyncMigrator("nuPickers.EnumDropDownPicker")]
-public class NuPickersEnumDropDownPickerToContentmentDataList : SyncPropertyMigratorBase
+public class NuPickersEnumDropDownPickerToContentmentDataList : NuPickersToContentmentDataListBase
 {
-    public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
-        => "Umbraco.Community.Contentment.DataList";
     public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
         var nuPickersConfig = JsonConvert.DeserializeObject<NuPickersEnumConfig>(dataTypeProperty.PreValues?.GetPreValueOrDefault("dataSource", string.Empty));

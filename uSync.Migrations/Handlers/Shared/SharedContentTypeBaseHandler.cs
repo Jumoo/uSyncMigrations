@@ -9,6 +9,7 @@ using Umbraco.Cms.Core.Services;
 using Umbraco.Extensions;
 
 using uSync.Core;
+using uSync.Migrations.Composing;
 using uSync.Migrations.Context;
 using uSync.Migrations.Extensions;
 using uSync.Migrations.Models;
@@ -20,16 +21,19 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
     where TEntity : ContentTypeBase
 {
     private readonly IDataTypeService _dataTypeService;
+    private readonly Lazy<SyncMigrationHandlerCollection> _migrationHandlers;
 
-	protected SharedContentTypeBaseHandler(
+    protected SharedContentTypeBaseHandler(
 		IEventAggregator eventAggregator,
 		ISyncMigrationFileService migrationFileService,
 		ILogger<SharedContentTypeBaseHandler<TEntity>> logger,
-		IDataTypeService dataTypeService)
+		IDataTypeService dataTypeService,
+        Lazy<SyncMigrationHandlerCollection> migrationHandlers)
 		: base(eventAggregator, migrationFileService, logger)
 	{
-		_dataTypeService = dataTypeService;
-	}
+        _dataTypeService = dataTypeService;
+        _migrationHandlers = migrationHandlers;
+    }
 
 	protected override void PrepareFile(XElement source, SyncMigrationContext context)
     {
@@ -66,7 +70,7 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
             else
             {
                 context.ContentTypes.AddProperty(contentTypeAlias, alias,
-                    editorAlias, context.DataTypes.GetByDefinition(definition));
+                    editorAlias, context.DataTypes.GetByDefinition(definition)?.EditorAlias);
 
                 context.ContentTypes.AddDataTypeAlias(contentTypeAlias, alias,
                     context.DataTypes.GetAlias(definition));
@@ -272,12 +276,16 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
 				continue;
 			}
 
-			var target = MigrateFile(source, 1, context);
-
-
 			context.ContentTypes.AddAliasAndKey(contentType.Alias, contentType.Key);
 
+            // register any additional properties that might be needed in the following migration
 			AddAdditionaProperties(contentType, context);
+
+            // ensure we use the v8 migrator, since the source XML generated above uses the v8 format
+            var eightMigrationHandler = this.SourceVersion == 8 ? 
+                this : 
+                _migrationHandlers.Value.FirstOrDefault(h => h.SourceVersion == 8 && h.ItemType == this.ItemType) as SharedContentTypeBaseHandler<TEntity> ?? this;
+            var target = eightMigrationHandler.MigrateFile(source, 1, context);
 
 			if (target != null)
 			{
@@ -299,7 +307,7 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
             if (dataType != null)
             {
                 context.ContentTypes.AddProperty(contentType.Alias, property.Alias,
-                    dataType.EditorAlias, dataType.EditorAlias);
+                    property.OriginalEditorAlias ?? dataType.EditorAlias, dataType.EditorAlias);
             }
 		}
 	}
