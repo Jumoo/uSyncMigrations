@@ -8,9 +8,9 @@ public class uSyncMigrationAddOn : ISyncAddOn
 
     public string Version => uSyncMigrations.AppVersion;
 
-    public string Icon => "icon-filter-arrows";
+    public string Icon => uSyncMigrations.Icon;
 
-    public string View => $"{uSyncMigrations.PluginFolder}/dashboard.html";
+    public string View => string.Empty; // $"{uSyncMigrations.PluginFolder}/dashboard.html";
 
     public string Alias => Name.ToLowerInvariant();
 
