@@ -1,7 +1,5 @@
 ﻿using System.Xml.Linq;
 
-using Examine.Lucene.Providers;
-
 using Microsoft.AspNetCore.Hosting;
 
 using Umbraco.Cms.Core;
@@ -11,6 +9,8 @@ using uSync.BackOffice;
 using uSync.BackOffice.Configuration;
 using uSync.BackOffice.Services;
 using uSync.Core;
+using uSync.Migrations.Helpers;
+using uSync.Migrations.Models;
 
 using IHostingEnvironment = Umbraco.Cms.Core.Hosting.IHostingEnvironment;
 
@@ -25,12 +25,15 @@ internal class SyncMigrationFileService : ISyncMigrationFileService
     private readonly uSyncConfigService _uSyncConfig;
     private readonly string _uSyncRoot;
 
+    private readonly ISyncMigrationStatusService _migrationStatusService;
+
     public SyncMigrationFileService(
         IWebHostEnvironment webHostEnvironment,
         IHostingEnvironment hostingEnvironment,
         uSyncService uSyncService,
         SyncFileService syncFileService,
-        uSyncConfigService uSyncConfig)
+        uSyncConfigService uSyncConfig,
+        ISyncMigrationStatusService migrationStatusService)
     {
         _webHostEnvironment = webHostEnvironment;
         _migrationRoot = Path.Combine(hostingEnvironment.LocalTempPath, "uSync", "Migrations");
@@ -42,6 +45,7 @@ internal class SyncMigrationFileService : ISyncMigrationFileService
         // gets us the folder above where uSync saves stuff (usually uSync/v9 so this returns uSync); 
         var uSyncPhysicalPath = _webHostEnvironment.MapPathContentRoot(_uSyncConfig.GetRootFolder()).TrimEnd(Path.DirectorySeparatorChar);
         _uSyncRoot = Path.GetDirectoryName(uSyncPhysicalPath) ?? _webHostEnvironment.MapPathContentRoot("uSync");
+        _migrationStatusService = migrationStatusService;
     }
 
     public void SaveMigrationFile(Guid id, XElement xml, string folder)
@@ -64,14 +68,16 @@ internal class SyncMigrationFileService : ISyncMigrationFileService
         if (!path.StartsWith(_uSyncRoot, StringComparison.OrdinalIgnoreCase))
             throw new AccessViolationException("Cannot migrate outside the uSync folder");
 
+        Directory.CreateDirectory(path);
+
+        var attempt = MigrationIoHelpers.FinduSyncPath(path);
+        if (attempt.Success) return attempt.Result ?? path;
+
         return path;
     }
 
-    static Dictionary<int, string[]> _wellKnownPaths = new Dictionary<int, string[]>()
-    {
-        { 7, new [] { "DataType", "DocumentType" } },
-        { 8, new [] { "DataTypes", "ContentTypes"} }
-    };
+   
+
 
     public Attempt<string> ValdateMigrationSource(int version, string folder)
     {
@@ -82,14 +88,10 @@ internal class SyncMigrationFileService : ISyncMigrationFileService
             return Attempt<string>.Fail(new DirectoryNotFoundException($"Root folder '{path}' doesn't exist"));
         }
 
-        foreach (var expectedFolder in _wellKnownPaths[version])
-        {
-            if (!Directory.Exists(Path.Combine(path, expectedFolder)))
-                return Attempt<string>.Fail(new DirectoryNotFoundException($"Missing well known folder '{expectedFolder}'"));
-        }
-
-        return Attempt<string>.Succeed("Pass");
+        return MigrationIoHelpers.CheckForFolders(path, MigrationIoHelpers.WellKnownPaths[version]);
     }
+
+  
 
     private string GetMigrationFolder(Guid id)
         => Path.Combine(_migrationRoot, id.ToString());
@@ -101,5 +103,24 @@ internal class SyncMigrationFileService : ISyncMigrationFileService
     {
         var path = Path.Combine(GetMigrationFolder(migrationId));
         _syncFileService.DeleteFolder(path, true);
+    }
+
+
+    public IEnumerable<MigrationStatus> GetMigrations()
+        => _migrationStatusService.GetAll();
+
+    public void DeleteMigration(string migrationId)
+    {
+        var migration = GetMigrations()
+            .FirstOrDefault(x => x.Id.Equals(migrationId));
+
+        if (migration != null && migration.Root != null)
+        {
+            var fullpath = Path.Combine(_webHostEnvironment.ContentRootPath, migration.Root.TrimStart(Path.DirectorySeparatorChar));
+            if (Directory.Exists(fullpath))
+            {
+                Directory.Delete(fullpath, true);
+            }
+        }
     }
 }

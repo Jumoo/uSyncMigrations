@@ -6,16 +6,16 @@ using uSync.Migrations.Validation;
 namespace uSync.Migrations.Composing;
 
 public class SyncMigrationProfileCollectionBuilder
-    : WeightedCollectionBuilderBase<SyncMigrationProfileCollectionBuilder, SyncMigrationProfileCollection, ISyncMigrationProfile>
+    : WeightedCollectionBuilderBase<SyncMigrationProfileCollectionBuilder, SyncMigrationProfileCollection, ISyncMigrationPlan>
 {
     protected override SyncMigrationProfileCollectionBuilder This => this;
 }
 
-public class SyncMigrationProfileCollection : BuilderCollectionBase<ISyncMigrationProfile>
+public class SyncMigrationProfileCollection : BuilderCollectionBase<ISyncMigrationPlan>
 {
-    public SyncMigrationProfileCollection(Func<IEnumerable<ISyncMigrationProfile>> items)
+    public SyncMigrationProfileCollection(Func<IEnumerable<ISyncMigrationPlan>> items)
         : base(items)
     { }
 
-    public IEnumerable<ISyncMigrationProfile> Profiles => this.OrderBy(x => x.Order);
+    public IEnumerable<ISyncMigrationPlan> Profiles => this.OrderBy(x => x.Order);
 }

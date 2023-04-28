@@ -17,93 +17,183 @@
                 <div><localize key="usyncmigrate_beta"></localize></div>
             </div>
 
-            <umb-box ng-if="vm.view == 'groups'">
+            <umb-box ng-if="vm.step != 'init'">
+                <umb-box-header ng-click="vm.goBack()"
+                                title="&laquo; back"
+                                style="cursor: pointer;"></umb-box-header>
+
+            </umb-box>
+
+            <umb-box ng-if="vm.step == 'init'">
                 <umb-box-header title-key="usyncmigrate_title"></umb-box-header>
                 <umb-box-content>
                     <localize key="usyncmigrate_intro"></localize>
                 </umb-box-content>
             </umb-box>
 
-            <umb-box>
-                <umb-box-content class="umb-box flex items-center color-blue">
-                    <div class="mr2">
-                        <umb-icon icon="icon-alert"></umb-icon>
-                    </div>
-                    <div><localize key="usyncmigrate_v8warn"></localize></div>
-                </umb-box-content>
-            </umb-box>
-
-            <umb-load-indicator ng-if="vm.loading"></umb-load-indicator>
-
-            <div ng-if="!vm.loading">
-
-                <div class="usync-group-actions" ng-if="vm.view == 'groups'">
-                    <umb-box ng-repeat="group in vm.groups" class="usync-group-box">
+            <div ng-if="vm.step == 'init'">
+                <div class="usync-group-actions">
+                    <umb-box class="usync-group-box">
                         <umb-box-content>
                             <div class="usync-group-box-header">
                                 <div class="usync-group-box-title">
-                                    <i class="icon {{group.icon}}"></i>
-                                    <h2>{{group.name}}</h2>
+                                    <i class="icon icon-sprout color-green"></i>
+                                    <h2><localize key="usyncmigrate_startTitle"></localize></h2>
                                 </div>
                             </div>
-                            <div>{{group.description}}</div>
+                            <div>
+                                <localize key="usyncmigrate_startIntro"></localize>
+                            </div>
+                            <div class="usync-group-buttons">
+                                <umb-button button-style="success"
+                                            icon="icon-folder"
+                                            action="vm.pickSource()"
+                                            size="l"
+                                            label-key="usyncmigrate_selectSource">
+                                </umb-button>
+
+                                <umb-button button-style="success"
+                                            icon="icon-zip"
+                                            action="vm.uploadZip()"
+                                            size="l"
+                                            label-key="usyncmigrate_uploadZip">
+                                </umb-button>
+                            </div>
+                        </umb-box-content>
+                    </umb-box>
+
+                    <umb-box class="usync-group-box">
+                        <umb-box-content>
+                            <div class="usync-group-box-header">
+                                <div class="usync-group-box-title">
+                                    <i class="icon icon-box"></i>
+                                    <h2><localize key="usyncmigrate_convertTitle"></localize></h2>
+                                </div>
+                            </div>
+                            <div><localize key="usyncmigrate_convertIntro"></localize></div>
                             <div class="usync-group-buttons">
                                 <umb-button button-style="success btn-large"
-                                            action="vm.loadProfiles(group)"
-                                            label="View options">
+                                            action="vm.existing();"
+                                            icon="icon-nodes"
+                                            label-key="usyncmigrate_convert">
                                 </umb-button>
                             </div>
                         </umb-box-content>
                     </umb-box>
                 </div>
 
-                <div ng-if="vm.view == 'profiles'">
+                <div>
+                    <usync-migration-list on-select="vm.selectMigration(migration)"></usync-migration-list>
+                </div>
+            </div>
+
+
+            <div ng-if="vm.step == 'start'">
+
+                <div ng-if="vm.migrationStatus">
+
                     <umb-box>
-                        <umb-box-header title="{{vm.group.name}}">
-                            <button type="button" ng-click="vm.view = 'groups'"
-                                    class="btn btn-link">
-                                <i class="icon icon-arrow-left"></i> back
-                            </button>
+                        <umb-box-header title="{{vm.migrationStatus.name}}">
+                            <umb-button button-style="default"
+                                        action="vm.edit(vm.migrationStatus)"
+                                        icon="icon-edit"
+                                        size="sm"
+                                        label-key="general_edit"></umb-button>
                         </umb-box-header>
                         <umb-box-content>
-                            {{vm.group.description}}
+                            <umb-control-group label="@usyncmigrate_statusSource">
+                                <div class="umb-textstring umb-property-editor">{{vm.migrationStatus.source}}</div>
+                            </umb-control-group>
+                            <umb-control-group label="@usyncmigrate_statusVersion">
+                                <div class="umb-textstring umb-property-editor">{{vm.migrationStatus.version}}</div>
+                            </umb-control-group>
+                            <umb-control-group label="@usyncmigrate_statusPlan">
+                                <div class="umb-textstring umb-property-editor">{{vm.migrationStatus.plan}}</div>
+                            </umb-control-group>
+
+                            <umb-control-group label="@usyncmigrate_convertedLabel"
+                                               description="@usyncmigrate_convertedDesc">
+                                <div ng-if="vm.migrationStatus.migrated"
+                                     class="flex justify-between">
+                                    <localize key="general_yes"></localize>
+                                    <umb-button action="vm.migrate()"
+                                                label-key="usyncmigrate_convertAgain"
+                                                button-style="default"
+                                                disabled="vm.working"
+                                                state="vm.buttonState">
+                                    </umb-button>
+                                </div>
+                                <div ng-if="!vm.migrationStatus.migrated">
+                                    <localize key="general_no"></localize>
+                                </div>
+                            </umb-control-group>
+
+                            <umb-control-group label="@usyncmigrate_importedLabel"
+                                               description="@usyncmigrate_importedDesc">
+                                <div ng-repeat="(group, flag) in vm.migrationStatus.importStatus">
+                                    <i class="icon icon-check color-green"></i>  {{group}}
+                                </div>
+                            </umb-control-group>
                         </umb-box-content>
                     </umb-box>
 
-                    <div class="usync-group-actions">
-                        <umb-box ng-repeat="profile in vm.profiles" class="usync-group-box">
-                            <umb-box-content>
-                                <div class="usync-group-box-header">
-                                    <div class="usync-group-box-title">
-                                        <i class="icon {{profile.icon}}"></i>
-                                        <h2>{{profile.name}}</h2>
-                                    </div>
-                                    <small>Umbraco v{{profile.options.sourceVersion}} -> v8+</small>
-                                </div>
-                                <div>{{profile.description}}</div>
-                                <div class="mt2 muted" style="min-height: 45px;">
-                                    <ul class="inline">
-                                        <li ng-repeat="handler in profile.options.handlers"
-                                            ng-if="handler.include == true">
-                                            <small>{{handler.name}}</small>
-                                        </li>
-                                    </ul>
-                                </div>
-
-                                <div class="usync-group-buttons">
-                                    <umb-button button-style="success btn-large"
-                                                action="vm.start(profile)"
-                                                label="Migrate"
-                                                disabled="vm.working == true"
-                                                state="vm.state">
-                                    </umb-button>
-                                </div>
-
-                            </umb-box-content>
-                        </umb-box>
+                    <usync-migration-results results="vm.validation"
+                                             action="Validation"
+                                             is-valid="vm.sourceValid">
+                    </usync-migration-results>
+                </div>
+                <div ng-if="vm.sourceValid && !vm.migrationStatus.migrated">
+                    <div class="flex justify-center flex-column items-center">
+                        <umb-button action="vm.migrate()"
+                                    label-key="usyncmigrate_convertButton"
+                                    button-style="success"
+                                    size="xl"
+                                    icon="icon-smiley"
+                                    disabled="vm.working"
+                                    state="vm.buttonState">
+                        </umb-button>
+                        <div><small><em><localize key="usyncmigrate_convertButtonSub"></localize></em></small></div>
                     </div>
                 </div>
             </div>
+
+
+            <div ng-if="vm.step == 'migrating'">
+
+                <div ng-if="vm.working">
+                    <usync-migration-messages working="vm.working"></usync-migration-messages>
+                </div>
+
+            </div>
+
+            <div ng-if="vm.step == 'migrated'">
+
+                <umb-box>
+                    <umb-box-content ng-if="vm.migrationResults.success">
+                        <localize accesskey="usyncmigrate_convertedSuccess"></localize>
+
+                        ({{vm.migrationResults.messages.length}} messages returned)
+                    </umb-box-content>
+                </umb-box>
+
+                <usync-migration-results results="vm.migrationResults"
+                                         action="Migration"
+                                         is-valid="vm.resultValid"
+                                         show-all="true">
+                </usync-migration-results>
+            </div>
+
+
+            <div ng-if="vm.canBeImported() && vm.step != 'init'">
+
+                <usync-migration-import folder="vm.migrationStatus.target"
+                                        migration-status="vm.migrationStatus"
+                                        on-import="vm.importing()"
+                                        on-report="vm.reporting()">
+                </usync-migration-import>
+
+            </div>
+
         </umb-editor-container>
     </umb-editor-view>
 </div>

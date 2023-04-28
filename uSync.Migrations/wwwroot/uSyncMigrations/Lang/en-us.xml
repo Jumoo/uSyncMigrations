@@ -18,5 +18,56 @@
 		<key alias="customize">
 			<![CDATA[You can customize this list with your own `ISyncMigrationProfile` or remove and add simple configs with a '/usync/profiles.json' file.]]>
 		</key>
+
+
+		<!-- dashboard localizations -->
+		<key alias="startTitle">Start a new Migration</key>
+		<key alias="startIntro">Convert some files, import them into umbraco</key>
+		
+		<key alias="selectSource">Select source</key>
+		<key alias="uploadZip">Upload a zip</key>
+
+		<key alias="convertTitle">Convert this site</key>
+		<key alias="convertIntro">Convert the properties on this site</key>
+		<key alias="convert">Convert</key>
+
+		<key alias="convertedLabel">Files converted</key>
+		<key alias="convertedDesc">Have the files been converted</key>
+		<key alias="convertAgain">Run conversion again</key>
+
+		<key alias="importedLabel">Imported</key>
+		<key alias="importedDesc">Which groups of items have been imported</key>
+
+		<key alias="convertButton">Convert files</key>
+		<key alias="convertButtonSub">(create the migrated uSync files)</key>
+
+		<key alias="convertedSuccess"><![CDATA[<p>The files have successfully been migrated to your uSync folder, you can now run reports, imports to get the files into uSync</p>]]></key>
+		
+		<!-- status -->
+		<key alias="statusName">Migration name</key>
+		<key alias="statusNameDesc">Name for this migration</key>
+		
+		<key alias="statusSource">uSync Source</key>
+		<key alias="statusSourceDesc">Location of the uSync Files</key>
+		
+		<key alias="statusSite">Site Files</key>
+		<key alias="statusSiteDesc">Location of the folder for additional site files</key>
+
+		<key alias="statusTarget">Target Location</key>
+		<key alias="statusTargetDesc">Where the files will be placed when converted</key>
+
+		<key alias="statusVersion">Detected Version</key>
+		<key alias="statusVersionDesc">Version of uSync files in source location</key>
+
+		<key alias="statusPlan">Migration Plan</key>
+		<key alias="statusDesc">Migration plan to use for conversion</key>
+
+		<!-- migrations list -->
+		<key alias="listName">Name</key>
+		<key alias="listFolder">Folder</key>
+		<key alias="listVersion">Version</key>
+		<key alias="listSiteFiles">Site files</key>
+		<key alias="listConverted">Converted</key>
+		<key alias="listImported">Imported</key>
 	</area>
 </language>

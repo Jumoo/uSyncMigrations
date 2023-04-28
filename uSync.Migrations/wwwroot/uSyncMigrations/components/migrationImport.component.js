@@ -1,141 +1,105 @@
 ﻿(function () {
-    'use strict';
 
-    function migrateController($scope, $q, $timeout,
-        editorService, uSyncHub,
-        uSyncMigrationService, uSync8DashboardService,
-        notificationsService) {
+    var importComponent = {
+        templateUrl: Umbraco.Sys.ServerVariables.application.applicationPath + 'App_Plugins/uSyncMigrations/components/migrationImport.html',
+        bindings: {
+            folder: '<',
+            migrationStatus: '=',
+            onImport: '&',
+            onReport: '&'
+        },
+        controllerAs: 'vm',
+        controller: importController,
+    };
+
+    function importController($q, eventsService,
+        notificationsService, uSyncHub, uSync8DashboardService,
+        uSyncMigrationService) {
 
         var vm = this;
-        vm.showSetup = true;
-        vm.working = false;
-        vm.state = 'init';
-        vm.sourceValid = true;
+        vm.loading = true;
 
-        vm.progress = 'init';
-
-        vm.error = '';
-
-        vm.profile = $scope.model.profile;
-        vm.options = vm.profile.options;
-
-        vm.close = close;
-        vm.migrate = migrate;
-
-        vm.pickSource = pickSource;
-        vm.pickTarget = pickTarget;
-        vm.pickHandlers = pickHandlers;
+        vm.doImport = doImport;
+        vm.doReport = doReport;
 
         vm.$onInit = function () {
+
+            getHandlerGroups();
             InitHub();
-            validateSource(vm.options.sourceVersion, vm.options.source);
-            validate(vm.options);
-            shuffleMessages(vm.messages);
-        };
-
-        //
-
-        function migrate() {
-            vm.showSetup = false; 
-            vm.working = true;
-            vm.state = 'busy';
-            vm.progress = 'migrating'
-
-            doMigrationMessages();
-
-            uSyncMigrationService.migrate(vm.options)
-                .then(function (result) {
-                    vm.state = 'success';
-                    vm.progress = 'migrated';
-                    vm.results = result.data;
-                    vm.working = false;
-                }, function (error) {
-                    vm.state = 'error';
-                    vm.working = false;
-                    vm.error = error.data.ExceptionMessage;
-                    notificationsService.error('error', error.data.ExceptionMessage);
-                })
         }
 
-        /////
+        // work out what import options we have 
+        function getHandlerGroups() {
 
-        function pickSource() {
-            pickFolder(function (folder) {
-                vm.options.source = folder;
-                validateSource(vm.options.sourceVersion, vm.options.source);
-                validate(vm.options);
-            });
-        }
+            vm.groups = [];
 
-        function validateSource(version, source) {
-
-            uSyncMigrationService.validateSource(version, source)
+            uSync8DashboardService.getHandlerGroups('default')
                 .then(function (result) {
-                    vm.sourceValid = result.data.length == 0;
-                    vm.sourceError = result.data;
-                }, function (error) {
-                    vm.error = error.data.ExceptionMessage;
+                    vm.loading = false;
+
+                    var groups = result.data;
+
+                    _.forEach(groups, function (icon, group) {
+
+                        if (group == '_everything') {
+                            vm.groups.push({
+                                icon: 'icon-paper-plane-alt color-deep-orange',
+                                name: 'Everything',
+                                group: '',
+                                state: 'init',
+                                key: 'everything'
+                            });
+                        }
+                        else {
+                            vm.groups.push({
+                                name: group,
+                                group: group,
+                                icon: icon,
+                                key: group.toLowerCase(),
+                                state: 'init'
+                            });
+                        }
+                    });
                 });
         }
 
-        function validate(options) {
-            uSyncMigrationService.validate(options)
-                .then(function (result) {
-                    vm.validation = result.data;
-                }, function (error) {
-                    vm.error = error.data.ExceptionMessage;
-                });
-        }
 
-        function pickTarget() {
-            pickFolder(function (folder) {
-                vm.options.target = folder;
-            });
-        }
+        function doImport(group) {
 
-        function pickFolder(cb) {
-
-            editorService.open({
-                size: 'small',
-                section: "settings",
-                treeAlias: "uSyncFiles",
-                view: "views/common/infiniteeditors/treepicker/treepicker.html",
-                entityType: "file",
-                title: 'Pick a folder',
-                isDialog: true,
-                onlyInitialized: false,
-                filterCssClass: "not-allowed",
-                filter: i => !i.hasChildren,
-                select: node => {
-                    const id = decodeURIComponent(node.id.replace(/\+/g, " "));
-                    cb(id);
-                    editorService.close();
-                },
-                close: () => editorService.close()
-            });
-        }
-
-        function pickHandlers() {
-
-            editorService.open({
-                title: 'Migration Handlers',
-                size: 'small',
-                handlers: vm.options.handlers,
-                view: Umbraco.Sys.ServerVariables.umbracoSettings.appPluginsPath + '/uSyncMigrations/dialogs/handlerPicker.html',
-                submit: function (handlers) {
-                    vm.options.handlers = handlers;
-                    editorService.close();
-                },
-                close: function () {
-                    editorService.close();
-                }
-            });
-        }
-
-        function close() {
-            if ($scope.model.close) {
-                $scope.model.close();
+            if (vm.onImport) {
+                vm.onImport();
             }
+
+            importItems(group);
+        }
+
+        function doReport(group) {
+            if (vm.onReport) {
+                vm.onReport();
+            }
+
+            report(group);
+        }
+
+        function complete(group) {
+
+            if (group.key == 'everything') {
+                _.forEach(vm.groups, function (group) {
+
+                    if (group.key != 'everything') {
+                        vm.migrationStatus.importStatus[group.group] = true;
+                    }
+                });
+            }
+            else {
+                vm.migrationStatus.importStatus[group.group] = true;
+            }
+
+            uSyncMigrationService.saveStatus(vm.migrationStatus)
+                .then(function (result) {
+                    console.log('saved status');
+                });
+
         }
 
 
@@ -151,9 +115,52 @@
 
         vm.savings = {};
 
+        vm.working = false;
+        vm.reported = false;
+        vm.state = 'init';
+        vm.progress = 'init';
         vm.importItems = importItems;
+        vm.report = report;
 
-        function importItems(folder) {
+
+        function report(group) {
+
+            if (vm.working === true) return;
+            vm.progress = 'reporting';
+
+            vm.results = [];
+
+            resetStatus(modes.REPORT);
+            // getWarnings('report');
+            group.state = 'busy';
+
+            var options = {
+                action: 'report',
+                group: group.group,
+                set: vm.currentSet
+            };
+
+            var start = performance.now();
+
+            performAction(options, uSync8DashboardService.reportHandler)
+                .then(function (results) {
+                    vm.working = false;
+                    vm.reported = true;
+                    vm.perf = performance.now() - start;
+                    vm.status.message = 'Report complete';
+                    group.state = 'success';
+
+                    vm.progress = 'completed';
+                }, function (error) {
+                    vm.working = false;
+                    group.state = 'error';
+                    notificationsService.error('Error', error.data.ExceptionMessage ?? error.data.exceptionMessage);
+                });
+        }
+
+        function importItems(group) {
+
+            var folder = vm.folder; 
 
             if (vm.working === true) return;
             vm.progress = 'importing';
@@ -166,7 +173,7 @@
 
             var options = {
                 action: 'import',
-                group: '',
+                group: group.group,
                 force: false,
                 set: 'default',
                 folder: folder
@@ -181,14 +188,15 @@
 
                     uSync8DashboardService.importPost(vm.results, options, getClientId())
                         .then(function (results) {
-                            vm.progress = 'imported';
                             vm.working = false;
                             vm.reported = true;
                             vm.perf = performance.now() - start;
                             group.state = 'success';
                             eventsService.emit('usync-dashboard.import.complete');
-                            // calculateTimeSaved(vm.results);
                             vm.status.message = 'Complete';
+
+                            vm.progress = 'completed';
+                            complete(group);
                         });
                 }, function (error) {
                     vm.working = false;
@@ -351,40 +359,9 @@
 
             return count;
         }
-
-        var messages = [
-            'Rewilding Canada',
-            'Sequesting carbon footprints',
-            'Chlorinating Car Pools',
-            'Partitioning Social Network',
-            'Prelaminating Drywall Inventory',
-            'Blurring Reality Lines',
-            'Reticulating 3 - Dimensional Splines',
-            'Preparing Captive Simulators',
-            'Capacitating Genetic Modifiers',
-            'Destabilizing Orbital Payloads',
-            'Sequencing Cinematic Specifiers',
-            'Branching Family Trees',
-            'Manipulating Modal Memory'
-        ];
-
-        var messageCount = 0;
-
-        function shuffleMessages() {
-            messages = messages.sort(() => (Math.random() > 0.5) ? 1 : -1);
-        }
-
-        function doMigrationMessages() {
-            messageCount = (messageCount + 1) % messages.length;
-            vm.migrationMessage = messages[messageCount];
-            if (vm.progress == 'migrating') {
-                $timeout(function () { doMigrationMessages(); }, 2281);
-            }
-        }
-
-        
     }
 
     angular.module('umbraco')
-        .controller('uSyncMigrateController', migrateController);
+        .component('usyncMigrationImport', importComponent);
+
 })();

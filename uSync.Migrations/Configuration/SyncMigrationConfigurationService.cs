@@ -20,26 +20,26 @@ internal class SyncMigrationConfigurationService : ISyncMigrationConfigurationSe
     private readonly IHostEnvironment _hostEnvironment;
     private readonly ILogger<SyncMigrationConfigurationService> _logger;
     private readonly ISyncMigrationService _migrationService;
-    private readonly SyncMigrationProfileCollection _syncMigrationProfiles;
+    private readonly SyncMigrationProfileCollection _syncMigrationPlans;
 
     public SyncMigrationConfigurationService(
         IHostEnvironment hostEnvironment,
         ILogger<SyncMigrationConfigurationService> logger,
         ISyncMigrationService migrationService,
-        SyncMigrationProfileCollection syncMigrationProfiles)
+        SyncMigrationProfileCollection syncMigrationPlans)
     {
         _hostEnvironment = hostEnvironment;
         _logger = logger;
         _migrationService = migrationService;
-        _syncMigrationProfiles = syncMigrationProfiles;
+        _syncMigrationPlans = syncMigrationPlans;
     }
 
-    public MigrationProfileInfo GetProfiles()
+    public MigrationPlanInfo GetPlans()
     {
         var info = GetCoreInfo();
 
         // if we have more or less than three its custom.
-        if (info.Profiles.Count != 3)
+        if (info.Plans.Count != 3)
         {
             info.HasCustom = true;
         }
@@ -52,29 +52,33 @@ internal class SyncMigrationConfigurationService : ISyncMigrationConfigurationSe
 
             if (custom.Remove != null && custom.Remove.Length > 0)
             {
-                info.Profiles = info.Profiles.Where(x => !custom.Remove.InvariantContains(x.Name))
+                info.Plans = info.Plans.Where(x => !custom.Remove.InvariantContains(x.Name))
                     .ToList();
             }
 
-            if (custom.Profiles != null && custom.Profiles.Count > 0)
+            if (custom.Plans != null && custom.Plans.Count > 0)
             {
-                info.Profiles.AddRange(custom.Profiles);
+                info.Plans.AddRange(custom.Plans);
             }
         }
 
-        info.Profiles = info.Profiles.OrderBy(x => x.Order).ToList();
+        info.Plans = info.Plans.OrderBy(x => x.Order).ToList();
         return info;
     }
 
-	public IEnumerable<ISyncMigrationProfile> GetProfiles(string groupAlias)
-        => GetProfiles().Profiles.Where(x => x.Options.Group.Equals(groupAlias, StringComparison.OrdinalIgnoreCase));
+	public IEnumerable<ISyncMigrationPlan> GetPlans(string groupAlias)
+        => GetPlans().Plans.Where(x => x.Options.Group.Equals(groupAlias, StringComparison.OrdinalIgnoreCase));
 
-	private MigrationProfileInfo GetCoreInfo() => new MigrationProfileInfo
+
+    public ISyncMigrationPlan? GetPlan(string profileName)
+        => GetPlans().Plans.FirstOrDefault(x => x.GetType().Name.Equals(profileName));
+
+	private MigrationPlanInfo GetCoreInfo() => new MigrationPlanInfo
     {
-        Profiles = _syncMigrationProfiles.ToList()
+        Plans = _syncMigrationPlans.ToList()
     };
 
-    private MigratrionProfileConfig? GetLocalProfiles()
+    private MigratrionPlanConfig? GetLocalProfiles()
     {
         try
         {
@@ -83,11 +87,11 @@ internal class SyncMigrationConfigurationService : ISyncMigrationConfigurationSe
             if (File.Exists(profileFile))
             {
                 var content = File.ReadAllText(profileFile);
-                var config = JsonConvert.DeserializeObject<MigratrionProfileConfig>(content);
+                var config = JsonConvert.DeserializeObject<MigratrionPlanConfig>(content);
 
                 if (config != null)
                 {
-                    foreach (var profile in config.Profiles)
+                    foreach (var profile in config.Plans)
                     {
                         if (profile == null || profile.Options == null) continue;
 

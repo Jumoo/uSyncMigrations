@@ -15,7 +15,7 @@ namespace MyMigrations;
 ///  A Custom migration profile, to do things in special ways.
 /// </summary>
 
-public class MyMigrationProfile : ISyncMigrationProfile
+public class MyMigrationProfile : ISyncMigrationPlan
 {
     private readonly SyncMigrationHandlerCollection _migrationHandlers;
 
