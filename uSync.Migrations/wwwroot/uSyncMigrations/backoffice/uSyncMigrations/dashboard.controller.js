@@ -117,6 +117,7 @@
                     vm.state = 'success';
                     vm.step = 'migrated';
                     vm.migrationResults = result.data;
+                    vm.migrationStatus.migrated = true;
                     vm.working = false;
                 }, function (error) {
                     vm.state = 'error';
