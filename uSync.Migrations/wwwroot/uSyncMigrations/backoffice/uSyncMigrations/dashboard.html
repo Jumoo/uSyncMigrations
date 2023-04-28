@@ -1,8 +1,9 @@
 ﻿<div ng-controller="uSyncMigrationDashboardController as vm">
     <umb-editor-view footer="false">
 
-        <umb-editor-header name="'uSync.Migrations'"
-                           hide-description="true"
+        <umb-editor-header name="'uSync.Migrations 🪛'"
+                           description="'You can migrate your own way.'"
+                           description-locked="true"
                            hide-alias="true"
                            hide-icon="true"
                            name-locked="true">
@@ -22,13 +23,6 @@
                                 title="&laquo; back"
                                 style="cursor: pointer;"></umb-box-header>
 
-            </umb-box>
-
-            <umb-box ng-if="vm.step == 'init'">
-                <umb-box-header title-key="usyncmigrate_title"></umb-box-header>
-                <umb-box-content>
-                    <localize key="usyncmigrate_intro"></localize>
-                </umb-box-content>
             </umb-box>
 
             <div ng-if="vm.step == 'init'">
