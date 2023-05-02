@@ -1,0 +1,57 @@
+﻿<div>
+    <div class="usync-group-actions" ng-if="!vm.loading"
+         ng-class="{'usync-working' : vm.working === true}">
+
+        <umb-box class="usync-group-box" ng-repeat="group in vm.groups">
+            <umb-box-content>
+
+                <div class="usync-group-box-title">
+                    <i class="icon {{group.icon}}"></i>
+                    <h2>{{group.name}}</h2>
+                </div>
+                <small><localize key="usync_{{group.key}}-description"></small>
+
+                <div class="usync-group-buttons">
+                    <umb-button button-style="default"
+                                action="vm.doReport(group)"
+                                label="Report"
+                                disabled="vm.working === true"
+                                state="group.state"></umb-button>
+                    <umb-button button-style="success"
+                                action="vm.doImport(group)"
+                                label="Import"
+                                disabled="vm.working === true"
+                                state="group.state"></umb-button>
+                </div>
+            </umb-box-content>
+        </umb-box>
+    </div>
+
+    <!-- importing -->
+    <div ng-if="vm.progress == 'importing' || vm.progress == 'reporting' || vm.progress == 'completed'">
+        <umb-box>
+            <umb-box-content>
+                <usync-progress-view update="vm.update" status="vm.status" hide-labels="false">
+                </usync-progress-view>
+            </umb-box-content>
+        </umb-box>
+    </div>
+
+    <!-- imported -->
+    <div ng-if="vm.progress == 'completed'">
+
+        <umb-box ng-if="!vm.showResults">
+            <umb-box-header title="View Results" ng-click="vm.showResults = !vm.showResults">
+                ({{vm.results.length}}) items
+            </umb-box-header>
+        </umb-box>
+
+        <div ng-if="vm.showResults">
+            <usync-report-view actions="vm.actions"
+                               results="vm.results"
+                               hide-action="true"
+                               hide-link="vm.hideLink">
+            </usync-report-view>
+        </div>
+    </div>
+</div>

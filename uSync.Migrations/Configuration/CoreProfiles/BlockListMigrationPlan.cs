@@ -1,26 +1,25 @@
 ﻿using uSync.Migrations.Composing;
 using uSync.Migrations.Configuration.Models;
-using uSync.Migrations.Migrators.BlockGrid;
 using uSync.Migrations.Migrators.Optional;
 
 namespace uSync.Migrations.Configuration.CoreProfiles;
 
-public class BlockMigrationProfile : ISyncMigrationProfile
+public class BlockListMigrationPlan : ISyncMigrationPlan
 {
     private readonly SyncMigrationHandlerCollection _migrationHandlers;
 
-    public BlockMigrationProfile(SyncMigrationHandlerCollection migrationHandlers)
+    public BlockListMigrationPlan(SyncMigrationHandlerCollection migrationHandlers)
     {
         _migrationHandlers = migrationHandlers;
     }
 
     public int Order => 200;
 
-    public string Name => "Convert to BlockLists and BlockGrid";
+    public string Name => "Convert Nested Content to BlockLists";
 
     public string Icon => "icon-brick color-green";
 
-    public string Description => "Convert Nested content and Grid to BlockList and BlockGrid  (Experimental!)";
+    public string Description => "Convert Nested content to BlockLists";
 
     public MigrationOptions Options => new MigrationOptions
     {
@@ -32,7 +31,6 @@ public class BlockMigrationProfile : ISyncMigrationProfile
         PreferredMigrators = new Dictionary<string, string>
         {
             { UmbConstants.PropertyEditors.Aliases.NestedContent, nameof(NestedToBlockListMigrator) },
-            { UmbConstants.PropertyEditors.Aliases.Grid, nameof(GridToBlockGridMigrator) }
         }
     };
 }

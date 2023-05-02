@@ -8,10 +8,10 @@ namespace uSync.Migrations.Services;
 
 public interface ISyncMigrationService
 {
+    int DetectVersion(string folder);
     IEnumerable<ISyncMigrationHandler> GetHandlers(int version);
     IEnumerable<string> HandlerTypes(int version);
 
     MigrationResults MigrateFiles(MigrationOptions options);
-    MigrationResults Validate(MigrationOptions options);
-    Attempt<string> ValidateMigrationSource(int version, string source);
+    MigrationResults Validate(MigrationOptions? options);
 }

@@ -4,10 +4,10 @@ using Newtonsoft.Json.Serialization;
 namespace uSync.Migrations.Configuration.Models;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-public class MigrationProfileInfo
+public class MigrationPlanInfo
 {
-    public List<ISyncMigrationProfile> Profiles { get; set; }
-        = new List<ISyncMigrationProfile>();
+    public List<ISyncMigrationPlan> Plans { get; set; }
+        = new List<ISyncMigrationPlan>();
 
     public bool HasCustom { get; set; }
 }

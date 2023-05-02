@@ -60,7 +60,7 @@ public static class SyncMigrationsBuilderExtensions
 
         builder
             .WithCollectionBuilder<SyncMigrationProfileCollectionBuilder>()
-                .Add(builder.TypeLoader.GetTypes<ISyncMigrationProfile>());
+                .Add(builder.TypeLoader.GetTypes<ISyncMigrationPlan>());
 
         builder
             .WithCollectionBuilder<SyncMigrationValidatorCollectionBuilder>()
@@ -70,6 +70,7 @@ public static class SyncMigrationsBuilderExtensions
             .WithCollectionBuilder<ArchetypeMigrationConfigurerCollectionBuilder>()
                 .Add(() => builder.TypeLoader.GetTypes<IArchetypeMigrationConfigurer>());
 
+        builder.Services.AddTransient<ISyncMigrationStatusService, SyncMigrationStatusService>();
         builder.Services.AddTransient<ISyncMigrationService, SyncMigrationService>();
         builder.Services.AddTransient<ISyncMigrationConfigurationService, SyncMigrationConfigurationService>();
 

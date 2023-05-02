@@ -1,0 +1,95 @@
+﻿<div>
+    <umb-box>
+        <umb-box-header title="Migration details"></umb-box-header>
+        <umb-box-content>
+            <umb-control-group label="@usyncmigrate_statusName"
+                               description="@usyncmigrate_statusNameDesc">
+                <input type="text" class="umb-textstring umb-property-editor"
+                       ng-model="vm.status.name"
+                       ng-disabled="vm.readonly"/>
+            </umb-control-group>
+        </umb-box-content>
+    </umb-box>
+
+    <umb-box>
+        <umb-box-header title="Folder Locations"
+                        description="locations for the migration">
+        </umb-box-header>
+        <umb-box-content>
+            <umb-control-group label="@usyncmigrate_statusSource"
+                               description="@usyncmigrate_statusSourceDesc">
+
+                <div class="flex justify-between item-center">
+                    <div class="flx-g1 mr2">
+                        <input type="text" class="umb-textstring umb-property-editor"
+                               ng-model="vm.status.source" readonly disabled />
+                    </div>
+
+                    <umb-button ng-if="!vm.readonly"
+                                button-style="action"
+                                size="small"
+                                action="vm.pickSource()"
+                                label-key="general_edit">
+                    </umb-button>
+                </div>
+            </umb-control-group>
+
+            <umb-control-group label="@usyncmigrate_statusSite"
+                               description="@usyncmigrate_statusSiteDesc">
+
+                <div class="flex justify-between item-center">
+                    <div class="flx-g1 mr2">
+                        <input type="text" class="umb-textstring umb-property-editor"
+                               ng-model="vm.status.siteFolder" readonly disabled />
+                    </div>
+                    <umb-button ng-if="!vm.readonly"
+                                button-style="action"
+                                size="small"
+                                action="vm.pickSiteFolder()"
+                                label-key="general_edit">
+                    </umb-button>
+                </div>
+            </umb-control-group>
+
+            <umb-control-group label="@usyncmigrate_statusTarget"
+                               description="@usyncmigrate_statusTargetDesc">
+
+                <div class="flex justify-between items-center">
+                    <div class="flx-g1 mr2">
+                        <input type="text" class="umb-textstring umb-property-editor"
+                               ng-model="vm.status.target" 
+                               ng-disabled="vm.readonly"/>
+                    </div>
+                    <umb-button ng-if="!vm.readonly"
+                                button-style="action"
+                                size="small"
+                                action="vm.pickTarget()"
+                                label-key="general_edit">
+                    </umb-button>
+                </div>
+
+            </umb-control-group>
+        </umb-box-content>
+    </umb-box>
+
+    <umb-box>
+        <umb-box-header title="Info"></umb-box-header>
+        <umb-box-content>
+            <umb-control-group label="@usyncmigrate_statusVersion"
+                               description="@usyncmigrate_statusVersionDesc">
+                <div>{{vm.status.version}}</div>
+                <div ng-if="vm.status.version < 7"
+                     class="color-red">
+                    Unsupported or undetected version
+                </div>
+            </umb-control-group>
+
+            <umb-control-group label="@usyncmigrate_statusPlan"
+                               descriptions="@usyncmigrate_statusPlanDesc">
+                <select ng-model="vm.status.plan"
+                        class="umb-property-editor"
+                        ng-options="k as v for (k,v) in vm.plans"></select>
+            </umb-control-group>
+        </umb-box-content>
+    </umb-box>
+</div>

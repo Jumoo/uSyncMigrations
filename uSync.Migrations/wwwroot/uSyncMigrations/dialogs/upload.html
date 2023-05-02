@@ -1,0 +1,75 @@
+﻿<div ng-controller="uSyncUploadMigrationController as vm">
+    <umb-editor-panel>
+        <umb-editor-header name="'Migration source'"
+                           description="'Select where the migrations are coming from'"
+                           name-locked="true"
+                           description-locked="true"
+                           hide-alias="true"
+                           hide-icon="true"></umb-editor-header>
+
+        <umb-editor-container class="form-horizontal">
+
+            <umb-box>
+                <umb-box-header title="Upload"
+                                description="upload a zip file containing files to migrate">
+                </umb-box-header>
+
+                <umb-box-content>
+                    <div class="usync-group-buttons flex items-center">
+
+                        <div>
+
+                            <input id="migrationupload"
+                                   type="file"
+                                   accept=".zip"
+                                   ngf-select
+                                   ngf-model="filesHolder"
+                                   ngf-change="vm.uploadChange($files, $event)"
+                                   ngf-multipart="true"
+                                   class="usync-import-upload-file" />
+
+                            <label for="migrationupload"
+                                   class="btn btn-default umb-button--xl">
+                                <span ng-if="vm.file == null">Select migration zip</span>
+                                <span ng-if="vm.file != null">{{vm.file.name}}</span>
+                            </label>
+                        </div>
+
+                        <div ng-if="vm.file != null">
+                            <umb-button type="button"
+                                        button-style="action"
+                                        size="xl"
+                                        action="vm.upload(vm.file)"
+                                        label-key="general_upload"
+                                        state="vm.buttonState"
+                                        disabled="vm.buttonState == 'busy'"></umb-button>
+                        </div>
+                    </div>
+
+                </umb-box-content>
+            </umb-box>
+
+            <div box ng-if="vm.uploaded && vm.success">
+                <usync-migration-status status="vm.status"></usync-migration-status>
+            </div>
+
+        </umb-editor-container>
+
+        <umb-editor-footer>
+            <umb-editor-footer-content-right>
+
+                <umb-button type="button"
+                            button-style="link"
+                            label-key="general_close"
+                            action="vm.close()"></umb-button>
+
+
+                <umb-button type="button"
+                            button-style="success"
+                            label-key="general_submit"
+                            action="vm.submit()"></umb-button>
+
+            </umb-editor-footer-content-right>
+        </umb-editor-footer>
+    </umb-editor-panel>
+</div>

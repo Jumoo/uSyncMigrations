@@ -1,12 +1,17 @@
 ﻿global using UmbConstants = Umbraco.Cms.Core.Constants;
 global using BackOfficeConstants = uSync.BackOffice.uSyncConstants;
 
+using Org.BouncyCastle.Bcpg.Sig;
+
 namespace uSync.Migrations;
 
 public static class uSyncMigrations
 {
     public const string AppName = "Migrations";
 
+    public const string TreeName = "uSyncMigrations";
+
+    public const string Icon = "icon-filter-arrows";
     public static string AppVersion => typeof(uSyncMigrations).Assembly.GetName().Version?.ToString(3) ?? "10.0.0";
 
     public const string PluginFolder = "/App_Plugins/uSyncMigrations";

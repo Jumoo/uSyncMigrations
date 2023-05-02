@@ -74,9 +74,9 @@ namespace uSync.Migrations.Helpers
                                     var newLinkUrl = "/testing/";
                                     if (umbracoContextReference != null)
                                     {
-                                        IPublishedContentCache contentCache = umbracoContextReference.UmbracoContext.Content;
-                                        IPublishedContent siteRoot = contentCache.GetAtRoot().FirstOrDefault();
-                                        if (siteRoot != null && siteRoot.Children.Any())
+                                        IPublishedContentCache? contentCache = umbracoContextReference.UmbracoContext.Content;
+                                        IPublishedContent? siteRoot = contentCache?.GetAtRoot().FirstOrDefault();
+                                        if (siteRoot != null && siteRoot.Children?.Any() == true)
                                         {
                                             newLinkUrl = (siteRoot?.Children.Where(x => x.Id == nodeId).FirstOrDefault())?.Url() ?? string.Empty;
                                         }
@@ -88,8 +88,8 @@ namespace uSync.Migrations.Helpers
 
                                     if (newLinkUrl == "#")
                                     {
-                                        IPublishedMediaCache mediaCache = umbracoContextReference.UmbracoContext.Media;
-                                        IPublishedContent siteRoot = mediaCache.GetAtRoot().FirstOrDefault();
+                                        IPublishedMediaCache? mediaCache = umbracoContextReference?.UmbracoContext.Media;
+                                        IPublishedContent? siteRoot = mediaCache?.GetAtRoot().FirstOrDefault();
 
                                         var mediaItem = siteRoot?.FirstChild(f => f.Id == nodeId) ?? null;
                                         if (mediaItem != null)
@@ -125,9 +125,10 @@ namespace uSync.Migrations.Helpers
 
                 return html;
             }
-            catch (Exception ex)
+            catch 
             {
-                return null;
+                // log an error ? 
+                return html;
             }
         }
     }

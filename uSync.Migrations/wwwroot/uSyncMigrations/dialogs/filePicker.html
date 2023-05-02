@@ -1,0 +1,35 @@
+﻿<div ng-controller="uSyncFilePickerController as vm">
+    <umb-editor-panel>
+        <umb-editor-header name="'Migration source'"
+                           description="'Select where the migrations are coming from'"
+                           name-locked="true"
+                           description-locked="true"
+                           hide-alias="true"
+                           hide-icon="true"></umb-editor-header>
+
+        <umb-editor-container class="form-horizontal">
+
+            <usync-migration-status status="vm.status"
+                                    is-new="vm.isNew"></usync-migration-status>
+
+        </umb-editor-container>
+
+        <umb-editor-footer>
+            <umb-editor-footer-content-right>
+
+                <umb-button type="button"
+                            button-style="link"
+                            label-key="general_close"
+                            action="vm.close()"></umb-button>
+
+
+                <umb-button ng-if="vm.isValid()"
+                            type="button"
+                            button-style="success"
+                            label-key="general_submit"
+                            action="vm.submit()"></umb-button>
+
+            </umb-editor-footer-content-right>
+        </umb-editor-footer>
+    </umb-editor-panel>
+</div>

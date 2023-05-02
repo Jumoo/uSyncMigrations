@@ -1,6 +1,5 @@
 using NUglify.Helpers;
 
-using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Extensions;
 
@@ -9,7 +8,7 @@ using uSync.Migrations.Composing;
 using uSync.Migrations.Configuration.Models;
 using uSync.Migrations.Context;
 using uSync.Migrations.Handlers;
-using uSync.Migrations.Migrators;
+using uSync.Migrations.Helpers;
 using uSync.Migrations.Migrators.Community.Archetype;
 using uSync.Migrations.Models;
 
@@ -18,6 +17,7 @@ namespace uSync.Migrations.Services;
 internal class SyncMigrationService : ISyncMigrationService
 {
     private readonly ISyncMigrationFileService _migrationFileService;
+
     private readonly SyncMigrationHandlerCollection _migrationHandlers;
     private readonly SyncMigrationValidatorCollection _migrationValidators;
     private readonly uSyncConfigService _usyncConfig;
@@ -49,17 +49,32 @@ internal class SyncMigrationService : ISyncMigrationService
     public IEnumerable<ISyncMigrationHandler> GetHandlers(int version)
         => _migrationHandlers.Where(x => x.SourceVersion == version);
 
-    public Attempt<string> ValidateMigrationSource(int version, string source)   
-        => _migrationFileService.ValdateMigrationSource(version, source);
 
-    /// <summary>
+    public int DetectVersion(string folder)
+    {
+        var uSyncFolder = _migrationFileService.GetMigrationFolder(folder);
+        return MigrationIoHelpers.DetectVersion(uSyncFolder);   
+    }
+
+     /// <summary>
     ///  validate things before we run through them and do an actuall migration.
     /// </summary>
     /// <param name="options"></param>
     /// <returns></returns>
-    public MigrationResults Validate(MigrationOptions options)
+    public MigrationResults Validate(MigrationOptions? options)
     {
+        if (options == null)
+        {
+            return new MigrationResults
+            {
+                MigrationId = Guid.Empty,
+                Success = false,
+                Messages = new MigrationMessage("Fail", "No Options", MigrationMessageType.Error).AsEnumerableOfOne()
+            };
+        }
+
         options.Source = _migrationFileService.GetMigrationFolder(options.Source);
+        options.SourceVersion = MigrationIoHelpers.DetectVersion(options.Source);
 
         var messages = new List<MigrationMessage>();
 
@@ -83,11 +98,14 @@ internal class SyncMigrationService : ISyncMigrationService
         };
     }
 
+
     public MigrationResults MigrateFiles(MigrationOptions options)
     {
         var migrationId = Guid.NewGuid();
         var sourceRoot = _migrationFileService.GetMigrationFolder(options.Source);
         var targetRoot = _migrationFileService.GetMigrationFolder(options.Target);
+
+        // make sure its here.
 
         // TODO: Add notifications for `uSyncMigrationStartingNotification` and `uSyncMigrationCompleteNotification`? [LK]
         // Pass through the context, in case 3rd-party wants to populate/reference it? [LK]
@@ -102,7 +120,7 @@ internal class SyncMigrationService : ISyncMigrationService
 
             var success = results.All(x => x.MessageType != MigrationMessageType.Error);
 
-            if (success == true && results.Count() > 0)
+            if (success == true && results.Any())
             {
                 // if everything works
                 _migrationFileService.CopyMigrationToFolder(migrationId, targetRoot);

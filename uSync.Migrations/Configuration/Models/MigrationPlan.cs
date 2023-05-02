@@ -10,7 +10,7 @@ namespace uSync.Migrations.Configuration.Models;
 /// </summary>
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 [HideFromTypeFinder]
-public class MigrationProfile : ISyncMigrationProfile
+public class MigrationPlan : ISyncMigrationPlan
 {
     public int Version { get; set; } = 7;
 

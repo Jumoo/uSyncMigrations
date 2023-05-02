@@ -3,23 +3,23 @@ using uSync.Migrations.Configuration.Models;
 
 namespace uSync.Migrations.Configuration.CoreProfiles;
 
-public class EverythingMigrationProfile : ISyncMigrationProfile
+public class UpgradeUmbracoSevenPlan : ISyncMigrationPlan
 {
     public int Order => 120;
 
     private readonly SyncMigrationHandlerCollection _migrationHandlers;
 
-    public EverythingMigrationProfile(
+    public UpgradeUmbracoSevenPlan(
         SyncMigrationHandlerCollection migrationHandlers)
     {
         _migrationHandlers = migrationHandlers;
     }
 
-    public string Name => "Everything";
+    public string Name => "Upgrade Plan";
 
     public string Icon => "icon-paper-plane color-orange";
 
-    public string Description => "Migrate everything";
+    public string Description => "Upgrade everything (don't convert)";
 
     public MigrationOptions Options => new MigrationOptions
     {

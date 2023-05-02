@@ -1,0 +1,66 @@
+﻿<div>
+    <umb-box>
+        <umb-box-header title="Existing migrations"
+                        description="Migrations that have been uploaded">
+        </umb-box-header>
+        <umb-box-content>
+            <div class="umb-table" ng-if="vm.migrations.length > 0">
+                <div class="umb-table-head">
+                    <div class="umb-table-row">
+                        <div class="umb-table-cell"></div>
+                        <div class="umb-table-cell"><localize key="usyncmigrate_listName"></localize></div>
+                        <div class="umb-table-cell usync_table_folder"><localize key="usyncmigrate_listFolder"></localize></div>
+                        <div class="umb-table-cell usync-table-check"><localize key="usyncmigrate_listVersion"></localize></div>
+                        <div class="umb-table-cell usync-table-check"><localize key="usyncmigrate_listSiteFiles"></localize></div>
+                        <div class="umb-table-cell usync-table-check"><localize key="usyncmigrate_listConverted"></localize></div>
+                        <div class="umb-table-cell usync-table-check"><localize key="usyncmigrate_listImported"></localize></div>
+                        <div class="umb-table-cell usync-table-migration-buttons"></div>
+                    </div>
+                </div>
+                <div class="umb-table-body">
+                    <div ng-repeat="migration in vm.migrations"
+                         class="umb-table-row">
+                        <div class="umb-table-cell"><i class="icon {{migration.icon}}"></i></div>
+                        <div class="umb-table-cell">{{migration.name}}</div>
+                        <div class="umb-table-cell usync_table_folder">
+                            {{migration.root}} <br />
+                        </div>
+                        <div class="umb-table-cell usync-table-check">{{migration.version}}</div>
+                        <div class="umb-table-cell usync-table-check">
+                            <i class="icon icon-check color-green" ng-if="migration.siteFolder"></i>
+                            <i class="icon icon-wrong color-red" ng-if="!migration.siteFolder"></i>
+                        </div>
+                        <div class="umb-table-cell usync-table-check">
+                            <i class="icon icon-check color-green" ng-if="migration.migrated"></i>
+                            <i class="icon icon-wrong color-red" ng-if="!migration.migrated"></i>
+                        </div>
+                        <div class="umb-table-cell usync-table-check">
+                            <div>
+                                <div ng-repeat="(group, flag) in migration.importStatus">
+                                    <i class="icon icon-check color-green"></i>  {{group}}
+                                </div>
+                            </div>
+                        </div>
+                            <div class="umb-table-cell justify-end usync-table-migration-buttons">
+                                <umb-button action="vm.select(migration)"
+                                            label-key="buttons_select"
+                                            button-style="action"
+                                            size="small"
+                                            type="button"></umb-button>
+                                <umb-button action="vm.remove(migration)"
+                                            label-key="general_remove"
+                                            button-style="danger"
+                                            size="small"
+                                            type="button"></umb-button>
+                            </div>
+                        </div>
+                    </div>
+            </div>
+
+            <umb-empty-state ng-if="vm.migrations.length == 0">
+                <h4>No Existing migrations</h4>
+                <p><small>There are no migrations on disk, pick one of the big <span class="color-green">green</span> buttons above to get started</small></p>
+            </umb-empty-state>
+        </umb-box-content>
+    </umb-box>
+</div>
