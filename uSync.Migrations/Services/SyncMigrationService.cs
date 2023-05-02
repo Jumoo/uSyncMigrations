@@ -61,8 +61,18 @@ internal class SyncMigrationService : ISyncMigrationService
     /// </summary>
     /// <param name="options"></param>
     /// <returns></returns>
-    public MigrationResults Validate(MigrationOptions options)
+    public MigrationResults Validate(MigrationOptions? options)
     {
+        if (options == null)
+        {
+            return new MigrationResults
+            {
+                MigrationId = Guid.Empty,
+                Success = false,
+                Messages = new MigrationMessage("Fail", "No Options", MigrationMessageType.Error).AsEnumerableOfOne()
+            };
+        }
+
         options.Source = _migrationFileService.GetMigrationFolder(options.Source);
         options.SourceVersion = MigrationIoHelpers.DetectVersion(options.Source);
 
@@ -110,7 +120,7 @@ internal class SyncMigrationService : ISyncMigrationService
 
             var success = results.All(x => x.MessageType != MigrationMessageType.Error);
 
-            if (success == true && results.Count() > 0)
+            if (success == true && results.Any())
             {
                 // if everything works
                 _migrationFileService.CopyMigrationToFolder(migrationId, targetRoot);

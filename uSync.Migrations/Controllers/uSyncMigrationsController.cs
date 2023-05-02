@@ -1,15 +1,10 @@
-﻿using Lucene.Net.Search;
-
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-using NUglify.JavaScript.Syntax;
-
-using Umbraco.Cms.Core.Dashboards;
 using Umbraco.Cms.Core.Strings;
 using Umbraco.Cms.Web.BackOffice.Controllers;
 using Umbraco.Extensions;
@@ -19,7 +14,6 @@ using uSync.BackOffice.Services;
 using uSync.Migrations.Configuration;
 using uSync.Migrations.Configuration.CoreProfiles;
 using uSync.Migrations.Configuration.Models;
-using uSync.Migrations.Helpers;
 using uSync.Migrations.Models;
 using uSync.Migrations.Services;
 
@@ -78,9 +72,9 @@ public class uSyncMigrationsController : UmbracoAuthorizedApiController
             var safename = Path.GetFileNameWithoutExtension(file.FileName)
                 .ToSafeFileName(_shortStringHelper) + ".zip";
 
-            var tempFile = Path.Combine(_tempPath, safename);
-
             Directory.CreateDirectory(_tempPath);
+
+            var tempFile = Path.Combine(_tempPath, safename);
 
             using(var stream = new FileStream(tempFile, FileMode.Create))
             {
@@ -156,17 +150,21 @@ public class uSyncMigrationsController : UmbracoAuthorizedApiController
     }
 
     [HttpPost]
-    public MigrationResults Migrate(MigrationStatus status)
+    public MigrationResults? Migrate(MigrationStatus status)
     {
+        if (status?.Plan == null) return null;
+
         var profile = _profileConfigService.GetPlan(status.Plan);
+        if (profile == null) return null;   
+
         var options = _migrationStatusService.ConvertToOptions(status, profile.Options);
 
+        if (options == null) return null;   
         var results = _migrationService.MigrateFiles(options);
 
         if (results.Success)
         {
             status.Migrated = true;
-
             _migrationStatusService.SaveStatus(status.Root, status);
         }
 
@@ -214,6 +212,9 @@ public class uSyncMigrationsController : UmbracoAuthorizedApiController
         var profileName = _migrationStatusService.GetDefaultProfile(8);
         var defaultProfile = _profileConfigService.GetPlan(profileName ?? nameof(BlockMigrationPlan));
 
+        if (defaultProfile == null)
+            throw new KeyNotFoundException(nameof(defaultProfile));
+
         return new MigrationStatus
         {
             Source = defaultProfile.Options.Source,
@@ -256,8 +257,9 @@ public class uSyncMigrationsController : UmbracoAuthorizedApiController
         }
         else
         {
-            var existing = _migrationStatusService.Get(status.Id);
-            if (existing == null) throw new InvalidOperationException("can't find status");
+            _ = _migrationStatusService.Get(status.Id) 
+                ?? throw new InvalidOperationException("can't find status");
+
             _migrationStatusService.SaveStatus(status.Root, status);
         }
 

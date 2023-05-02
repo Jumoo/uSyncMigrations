@@ -13,5 +13,5 @@ public interface ISyncMigrationService
     IEnumerable<string> HandlerTypes(int version);
 
     MigrationResults MigrateFiles(MigrationOptions options);
-    MigrationResults Validate(MigrationOptions options);
+    MigrationResults Validate(MigrationOptions? options);
 }

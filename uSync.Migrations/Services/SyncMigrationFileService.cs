@@ -112,7 +112,7 @@ internal class SyncMigrationFileService : ISyncMigrationFileService
     public void DeleteMigration(string migrationId)
     {
         var migration = GetMigrations()
-            .FirstOrDefault(x => x.Id.Equals(migrationId));
+            .FirstOrDefault(x => x.Id != null && x.Id.Equals(migrationId));
 
         if (migration != null && migration.Root != null)
         {

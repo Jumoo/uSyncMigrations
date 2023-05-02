@@ -1,8 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-using Org.BouncyCastle.Bcpg.Sig;
-
 namespace uSync.Migrations.Models;
 
 /// <summary>

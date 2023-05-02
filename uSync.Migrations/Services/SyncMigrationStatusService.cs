@@ -70,7 +70,7 @@ internal class SyncMigrationStatusService : ISyncMigrationStatusService
     public MigrationStatus? Get(string id)
     {
         return GetAll()
-            .FirstOrDefault(x =>  x.Id.Equals(id));
+            .FirstOrDefault(x => x.Id != null && x.Id.Equals(id));
     }
 
     public MigrationStatus? LoadStatus(string folder)
@@ -134,9 +134,8 @@ internal class SyncMigrationStatusService : ISyncMigrationStatusService
     {
         if (status == null || status.Source == null ) return null;
 
-        // status.Id = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
-
-        status.Id = status.Name.ToSafeFileName(_shortStringHelper);
+        status.Id = status.Name?.ToSafeFileName(_shortStringHelper) ??
+            Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
         status.Version = MigrationIoHelpers.DetectVersion(status.Source);
         status.Root = Path.Combine(_migrateRoot, status.Id);
 
@@ -157,8 +156,10 @@ internal class SyncMigrationStatusService : ISyncMigrationStatusService
     }
 
 
-    public void SaveStatus(string folder, MigrationStatus status)
+    public void SaveStatus(string? folder, MigrationStatus status)
     {
+        if (string.IsNullOrWhiteSpace(folder)) return;
+
         var statusFile = GetStatusFilePath(folder);
         if (File.Exists(statusFile))
             File.Delete(statusFile);
@@ -177,8 +178,10 @@ internal class SyncMigrationStatusService : ISyncMigrationStatusService
         => folder.Substring(_webHostEnvironment.ContentRootPath.Length+1);
  
     
-    public MigrationOptions ConvertToOptions(MigrationStatus status, MigrationOptions defaultOptions)
+    public MigrationOptions? ConvertToOptions(MigrationStatus status, MigrationOptions defaultOptions)
     {
+        if (status.Source == null || status.Target == null) return null;
+
         return new MigrationOptions
         {
             Source = status.Source,
