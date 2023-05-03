@@ -58,8 +58,10 @@ public class VortoMapper : SyncPropertyMigratorBase,
         return null;
     }
 
-    private IDataType? GetWrappedDatatype(IReadOnlyCollection<PreValue> preValues)
+    private IDataType? GetWrappedDatatype(IReadOnlyCollection<PreValue>? preValues)
     {
+        if (preValues == null) return null;
+
         var dataType = preValues.FirstOrDefault(x => x.Alias.Equals("dataType"));
         if (dataType == null) return null;
 
@@ -81,7 +83,7 @@ public class VortoMapper : SyncPropertyMigratorBase,
         {
             var culturedValues = JsonConvert.DeserializeObject<CulturedPropertyValue>(contentProperty.Value);
             return culturedValues != null
-                ? Attempt.Succeed(culturedValues)
+                ? Attempt<CulturedPropertyValue>.Succeed(culturedValues)
                 : Attempt<CulturedPropertyValue>.Fail(new ArgumentNullException("Null value in vorto"));
         }
         catch (Exception ex)

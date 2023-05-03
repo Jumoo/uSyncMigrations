@@ -41,7 +41,7 @@ public class MigratorsContext
 	/// <summary>
 	/// gets the property splitting version of a migrator (if there is one)
 	/// </summary>
-    public ISyncPropertySplittingMigrator TryGetPropertySplittingMigrator(string editorAlias)
+    public ISyncPropertySplittingMigrator? TryGetPropertySplittingMigrator(string editorAlias)
     {
         if (_migrators.TryGetValue(editorAlias, out var migrator)
             && migrator is ISyncPropertySplittingMigrator propertySplittingMigrator)

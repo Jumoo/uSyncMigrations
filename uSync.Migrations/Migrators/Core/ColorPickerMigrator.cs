@@ -17,6 +17,7 @@ public class ColorPickerMigrator : SyncPropertyMigratorBase
     public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
         var config = new ColorPickerConfiguration();
+        if (dataTypeProperty.PreValues == null) return config;
 
         int count = 0;
 
@@ -64,7 +65,9 @@ public class ColorPickerMigrator : SyncPropertyMigratorBase
 
     public override string GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
     {
-        if (contentProperty.Value.DetectIsJson())
+        if (contentProperty.Value == null) return null;
+
+        if (contentProperty.Value.DetectIsJson() == true)
         {
             var legacyValue = JsonConvert.DeserializeObject<ColorItemValue>(contentProperty.Value);
             if (legacyValue == null) return contentProperty.Value;

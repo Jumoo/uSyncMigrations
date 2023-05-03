@@ -137,7 +137,7 @@ public class NestedToBlockListMigrator : SyncPropertyMigratorBase
                         new SyncMigrationContentProperty(
                             row.ContentTypeAlias,
                             property.Key,
-                            row.ContentTypeAlias, property.Value.ToString()), context);
+                            row.ContentTypeAlias, property.Value?.ToString() ?? string.Empty), context);
                 }
                 else
                 {

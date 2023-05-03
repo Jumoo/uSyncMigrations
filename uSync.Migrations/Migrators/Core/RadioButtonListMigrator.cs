@@ -14,6 +14,7 @@ public class RadioButtonListMigrator : SyncPropertyMigratorBase
     public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
         var config = new ValueListConfiguration();
+        if (dataTypeProperty.PreValues == null) return config;
 
         foreach (var item in dataTypeProperty.PreValues)
         {

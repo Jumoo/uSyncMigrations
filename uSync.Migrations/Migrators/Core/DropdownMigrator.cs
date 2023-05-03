@@ -15,6 +15,7 @@ public class DropdownMigrator : SyncPropertyMigratorBase
     public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
         var config = new DropDownFlexibleConfiguration();
+        if (dataTypeProperty.PreValues == null) return config;
 
         foreach (var preValue in dataTypeProperty.PreValues)
         {

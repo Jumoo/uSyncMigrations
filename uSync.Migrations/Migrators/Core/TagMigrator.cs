@@ -16,6 +16,9 @@ public class TagMigrator : SyncPropertyMigratorBase
             Delimiter = '\u0000'
         };
 
+        if (dataTypeProperty.PreValues == null) return config;
+
+
         foreach (var preValue in dataTypeProperty.PreValues)
         {
             switch (preValue.Alias)

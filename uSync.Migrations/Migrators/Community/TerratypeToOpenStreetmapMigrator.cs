@@ -41,8 +41,8 @@ public class TerratypeToOpenStreetmapMigrator : SyncPropertyMigratorBase
                 var xy = cords.Split(",");
                 if (xy.Length == 2)
                 {
-                    defaultJson["marker"]["latitude"] = decimal.Parse(xy[0]);
-                    defaultJson["marker"]["longitude"] = decimal.Parse(xy[1]);
+                    defaultJson["marker"]!["latitude"] = decimal.Parse(xy[0]);
+                    defaultJson["marker"]!["longitude"] = decimal.Parse(xy[1]);
                 }
             }
         }
