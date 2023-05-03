@@ -22,8 +22,10 @@ public abstract class MigratiorTestBase
         _context = new SyncMigrationContext(Guid.NewGuid(), "", 7);
     }
 
-    protected string ConvertResultToJsonTestResult(object value)
+    protected string ConvertResultToJsonTestResult(object? value)
     {
+        if (value == null) return JsonConvert.SerializeObject(string.Empty);
+
         var jsonSerializerSettings = new JsonSerializerSettings()
         {
             ContractResolver = new SyncMigrationsContractResolver(),

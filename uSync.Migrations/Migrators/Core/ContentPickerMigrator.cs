@@ -16,7 +16,7 @@ public class ContentPicker1Migrator : SyncPropertyMigratorBase
     public override string GetDatabaseType(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
         => nameof(ValueStorageType.Ntext);
 
-    public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
+    public override object? GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
         var config = new ContentPickerConfiguration();
 
@@ -29,7 +29,7 @@ public class ContentPicker1Migrator : SyncPropertyMigratorBase
         return config.MapPreValues(dataTypeProperty.PreValues, mappings);
     }
 
-    public override string GetContentValue (SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
+    public override string? GetContentValue (SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
     {
         // A Key should be a UDI
         if (Guid.TryParse(contentProperty.Value, out var guid))

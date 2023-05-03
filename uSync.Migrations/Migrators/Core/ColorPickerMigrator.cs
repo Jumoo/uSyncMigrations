@@ -14,7 +14,7 @@ public class ColorPickerMigrator : SyncPropertyMigratorBase
     public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
         => UmbConstants.PropertyEditors.Aliases.ColorPicker;
 
-    public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
+    public override object? GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
         var config = new ColorPickerConfiguration();
         if (dataTypeProperty.PreValues == null) return config;
@@ -63,7 +63,7 @@ public class ColorPickerMigrator : SyncPropertyMigratorBase
         return config;
     }
 
-    public override string GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
+    public override string? GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
     {
         if (contentProperty.Value == null) return null;
 

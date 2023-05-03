@@ -45,7 +45,7 @@ public class RelatedLinksMigrator : SyncPropertyMigratorBase
     public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
         => UmbConstants.PropertyEditors.Aliases.MultiUrlPicker;
 
-    public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
+    public override object? GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
         var mappings = new Dictionary<string, string>
         {
@@ -55,7 +55,7 @@ public class RelatedLinksMigrator : SyncPropertyMigratorBase
         return new MultiUrlPickerConfiguration().MapPreValues(dataTypeProperty.PreValues, mappings);
     }
 
-    public override string GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
+    public override string? GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
     {
         var links = new List<Link>();
 

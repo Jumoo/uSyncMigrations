@@ -11,15 +11,16 @@ namespace uSync.Migrations.Migrators;
 [SyncMigrator("Imulus.UrlPicker2")]
 public class ImulusUrlPickerToUmbMultiUrlPickerMigrator : SyncPropertyMigratorBase
 {
-    public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
+    public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
+        => UmbConstants.PropertyEditors.Aliases.MultiUrlPicker;
+    
+    public override object? GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
         var config = new MultiUrlPickerConfiguration();
         return config;
     }
-    public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
-    => UmbConstants.PropertyEditors.Aliases.MultiUrlPicker;
 
-    public override string GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
+    public override string? GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
     {
         var urlPicker = JsonConvert.DeserializeObject<UrlPicker>(contentProperty.Value);
 

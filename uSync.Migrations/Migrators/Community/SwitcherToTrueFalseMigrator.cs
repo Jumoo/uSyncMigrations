@@ -11,7 +11,7 @@ public class SwitcherToTrueFalseMigrator : SyncPropertyMigratorBase
     public override string GetEditorAlias(SyncMigrationDataTypeProperty propertyModel, SyncMigrationContext context)
         => UmbConstants.PropertyEditors.Aliases.Boolean;
 
-    public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
+    public override object? GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
         return new TrueFalseConfiguration().MapPreValues(dataTypeProperty.PreValues, new Dictionary<string, string>
         {

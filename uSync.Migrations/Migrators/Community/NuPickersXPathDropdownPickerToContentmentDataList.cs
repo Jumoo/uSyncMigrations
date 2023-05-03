@@ -11,9 +11,9 @@ namespace uSync.Migrations.Migrators.Community
     [SyncMigrator("nuPickers.XmlDropdownPicker")]
     public class NuPickersXPathDropdownPickerToContentmentDataList : NuPickersToContentmentDataListBase
     {
-        public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
+        public override object? GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
         {
-            var nuPickersConfig = JsonConvert.DeserializeObject<NuPickersConfig>(dataTypeProperty.PreValues?.GetPreValueOrDefault("dataSource", string.Empty));
+            var nuPickersConfig = JsonConvert.DeserializeObject<NuPickersConfig>(dataTypeProperty.PreValues.GetPreValueOrDefault("dataSource", string.Empty));
 
             if (nuPickersConfig == null) return null;
 
@@ -53,7 +53,7 @@ namespace uSync.Migrations.Migrators.Community
 
         }
 
-        public override string GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
+        public override string? GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
         {
             if (!string.IsNullOrWhiteSpace(contentProperty.Value))
             {

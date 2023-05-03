@@ -15,9 +15,9 @@ public interface ISyncPropertyMigrator : IDiscoverable
 
     public string GetDatabaseType(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context);
 
-    public object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context);
+    public object? GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context);
 
-    public string GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context);
+    public string? GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context);
 }
 
 

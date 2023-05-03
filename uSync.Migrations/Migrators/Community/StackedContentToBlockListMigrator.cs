@@ -24,7 +24,7 @@ public class StackedContentToBlockListMigrator : SyncPropertyMigratorBase
     public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
         => UmbConstants.PropertyEditors.Aliases.BlockList;
 
-    public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
+    public override object? GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
         var contentTypes = dataTypeProperty.PreValues?.GetPreValueOrDefault("contentTypes", "[]") ?? "[]";
         var maxItems = dataTypeProperty.PreValues?.GetPreValueOrDefault("maxItems", 0) ?? 0;
@@ -58,7 +58,7 @@ public class StackedContentToBlockListMigrator : SyncPropertyMigratorBase
         };
     }
 
-    public override string GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
+    public override string? GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
     {
         if (string.IsNullOrWhiteSpace(contentProperty.Value))
         {

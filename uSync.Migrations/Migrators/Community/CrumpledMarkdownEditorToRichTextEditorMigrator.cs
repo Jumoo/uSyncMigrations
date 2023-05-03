@@ -24,13 +24,13 @@ namespace uSync.Migrations.Migrators.Community
 
         public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
       => UmbConstants.PropertyEditors.Aliases.TinyMce;
-        public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
+        public override object? GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
         {
             var config = new RichTextConfiguration();
             return config;
         }
 
-        public override string GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
+        public override string? GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
         {
             var markdownContent = JsonConvert.DeserializeObject<CrumpledMarkDown>(contentProperty.Value)?.Editor.Content;
 

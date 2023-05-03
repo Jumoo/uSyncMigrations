@@ -11,9 +11,9 @@ namespace uSync.Migrations.Migrators.Community
     [SyncMigrator("nuPickers.XmlCheckBoxPicker")]
     public class NuPickersXPathCheckboxPickerToContentmentDataList : NuPickersToContentmentDataListBase
     {
-        public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
+        public override object? GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
         {
-            var nuPickersConfig = JsonConvert.DeserializeObject<NuPickersXmlConfig>(dataTypeProperty.PreValues?.GetPreValueOrDefault("dataSource", string.Empty));
+            var nuPickersConfig = JsonConvert.DeserializeObject<NuPickersXmlConfig>(dataTypeProperty.PreValues.GetPreValueOrDefault("dataSource", string.Empty));
 
             if (nuPickersConfig == null) return null;
 

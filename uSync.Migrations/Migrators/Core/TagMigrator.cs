@@ -9,7 +9,7 @@ namespace uSync.Migrations.Migrators;
 [SyncMigrator(UmbConstants.PropertyEditors.Aliases.Tags)]
 public class TagMigrator : SyncPropertyMigratorBase
 {
-    public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
+    public override object? GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
         var config = new TagConfiguration
         {

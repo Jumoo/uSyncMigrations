@@ -31,7 +31,7 @@ internal class TrueFalseMigratorTests : MigratiorTestBase
     [Test]
     public override void ConfigValueAsExpected()
     {
-        var configFile = _migrator.GetConfigValues(GetMigrationDataTypeProperty(), _context);
+        var configFile = _migrator!.GetConfigValues(GetMigrationDataTypeProperty(), _context!);
 
         var expected = @"{
   ""Default"": false,
