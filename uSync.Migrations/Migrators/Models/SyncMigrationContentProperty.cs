@@ -24,7 +24,9 @@ public sealed class SyncMigrationContentProperty : SyncMigrationPropertyBase
         string contentTypeAlias,
         string propertyAlias,
         string editorAlias, string? value)
+#pragma warning disable CS0618 // Type or member is obsolete
         : this(editorAlias, value)
+#pragma warning restore CS0618 // Type or member is obsolete
     {
         ContentTypeAlias = contentTypeAlias;
         PropertyAlias = propertyAlias;  

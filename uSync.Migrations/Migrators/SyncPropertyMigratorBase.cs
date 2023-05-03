@@ -62,7 +62,7 @@ public abstract class SyncPropertyMigratorBase : ISyncPropertyMigrator
     public virtual string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
         => string.IsNullOrWhiteSpace(_defaultAlias) ? dataTypeProperty.EditorAlias : _defaultAlias;
 
-    public virtual object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
+    public virtual object? GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
         if (configurationType is not null)
         {
@@ -72,6 +72,6 @@ public abstract class SyncPropertyMigratorBase : ISyncPropertyMigrator
         return dataTypeProperty.PreValues.ConvertPreValuesToJson(false);
     }
 
-    public virtual string GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
+    public virtual string? GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
         => contentProperty.Value;
 }

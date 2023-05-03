@@ -11,7 +11,7 @@ namespace uSync.Migrations.Migrators.Community
     {
         public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
       => UmbConstants.PropertyEditors.Aliases.TextBox;
-        public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
+        public override object? GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
         {
             var config = new TextboxConfiguration();
 

@@ -15,7 +15,7 @@ public class MultiNodeTreePickerMigrator : SyncPropertyMigratorBase
     public override string GetDatabaseType(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
 => nameof(ValueStorageType.Ntext);
 
-    public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
+    public override object? GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
         var config = new MultiNodePickerConfiguration();
 
@@ -32,7 +32,7 @@ public class MultiNodeTreePickerMigrator : SyncPropertyMigratorBase
         return config.MapPreValues(dataTypeProperty.PreValues, mappings);
     }
 
-    public override string GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
+    public override string? GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
     {
         var values = new List<Udi>();
 

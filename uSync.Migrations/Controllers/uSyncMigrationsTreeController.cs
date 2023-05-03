@@ -40,10 +40,14 @@ public class uSyncMigrationsTreeController : TreeController
     protected override ActionResult<TreeNode?> CreateRootNode(FormCollection queryStrings)
     {
         var root = base.CreateRootNode(queryStrings);
-        root.Value.RoutePath = $"{this.SectionAlias}/{uSyncMigrations.TreeName}/dashboard";
-        root.Value.Icon = uSyncMigrations.Icon;
-        root.Value.HasChildren = false;
-        root.Value.MenuUrl = null;
+
+        if (root.Value != null)
+        {
+            root.Value.RoutePath = $"{this.SectionAlias}/{uSyncMigrations.TreeName}/dashboard";
+            root.Value.Icon = uSyncMigrations.Icon;
+            root.Value.HasChildren = false;
+            root.Value.MenuUrl = null;
+        }
 
         return root.Value;
     }

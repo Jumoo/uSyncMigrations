@@ -11,9 +11,9 @@ namespace uSync.Migrations.Migrators.Community;
 [SyncMigrator("nuPickers.EnumDropDownPicker")]
 public class NuPickersEnumDropDownPickerToContentmentDataList : NuPickersToContentmentDataListBase
 {
-    public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
+    public override object? GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
-        var nuPickersConfig = JsonConvert.DeserializeObject<NuPickersEnumConfig>(dataTypeProperty.PreValues?.GetPreValueOrDefault("dataSource", string.Empty));
+        var nuPickersConfig = JsonConvert.DeserializeObject<NuPickersEnumConfig>(dataTypeProperty.PreValues.GetPreValueOrDefault("dataSource", string.Empty));
 
         if (nuPickersConfig == null)
             return null;

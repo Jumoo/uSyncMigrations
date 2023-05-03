@@ -5,6 +5,7 @@ using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Extensions;
+
 using uSync.Migrations.Context;
 using uSync.Migrations.Migrators.Models;
 using uSync.Migrations.Models;
@@ -23,7 +24,7 @@ public class VortoMapper : SyncPropertyMigratorBase,
         _dataTypeService = dataTypeService;
     }
 
-    public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
+    public override object? GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
         => string.Empty;
 
     public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
@@ -58,8 +59,10 @@ public class VortoMapper : SyncPropertyMigratorBase,
         return null;
     }
 
-    private IDataType? GetWrappedDatatype(IReadOnlyCollection<PreValue> preValues)
+    private IDataType? GetWrappedDatatype(IReadOnlyCollection<PreValue>? preValues)
     {
+        if (preValues == null) return null;
+
         var dataType = preValues.FirstOrDefault(x => x.Alias.Equals("dataType"));
         if (dataType == null) return null;
 
@@ -77,11 +80,14 @@ public class VortoMapper : SyncPropertyMigratorBase,
 
     public Attempt<CulturedPropertyValue> GetVariedElements(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
     {
+        if (contentProperty.Value == null) return Attempt<CulturedPropertyValue>.Fail(
+            new ArgumentNullException(nameof(contentProperty.Value)));
+
         try
         {
             var culturedValues = JsonConvert.DeserializeObject<CulturedPropertyValue>(contentProperty.Value);
             return culturedValues != null
-                ? Attempt.Succeed(culturedValues)
+                ? Attempt<CulturedPropertyValue>.Succeed(culturedValues)
                 : Attempt<CulturedPropertyValue>.Fail(new ArgumentNullException("Null value in vorto"));
         }
         catch (Exception ex)

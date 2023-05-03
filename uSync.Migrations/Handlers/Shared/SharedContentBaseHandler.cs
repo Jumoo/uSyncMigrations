@@ -195,7 +195,7 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
 
     protected virtual string MigrateContentValue(SyncMigrationContentProperty migrationProperty, SyncMigrationContext context)
     {
-        if (migrationProperty == null) return string.Empty;
+        if (migrationProperty?.Value == null) return string.Empty;
 
         if (string.IsNullOrWhiteSpace(migrationProperty.EditorAlias)) return migrationProperty.Value;
 

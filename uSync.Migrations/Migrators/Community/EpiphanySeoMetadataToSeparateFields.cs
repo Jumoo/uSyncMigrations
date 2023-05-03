@@ -37,10 +37,14 @@ public class EpiphanySeoMetadataToSeparateFields : SyncPropertyMigratorBase, ISy
         }
 
         var content = JsonConvert.DeserializeObject<SeoMetadata>(migrationProperty.Value);
-        yield return new SplitPropertyContent(Properties[nameof(SeoMetadata.Title)].Alias, content.Title);
-        yield return new SplitPropertyContent(Properties[nameof(SeoMetadata.Description)].Alias, content.Description);
-        yield return new SplitPropertyContent(Properties[nameof(SeoMetadata.NoIndex)].Alias, (content.NoIndex ? 1 : 0).ToString());
-        yield return new SplitPropertyContent(Properties[nameof(SeoMetadata.UrlName)].Alias, content.UrlName);
+
+        if (content != null)
+        {
+            yield return new SplitPropertyContent(Properties[nameof(SeoMetadata.Title)].Alias, content.Title);
+            yield return new SplitPropertyContent(Properties[nameof(SeoMetadata.Description)].Alias, content.Description);
+            yield return new SplitPropertyContent(Properties[nameof(SeoMetadata.NoIndex)].Alias, (content.NoIndex ? 1 : 0).ToString());
+            yield return new SplitPropertyContent(Properties[nameof(SeoMetadata.UrlName)].Alias, content.UrlName);
+        }
     }
 
     public IEnumerable<SplitPropertyInfo> GetSplitProperties(string contentTypeAlias, string propertyAlias, string propertyName, SyncMigrationContext context)

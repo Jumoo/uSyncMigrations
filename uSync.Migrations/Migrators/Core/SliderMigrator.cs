@@ -8,7 +8,7 @@ namespace uSync.Migrations.Migrators;
 [SyncMigrator(UmbConstants.PropertyEditors.Aliases.Slider)]
 public class SliderMigrator : SyncPropertyMigratorBase
 {
-    public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
+    public override object? GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
         var config = new SliderConfiguration();
 

@@ -10,9 +10,9 @@ namespace uSync.Migrations.Migrators.Community
     [SyncMigrator("nuPickers.SqlDropdownPicker")]
     public class NuPickersSqlDropdownPickerToContentmentDataList : NuPickersToContentmentDataListBase
     {
-        public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
+        public override object? GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
         {
-            var nuPickersConfig = JsonConvert.DeserializeObject<NuPickersSqlConfig>(dataTypeProperty.PreValues?.GetPreValueOrDefault("dataSource", string.Empty));
+            var nuPickersConfig = JsonConvert.DeserializeObject<NuPickersSqlConfig>(dataTypeProperty.PreValues?.GetPreValueOrDefault("dataSource", string.Empty) ?? string.Empty);
 
             if (nuPickersConfig == null) return null;
 

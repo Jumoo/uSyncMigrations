@@ -20,7 +20,7 @@ public class NestedContentMigrator : SyncPropertyMigratorBase
     public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
         => UmbConstants.PropertyEditors.Aliases.NestedContent;
 
-    public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
+    public override object? GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
         if (dataTypeProperty?.PreValues == null) return new NestedContentConfiguration();
 
@@ -39,7 +39,7 @@ public class NestedContentMigrator : SyncPropertyMigratorBase
     }
 
     // TODO: [KJ] Nested content GetContentValue (so we can recurse)
-    public override string GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
+    public override string? GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
     {
         if (string.IsNullOrWhiteSpace(contentProperty.Value)) return string.Empty;
 

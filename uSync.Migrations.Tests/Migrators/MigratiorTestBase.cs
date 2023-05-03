@@ -13,8 +13,8 @@ namespace uSync.Migrations.Tests.Migrators;
 
 public abstract class MigratiorTestBase
 {
-    protected SyncMigrationContext _context;
-    protected ISyncPropertyMigrator  _migrator;
+    protected SyncMigrationContext? _context;
+    protected ISyncPropertyMigrator?  _migrator;
 
     [SetUp]
     public virtual void Setup()
@@ -22,8 +22,10 @@ public abstract class MigratiorTestBase
         _context = new SyncMigrationContext(Guid.NewGuid(), "", 7);
     }
 
-    protected string ConvertResultToJsonTestResult(object value)
+    protected string ConvertResultToJsonTestResult(object? value)
     {
+        if (value == null) return JsonConvert.SerializeObject(string.Empty);
+
         var jsonSerializerSettings = new JsonSerializerSettings()
         {
             ContractResolver = new SyncMigrationsContractResolver(),
@@ -40,14 +42,14 @@ public abstract class MigratiorTestBase
 
     protected void DatabaseTypeAsExpectedBase(string expectedType)
     {
-        var databaseType = _migrator.GetDatabaseType(GetMigrationDataTypeProperty(), _context);
+        var databaseType = _migrator!.GetDatabaseType(GetMigrationDataTypeProperty(), _context!);
         Assert.AreEqual(expectedType, databaseType);
     }
 
     public abstract void EditorAliasAsExpected();
     protected void EditorAliasAsExpectedbase(string expectedAlias)
     {
-        var editorAlias = _migrator.GetEditorAlias(GetMigrationDataTypeProperty(), _context);
+        var editorAlias = _migrator!.GetEditorAlias(GetMigrationDataTypeProperty(), _context!);
         Assert.AreEqual(expectedAlias, editorAlias);
     }
 
@@ -56,7 +58,7 @@ public abstract class MigratiorTestBase
 
     protected void ContentValueAsExpecetedBase(string value, string expected)
     {
-        var contentValue = _migrator.GetContentValue(GetMigrationContentProperty(value), _context);
+        var contentValue = _migrator!.GetContentValue(GetMigrationContentProperty(value), _context!);
         Assert.AreEqual(expected, contentValue);
     }
 }

@@ -59,7 +59,7 @@ public class ColourPickerMigratorTests : MigratiorTestBase
     [Test]
     public override void ConfigValueAsExpected()
     {
-        var value = _migrator.GetConfigValues(GetMigrationDataTypeProperty(), _context);
+        var value = _migrator!.GetConfigValues(GetMigrationDataTypeProperty(), _context!);
 
         Assert.AreEqual(_migratedValue, base.ConvertResultToJsonTestResult(value));
     }

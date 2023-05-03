@@ -8,7 +8,7 @@ namespace uSync.Migrations.Migrators;
 [SyncMigrator(UmbConstants.PropertyEditors.Aliases.Decimal)]
 public class DecimalMigrator : SyncPropertyMigratorBase
 {
-    public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
+    public override object? GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
         var item = new JObject();
 

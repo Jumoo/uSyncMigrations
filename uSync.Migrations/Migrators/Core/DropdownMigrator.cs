@@ -12,9 +12,10 @@ namespace uSync.Migrations.Migrators;
 [SyncMigrator("Umbraco.DropDownMultiple")]
 public class DropdownMigrator : SyncPropertyMigratorBase
 {
-    public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
+    public override object? GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
         var config = new DropDownFlexibleConfiguration();
+        if (dataTypeProperty.PreValues == null) return config;
 
         foreach (var preValue in dataTypeProperty.PreValues)
         {
@@ -39,6 +40,8 @@ public class DropdownMigrator : SyncPropertyMigratorBase
         return config;
     }
 
-    public override string GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
-        => JsonConvert.SerializeObject(contentProperty.Value.ToDelimitedList(), Formatting.Indented);
+    public override string? GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
+        => contentProperty.Value == null
+            ? null 
+            : JsonConvert.SerializeObject(contentProperty.Value.ToDelimitedList(), Formatting.Indented);
 }

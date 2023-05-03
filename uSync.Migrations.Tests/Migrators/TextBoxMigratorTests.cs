@@ -22,7 +22,7 @@ internal class TextBoxMigratorTests : MigratiorTestBase
   ""MaxChars"": 128
 }";
 
-        var result = _migrator.GetConfigValues(GetMigrationDataTypeProperty(), _context);
+        var result = _migrator!.GetConfigValues(GetMigrationDataTypeProperty(), _context!);
 
         Assert.AreEqual(expected, ConvertResultToJsonTestResult(result));
     }

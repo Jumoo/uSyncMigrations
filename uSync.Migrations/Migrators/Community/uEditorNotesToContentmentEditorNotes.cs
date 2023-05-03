@@ -10,7 +10,7 @@ namespace uSync.Migrations.Migrators.Community
     {
         public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
       => "Umbraco.Community.Contentment.EditorNotes";
-        public override object GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
+        public override object? GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
         {
             var config = new JObject();
             config = dataTypeProperty.PreValues.ConvertPreValuesToJson(false,new Dictionary<string, string>
