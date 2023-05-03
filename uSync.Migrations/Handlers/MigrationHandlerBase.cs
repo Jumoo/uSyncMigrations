@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics;
+using System.Reflection;
 using System.Xml.Linq;
 
 using Microsoft.Extensions.Logging;
@@ -81,6 +82,9 @@ internal abstract class MigrationHandlerBase<TObject>
 
     public virtual void PrepareMigrations(SyncMigrationContext context)
     {
+        Stopwatch sw = Stopwatch.StartNew();
+        
+        _logger.LogInformation("[{type}] Preparing Migration {source}", typeof(TObject).Name, context.Metadata.SourceFolder);
         var files = GetSourceFiles(context.Metadata.SourceFolder);
         if (files == null)
         {
@@ -91,7 +95,11 @@ internal abstract class MigrationHandlerBase<TObject>
         {
             var source = XElement.Load(file);   
             PrepareFile(source, context);
+            
         }
+
+        sw.Stop();
+        _logger.LogInformation("[{type}] Migration Prep completed ({elapsed}ms)", typeof(TObject).Name, sw.ElapsedMilliseconds);
     }
 
     // for global prepapre stuff. 
