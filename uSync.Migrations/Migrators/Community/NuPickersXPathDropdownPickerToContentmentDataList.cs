@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Xml.Serialization;
 using Umbraco.Cms.Core;
 using Umbraco.Extensions;
 using uSync.Migrations.Context;
@@ -55,20 +56,89 @@ namespace uSync.Migrations.Migrators.Community
 
         public override string GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
         {
-            if (!string.IsNullOrWhiteSpace(contentProperty.Value))
+           if (!string.IsNullOrWhiteSpace(contentProperty.Value))
             {
-                var guid = context.GetKey(int.Parse(contentProperty.Value));
-                if (guid != Guid.Empty)
+                // The XPath DataList Dropdown can only pick one value
+                // but it isn't limited to being the Integer Node Id, it can be configured to be any property
+                // similarly it's storage isn't guaranteed to be as an integer, it can be CSV, JSON, XML or Relations Only!
+                // without knowing what has been configured (and I understand it's difficult to know from the uSync Content files, but kev is going to have a look at it)
+                // we can only really guess based on the value.
+
+                // first let's see if it's Json, and if it is deserialise into a string
+                // then look for XML
+                // then fall back to TryParse with Int... maybe this logic will be useful in other NuPickers... but they might store multiple values...
+
+                // Is it JSON?
+                string valueToParse = "";
+                if (contentProperty.Value.DetectIsJson())
                 {
-                    var contentUdi = Udi.Create(UmbConstants.UdiEntityType.Document, guid);
-                    return contentUdi.ToString();
+                    var nuPickerValues = JsonConvert.DeserializeObject<IEnumerable<NuPickerValue>>(contentProperty.Value);
+                    if (nuPickerValues != null)
+                    {
+                        var nuPickerValue = nuPickerValues.FirstOrDefault();
+                        if (nuPickerValue != null)
+                        {
+                            valueToParse = nuPickerValue.key;
+                        }
+                    }
+                }
+                else if (contentProperty.Value.Contains("<Picker>"))
+                {
+                    // then this is XML storage
+                    XmlSerializer serializer = new XmlSerializer(typeof(Picker));
+                    Picker picker;
+
+                    using (TextReader reader = new StringReader(contentProperty.Value))
+                    {
+                        picker = (Picker)serializer.Deserialize(reader);
+                    }
+                    valueToParse = picker.PickedItems.FirstOrDefault()?.Key;
+                }
+                else
+                {
+                    // it is a string or an integer as a string
+                    valueToParse = contentProperty.Value;
+                }
+
+                //this will only work if the NuPicker is storing an nodeId
+
+                if (int.TryParse(valueToParse, out int nodeId))
+                {
+                    var guid = context.GetKey(nodeId);
+                    if (guid != Guid.Empty)
+                    {
+                        var contentUdi = Udi.Create(UmbConstants.UdiEntityType.Document, guid);
+                        return contentUdi.ToString();
+                    }
                 }
             }
 
             return string.Empty;
         }
     }
+    internal class NuPickerValue
+    {
+        [XmlElement("key")]
+        public string key { get; set; }
+        [XmlElement("label")]
+        public string label { get; set; }
+    }
 
+    [XmlRoot("Picker")]
+    internal class Picker
+    {
+        [XmlElement("Picked")]
+        public List<Picked> PickedItems { get; set; }
+
+    }
+    internal class Picked
+    {
+        [XmlAttribute("Key")]
+        public string Key { get; set; }
+
+        [XmlText]
+        public string Label { get; set; }
+    }
     internal class NuPickersConfig
     {
         public string ApiController { get; set; }
