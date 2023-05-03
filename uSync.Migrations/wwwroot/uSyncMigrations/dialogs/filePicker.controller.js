@@ -22,8 +22,8 @@
            
         function isValid() {
 
-            if (vm.status.name.length < 1) { return false; }
-            if (vm.status.version < 7) { return false; }
+            if (vm.status.name !== undefined && vm.status.name.length < 1) { return false; }
+            if (vm.status.version !== undefined && vm.status.version < 7) { return false; }
             if (vm.status.source === undefined) { return false; }
 
             return true;

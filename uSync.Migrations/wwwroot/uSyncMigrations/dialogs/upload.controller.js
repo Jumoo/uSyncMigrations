@@ -1,7 +1,7 @@
 ﻿(function () {
     'use strict';
 
-    function uploadController($scope, Upload,
+    function uploadController($scope, Upload, notificationsService,
         overlayService, uSyncMigrationService) {
 
         var vm = this;
