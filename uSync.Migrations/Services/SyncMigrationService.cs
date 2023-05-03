@@ -1,3 +1,7 @@
+using System.Diagnostics;
+
+using Microsoft.Extensions.Logging;
+
 using NUglify.Helpers;
 
 using Umbraco.Cms.Core.Models;
@@ -17,6 +21,7 @@ namespace uSync.Migrations.Services;
 internal class SyncMigrationService : ISyncMigrationService
 {
     private readonly ISyncMigrationFileService _migrationFileService;
+    private readonly ILogger<SyncMigrationService> _logger;
 
     private readonly SyncMigrationHandlerCollection _migrationHandlers;
     private readonly SyncMigrationValidatorCollection _migrationValidators;
@@ -25,6 +30,7 @@ internal class SyncMigrationService : ISyncMigrationService
     private readonly ArchetypeMigrationConfigurerCollection _archetypeConfigurers;
 
     public SyncMigrationService(
+        ILogger<SyncMigrationService> logger,
         ISyncMigrationFileService migrationFileService,
         SyncMigrationHandlerCollection migrationHandlers,
         uSyncConfigService usyncConfig,
@@ -32,6 +38,8 @@ internal class SyncMigrationService : ISyncMigrationService
         SyncPropertyMigratorCollection migrators,
         ArchetypeMigrationConfigurerCollection archetypeConfigurers)
     {
+        _logger = logger;
+
         _migrationFileService = migrationFileService;
         _migrationHandlers = migrationHandlers;
         _usyncConfig = usyncConfig;
@@ -101,11 +109,14 @@ internal class SyncMigrationService : ISyncMigrationService
 
     public MigrationResults MigrateFiles(MigrationOptions options)
     {
+        var sw = Stopwatch.StartNew();
+
         var migrationId = Guid.NewGuid();
         var sourceRoot = _migrationFileService.GetMigrationFolder(options.Source);
         var targetRoot = _migrationFileService.GetMigrationFolder(options.Target);
 
         // make sure its here.
+        _logger.LogInformation("Migrating from {source} to {target}", sourceRoot, targetRoot);
 
         // TODO: Add notifications for `uSyncMigrationStartingNotification` and `uSyncMigrationCompleteNotification`? [LK]
         // Pass through the context, in case 3rd-party wants to populate/reference it? [LK]
@@ -122,10 +133,16 @@ internal class SyncMigrationService : ISyncMigrationService
 
             if (success == true && results.Any())
             {
+                // here...
+                _logger.LogInformation("Copying from working to folder {targetRoot}", targetRoot);
+
                 // if everything works
                 _migrationFileService.CopyMigrationToFolder(migrationId, targetRoot);
                 _migrationFileService.RemoveMigration(migrationId);
             }
+
+            sw.Stop();
+            _logger.LogInformation("Migration Complete {success} {count} ({elapsed}ms)", success, results.Count(), sw.ElapsedMilliseconds);
 
             return new MigrationResults
             {
@@ -151,13 +168,14 @@ internal class SyncMigrationService : ISyncMigrationService
             .OrderBy(x => x.Priority);
     }
 
-    private static IEnumerable<MigrationMessage> MigrateFromDisk(Guid migrationId, string sourceRoot, SyncMigrationContext migrationContext, IOrderedEnumerable<ISyncMigrationHandler> handlers)
+    private IEnumerable<MigrationMessage> MigrateFromDisk(Guid migrationId, string sourceRoot, SyncMigrationContext migrationContext, IOrderedEnumerable<ISyncMigrationHandler> handlers)
     {
         // maybe replace with a Dictionary<string, MigrationMessage> (with `ItemType` as the key)?
         var results = new List<MigrationMessage>();
 
         foreach (var handler in handlers)
         {
+            _logger.LogInformation("Migrating {handler} files", handler.GetType().Name);
             results.AddRange(handler.DoMigration(migrationContext));
         }
 
@@ -166,6 +184,8 @@ internal class SyncMigrationService : ISyncMigrationService
 
     private SyncMigrationContext PrepareContext(Guid migrationId, string sourceRoot, MigrationOptions options)
     {
+        _logger.LogInformation("PrepareContext {id} {source}", migrationId, sourceRoot);
+
         var context = new SyncMigrationContext(migrationId, sourceRoot, options.SourceVersion);
 
         if (options.BlockListViews)
@@ -215,6 +235,8 @@ internal class SyncMigrationService : ISyncMigrationService
 
     private void AddMigrators(SyncMigrationContext context, IDictionary<string,string>? preferredMigrators)
     {
+        _logger.LogInformation("Adding migrators");
+
         var preferredList = _migrators.GetPreferredMigratorList(preferredMigrators);
         if (preferredList != null)
         {
