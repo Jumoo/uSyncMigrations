@@ -137,7 +137,8 @@
             var options = {
                 action: 'report',
                 group: group.group,
-                set: vm.currentSet
+                set: vm.currentSet,
+                folder: vm.folder,
             };
 
             var start = performance.now();
