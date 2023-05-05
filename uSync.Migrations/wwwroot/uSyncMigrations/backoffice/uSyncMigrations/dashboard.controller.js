@@ -128,9 +128,7 @@
         }
 
         function canBeImported() {
-            if (vm.migrationStatus?.migrated == true) { return true; }
-
-            return false; 
+            return (vm.step != 'migrating' && vm.migrationStatus?.migrated == true);
         }
 
         function importing() {

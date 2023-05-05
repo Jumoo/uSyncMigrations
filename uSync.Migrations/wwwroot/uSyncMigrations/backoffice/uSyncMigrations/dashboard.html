@@ -1,5 +1,5 @@
 ﻿<div ng-controller="uSyncMigrationDashboardController as vm">
-    <umb-editor-view footer="false">
+    <umb-editor-view>
 
         <umb-editor-header name="'uSync.Migrations 🪛'"
                            description="'You can migrate your own way.'"
@@ -18,12 +18,6 @@
                 <div><localize key="usyncmigrate_beta"></localize></div>
             </div>
 
-            <umb-box ng-if="vm.step != 'init'">
-                <umb-box-header ng-click="vm.goBack()"
-                                title="&laquo; back"
-                                style="cursor: pointer;"></umb-box-header>
-
-            </umb-box>
 
             <div ng-if="vm.step == 'init'">
                 <div class="usync-group-actions">
@@ -131,11 +125,15 @@
                         </umb-box-content>
                     </umb-box>
 
-                    <usync-migration-results results="vm.validation"
-                                             action="Validation"
-                                             is-valid="vm.sourceValid">
-                    </usync-migration-results>
+
+                    <div ng-if="!vm.migrationStatus.migrated">
+                        <usync-migration-results results="vm.validation"
+                                                 action="Validation"
+                                                 is-valid="vm.sourceValid">
+                        </usync-migration-results>
+                    </div>
                 </div>
+                
                 <div ng-if="vm.sourceValid && !vm.migrationStatus.migrated">
                     <div class="flex justify-center flex-column items-center">
                         <umb-button action="vm.migrate()"
@@ -189,5 +187,15 @@
             </div>
 
         </umb-editor-container>
+
+        <umb-editor-footer>
+            <umb-editor-footer-content-right>
+                    <umb-button ng-if="vm.step != 'init'"
+                                action="vm.goBack()"
+                                label-key="general_back"
+                                icon="icon-arrow-left"
+                                button-style="link"></umb-button>
+            </umb-editor-footer-content-right>
+        </umb-editor-footer>
     </umb-editor-view>
 </div>
