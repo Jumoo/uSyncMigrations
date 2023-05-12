@@ -1,5 +1,5 @@
 ﻿<div ng-controller="uSyncMigrationDashboardController as vm">
-    <umb-editor-view footer="false">
+    <umb-editor-view>
 
         <umb-editor-header name="'uSync.Migrations 🪛'"
                            description="'You can migrate your own way.'"
@@ -11,19 +11,14 @@
 
         <umb-editor-container class="form-horizontal">
 
-            <div class="alert alert-warning flex items-center">
+            <div class="alert alert-warning flex items-center"
+                 style="margin:-20px; margin-bottom: 10px;">
                 <div class="mr2">
                     <umb-icon icon="icon-lab"></umb-icon>
                 </div>
                 <div><localize key="usyncmigrate_beta"></localize></div>
             </div>
 
-            <umb-box ng-if="vm.step != 'init'">
-                <umb-box-header ng-click="vm.goBack()"
-                                title="&laquo; back"
-                                style="cursor: pointer;"></umb-box-header>
-
-            </umb-box>
 
             <div ng-if="vm.step == 'init'">
                 <div class="usync-group-actions">
@@ -96,7 +91,15 @@
                         </umb-box-header>
                         <umb-box-content>
                             <umb-control-group label="@usyncmigrate_statusSource">
-                                <div class="umb-textstring umb-property-editor">{{vm.migrationStatus.source}}</div>
+                                <div class="flex justify-between">
+                                    <div class="umb-textstring umb-property-editor">{{vm.migrationStatus.source}}</div>
+                                    <div>
+                                        <umb-button action="vm.showValidation = !vm.showValidation"
+                                                    label-key="usyncmigrate_showValidation"
+                                                    button-style="link"></umb-button>
+                                                    
+                                    </div>
+                                </div>
                             </umb-control-group>
                             <umb-control-group label="@usyncmigrate_statusVersion">
                                 <div class="umb-textstring umb-property-editor">{{vm.migrationStatus.version}}</div>
@@ -131,11 +134,15 @@
                         </umb-box-content>
                     </umb-box>
 
-                    <usync-migration-results results="vm.validation"
-                                             action="Validation"
-                                             is-valid="vm.sourceValid">
-                    </usync-migration-results>
+
+                    <div ng-if="!vm.migrationStatus.migrated || vm.showValidation">
+                        <usync-migration-results results="vm.validation"
+                                                 action="Validation"
+                                                 is-valid="vm.sourceValid">
+                        </usync-migration-results>
+                    </div>
                 </div>
+                
                 <div ng-if="vm.sourceValid && !vm.migrationStatus.migrated">
                     <div class="flex justify-center flex-column items-center">
                         <umb-button action="vm.migrate()"
@@ -189,5 +196,15 @@
             </div>
 
         </umb-editor-container>
+
+        <umb-editor-footer>
+            <umb-editor-footer-content-left>
+                    <umb-button ng-if="vm.step != 'init'"
+                                action="vm.goBack()"
+                                label-key="general_back"
+                                icon="icon-arrow-left"
+                                button-style="link"></umb-button>
+            </umb-editor-footer-content-left>
+        </umb-editor-footer>
     </umb-editor-view>
 </div>

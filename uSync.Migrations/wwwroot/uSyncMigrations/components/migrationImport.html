@@ -1,10 +1,13 @@
 ﻿<div>
-    <div class="flex justify-center">
-        <h4>[{{vm.folder}}]</h4>
-    </div>
+    <umb-box>
+        <umb-box-content class="flex justify-center">
+            <div>Working folder:</div><div class="ml2"><strong>{{vm.folder}}</strong></div>
+        </umb-box-content>
+    </umb-box>
 
     <div class="usync-group-actions" ng-if="!vm.loading"
          ng-class="{'usync-working' : vm.working === true}">
+
 
         <umb-box class="usync-group-box" ng-repeat="group in vm.groups">
             <umb-box-content>

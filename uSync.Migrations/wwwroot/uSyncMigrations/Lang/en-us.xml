@@ -62,6 +62,8 @@
 		<key alias="statusPlan">Migration Plan</key>
 		<key alias="statusDesc">Migration plan to use for conversion</key>
 
+		<key alias="showValidation">Validation results</key>
+
 		<!-- migrations list -->
 		<key alias="listName">Name</key>
 		<key alias="listFolder">Folder</key>

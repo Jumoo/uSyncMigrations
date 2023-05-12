@@ -13,7 +13,7 @@
         controller: uSyncMigrationResultController
     };
 
-    function uSyncMigrationResultController($scope)
+    function uSyncMigrationResultController($scope, usyncMigrationHelpers)
     {
         var vm = this;
 
@@ -50,6 +50,15 @@
                 vm.showAll = true;
             }
         }
+
+        vm.copyReport = copyReport;
+        function copyReport() {
+            usyncMigrationHelpers.copyResults(vm.results.messages);
+         
+        }
+
+       
+
     }
 
     angular.module('umbraco')
