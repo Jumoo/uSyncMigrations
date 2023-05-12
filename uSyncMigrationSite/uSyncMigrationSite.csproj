@@ -4,6 +4,12 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
+	<ItemGroup>
+	  <Compile Remove="uSync\**" />
+	  <Content Remove="uSync\**" />
+	  <EmbeddedResource Remove="uSync\**" />
+	  <None Remove="uSync\**" />
+	</ItemGroup>
 	
 	<ItemGroup>
 		<PackageReference Include="Umbraco.Cms" Version="10.4.0" />
