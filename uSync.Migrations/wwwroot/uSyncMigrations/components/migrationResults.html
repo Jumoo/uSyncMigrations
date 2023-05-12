@@ -3,13 +3,14 @@
         <umb-box-header title="{{vm.action}} Reuslts"
                         ng-click="vm.showResults = !vm.showResults"
                         style="cursor: pointer;">
-            <div class="flex items-center flx-row">
-                <div class="mr2" ng-if="vm.counts.Success > 0"><i class="icon-check color-green"></i> {{vm.counts.Success}} Passed</div>
-                <div class="mr2" ng-if="vm.counts.Warning > 0"><i class="icon-alert color-orange"></i> {{vm.counts.Warning}} Warnings</div>
-                <div class="mr2" ng-if="vm.counts.Error > 0"><i class="icon-wrong color-red"></i> {{vm.counts.Error}} Errors</div>
-
-                <i ng-if="!vm.showResults" class="icon icon-navigation-down"></i>
-                <i ng-if="vm.showResults" class="icon icon-navigation-up"></i>
+            <div>
+                <div class="flex items-center flx-row">
+                    <div class="mr2" ng-if="vm.counts.Success > 0"><i class="icon-check color-green"></i> {{vm.counts.Success}} Passed</div>
+                    <div class="mr2" ng-if="vm.counts.Warning > 0"><i class="icon-alert color-orange"></i> {{vm.counts.Warning}} Warnings</div>
+                    <div class="mr2" ng-if="vm.counts.Error > 0"><i class="icon-wrong color-red"></i> {{vm.counts.Error}} Errors</div>
+                    <i ng-if="!vm.showResults" class="icon icon-navigation-down"></i>
+                    <i ng-if="vm.showResults" class="icon icon-navigation-up"></i>
+                </div>
             </div>
         </umb-box-header>
         <umb-box-content ng-if="vm.showResults">
@@ -36,6 +37,12 @@
                         <div class="umb-table-cell umb-table__name">{{m.message}}</div>
                     </div>
                 </div>
+            </div>
+
+            <div class="flex justify-end mt2">
+                <umb-button action="vm.copyReport()"
+                            label-key="general_copy"
+                            button-style="link"></umb-button>
             </div>
         </umb-box-content>
     </umb-box>

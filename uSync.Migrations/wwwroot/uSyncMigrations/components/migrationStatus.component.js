@@ -11,7 +11,8 @@
         controller: statusController
     };
 
-    function statusController($scope, editorService, uSyncMigrationService) {
+    function statusController($scope, editorService,
+        uSyncMigrationService) {
 
         var vm = this;
 
@@ -104,8 +105,6 @@
                     vm.plans = result.data;
                 });
         }
-
-
     }
 
     angular.module('umbraco')

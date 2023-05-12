@@ -91,7 +91,15 @@
                         </umb-box-header>
                         <umb-box-content>
                             <umb-control-group label="@usyncmigrate_statusSource">
-                                <div class="umb-textstring umb-property-editor">{{vm.migrationStatus.source}}</div>
+                                <div class="flex justify-between">
+                                    <div class="umb-textstring umb-property-editor">{{vm.migrationStatus.source}}</div>
+                                    <div>
+                                        <umb-button action="vm.showValidation = !vm.showValidation"
+                                                    label-key="usyncmigrate_showValidation"
+                                                    button-style="link"></umb-button>
+                                                    
+                                    </div>
+                                </div>
                             </umb-control-group>
                             <umb-control-group label="@usyncmigrate_statusVersion">
                                 <div class="umb-textstring umb-property-editor">{{vm.migrationStatus.version}}</div>
@@ -127,7 +135,7 @@
                     </umb-box>
 
 
-                    <div ng-if="!vm.migrationStatus.migrated">
+                    <div ng-if="!vm.migrationStatus.migrated || vm.showValidation">
                         <usync-migration-results results="vm.validation"
                                                  action="Validation"
                                                  is-valid="vm.sourceValid">
