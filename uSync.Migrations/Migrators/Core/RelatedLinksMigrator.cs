@@ -36,8 +36,10 @@ public class RelatedLinksMigrator : SyncPropertyMigratorBase
         foreach (Match m in Regex.Matches(value, guidRegEx)) {
             uniqueMatches.Add(m.Value);
         }
+
         foreach (var guid in uniqueMatches) { 
-          value = value.Replace(guid, "\"" + guid + "\"");
+          value = value.Replace(guid, "\"" + guid + "\"")
+                .Replace("\"\"", "\"");
         }
         return value;
     }
