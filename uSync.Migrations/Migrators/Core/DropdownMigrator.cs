@@ -15,6 +15,7 @@ public class DropdownMigrator : SyncPropertyMigratorBase
     public override object? GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
         var config = new DropDownFlexibleConfiguration();
+        if (dataTypeProperty.PreValues == null) return config;
 
         var index = 0;
         foreach (var preValue in dataTypeProperty.PreValues)
@@ -43,6 +44,6 @@ public class DropdownMigrator : SyncPropertyMigratorBase
 
     public override string? GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
         => contentProperty.Value == null
-            ? null
+            ? null 
             : JsonConvert.SerializeObject(contentProperty.Value.ToDelimitedList(), Formatting.Indented);
 }
