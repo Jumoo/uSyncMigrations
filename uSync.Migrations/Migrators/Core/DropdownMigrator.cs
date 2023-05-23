@@ -15,8 +15,8 @@ public class DropdownMigrator : SyncPropertyMigratorBase
     public override object? GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
         var config = new DropDownFlexibleConfiguration();
-        if (dataTypeProperty.PreValues == null) return config;
 
+        var index = 0;
         foreach (var preValue in dataTypeProperty.PreValues)
         {
             if (preValue.Alias.InvariantEquals("multiple"))
@@ -31,10 +31,11 @@ public class DropdownMigrator : SyncPropertyMigratorBase
             {
                 config.Items.Add(new ValueListConfiguration.ValueListItem
                 {
-                    Id = preValue.SortOrder,
+                    Id = index,
                     Value = preValue.Value
                 });
             }
+            index++;
         }
 
         return config;
@@ -42,6 +43,6 @@ public class DropdownMigrator : SyncPropertyMigratorBase
 
     public override string? GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
         => contentProperty.Value == null
-            ? null 
+            ? null
             : JsonConvert.SerializeObject(contentProperty.Value.ToDelimitedList(), Formatting.Indented);
 }
