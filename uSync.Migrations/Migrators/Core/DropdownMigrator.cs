@@ -17,6 +17,7 @@ public class DropdownMigrator : SyncPropertyMigratorBase
         var config = new DropDownFlexibleConfiguration();
         if (dataTypeProperty.PreValues == null) return config;
 
+        var index = 0;
         foreach (var preValue in dataTypeProperty.PreValues)
         {
             if (preValue.Alias.InvariantEquals("multiple"))
@@ -31,10 +32,11 @@ public class DropdownMigrator : SyncPropertyMigratorBase
             {
                 config.Items.Add(new ValueListConfiguration.ValueListItem
                 {
-                    Id = preValue.SortOrder,
+                    Id = index,
                     Value = preValue.Value
                 });
             }
+            index++;
         }
 
         return config;
