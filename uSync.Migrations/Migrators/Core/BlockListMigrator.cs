@@ -98,7 +98,7 @@ public class BlockListMigrator : SyncPropertyMigratorBase
     internal class BlockListLayoutValue
     {
         [JsonProperty("Umbraco.BlockList")]
-        public BlockUdiValue[]? AllowedBlocks { get; set; }
+        public BlockUdiValue[]? BlockOrder { get; set; }
     }
 
     internal class BlockUdiValue
