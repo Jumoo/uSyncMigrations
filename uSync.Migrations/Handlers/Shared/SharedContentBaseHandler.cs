@@ -171,7 +171,7 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
 
             // get editor alias from dtdguid
             var variantDataType = context.DataTypes.GetByDefinition(attempt.Result.DtdGuid);
-            if (variantDataType != null)
+            if (variantDataType != null && attempt.Result.Values != null)
             {
                 foreach (var variation in attempt.Result.Values)
                 {
