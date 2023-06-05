@@ -57,14 +57,21 @@ public class NestedContentMigrator : SyncPropertyMigratorBase
             {
                 var editorAlias = context.ContentTypes.GetEditorAliasByTypeAndProperty(row.ContentTypeAlias, property.Key);
                 if (editorAlias == null) continue;
-                
-                var migrator = context.Migrators.TryGetMigrator(editorAlias.OriginalEditorAlias);
-                if (migrator != null)
+
+                try
                 {
-                    row.RawPropertyValues[property.Key] = migrator.GetContentValue(
-                        new SyncMigrationContentProperty(
-                            row.ContentTypeAlias, property.Key, row.ContentTypeAlias, property.Value?.ToString()),
-                            context);
+                    var migrator = context.Migrators.TryGetMigrator(editorAlias.OriginalEditorAlias);
+                    if (migrator != null)
+                    {
+                        row.RawPropertyValues[property.Key] = migrator.GetContentValue(
+                            new SyncMigrationContentProperty(
+                                row.ContentTypeAlias, property.Key, row.ContentTypeAlias, property.Value?.ToString()),
+                                context);
+                    }
+                }
+                catch(Exception ex)
+                {
+                    throw new Exception($"Nested Error: [{editorAlias.OriginalEditorAlias} -{property.Key}] : {ex.Message}", ex);
                 }
             }
         }
