@@ -53,6 +53,16 @@ public class MyMigrationProfile : ISyncMigrationPlan
 
         // eveything beneath is optional... 
 
+        //PropertyMigrators = new Dictionary<string, string>()
+        //{
+        //    // use the NestedToBlockListMigrator For myProperty in the 'MyContentType' contentType
+        //    { "myContentType_myProperty", nameof(NestedToBlockListMigrator) }, 
+
+        //    // Convert all properties called myGridProperty to blocklist 
+        //    { "myGridProperty", nameof(GridToBlockListMigrator) }
+        //},
+
+
         // add a list of things we don't want to import 
         BlockedItems = new Dictionary<string, List<string>>
         {
