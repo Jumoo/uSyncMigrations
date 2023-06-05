@@ -179,7 +179,16 @@ internal abstract class MigrationHandlerBase<TObject>
             catch(Exception ex)
             {
                 _logger.LogError(ex, "Error while processing {file}", file);
-                throw new Exception($"Error processing {file}", ex);
+
+                var name = Path.Combine(
+                    Path.GetFileNameWithoutExtension(Path.GetDirectoryName(file)) ?? "",
+                    Path.GetFileNameWithoutExtension(file));
+
+                // throw new Exception($"Error processing {file}", ex);
+                messages.Add(new MigrationMessage(ItemType, name, MigrationMessageType.Error)
+                {
+                    Message = ex.Message
+                });
             }
         }
 

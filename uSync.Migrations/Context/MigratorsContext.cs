@@ -10,11 +10,35 @@ namespace uSync.Migrations.Context;
 public class MigratorsContext
 {
 	private Dictionary<string, ISyncPropertyMigrator> _migrators { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+	private Dictionary<string, ISyncPropertyMigrator> _propertyMigrators { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
 	public ISyncPropertyMigrator? TryGetMigrator(string? editorAlias)
 	=> string.IsNullOrEmpty(editorAlias)
 		? null
 		: _migrators.TryGetValue(editorAlias, out var migrator) == true ? migrator : null;
+
+	public ISyncPropertyMigrator? TryGetPropertyAliasMigrator(string? propertyAlias)
+	{
+		if (string.IsNullOrEmpty(propertyAlias)) return null;
+
+        // search for the full pattern
+        if (_propertyMigrators.TryGetValue(propertyAlias, out var migrator))
+            return migrator;
+
+		// if we haven't found - but its a split (contentType_alias) value split the value and look just for the
+		// propertyAlias
+	
+        if (propertyAlias.IndexOf('_') > 0)
+		{
+			var propertyEditorAlias = propertyAlias.Substring(propertyAlias.IndexOf('_') + 1);
+			return _propertyMigrators.TryGetValue(propertyEditorAlias, out var propertyAliasMigrator) == true
+				? propertyAliasMigrator : null;
+		}
+        return null;
+	}
+
+	public ISyncPropertyMigrator? TryGetMigrator(string? propertyAlias, string? editorAlias)
+		=> TryGetPropertyAliasMigrator(propertyAlias) ?? TryGetMigrator(editorAlias);
 
 	/// <summary>
 	///  Add a migrator for a given editorAlias

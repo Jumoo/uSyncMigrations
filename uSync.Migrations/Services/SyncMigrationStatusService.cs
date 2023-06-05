@@ -198,6 +198,7 @@ internal class SyncMigrationStatusService : ISyncMigrationStatusService
             IgnoredPropertiesByContentType = defaultOptions.IgnoredPropertiesByContentType,
             MigrationType = defaultOptions.MigrationType,
             PreferredMigrators = defaultOptions.PreferredMigrators,
+            PropertyMigrators = defaultOptions.PropertyMigrators,
         };
     }
 

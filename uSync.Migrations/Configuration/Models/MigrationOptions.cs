@@ -18,6 +18,16 @@ public class MigrationOptions
 
     public IDictionary<string, string>? PreferredMigrators { get; set; }
 
+    /// <summary>
+    ///  migrators by property name. 
+    /// </summary>
+    /// <remarks>
+    ///  property migrators will be searched by property alias
+    ///  and contentType_propertyAlias, so you can define both 
+    ///  for all properties with a name, or restrict to the content/media type
+    /// </remarks>
+    public IDictionary<string, string>? PropertyMigrators { get; set; }
+
     public bool BlockListViews { get; set; } = true;
 
     public bool BlockCommonTypes { get; set; } = true;

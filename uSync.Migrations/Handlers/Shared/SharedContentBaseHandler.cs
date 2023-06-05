@@ -6,6 +6,7 @@ using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Strings;
 using Umbraco.Extensions;
+
 using uSync.Core;
 using uSync.Migrations.Context;
 using uSync.Migrations.Migrators;
@@ -113,34 +114,45 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
     {
         var editorAlias = context.ContentTypes.GetEditorAliasByTypeAndProperty(contentType, property.Name.LocalName)?.OriginalEditorAlias ?? string.Empty;
 
-        // convert the property .
-
-        var migrationProperty = new SyncMigrationContentProperty(
-            contentType, property.Name.LocalName, editorAlias, property.Value);
-
-        var migrator = context.Migrators.TryGetVariantMigrator(editorAlias);
-        if (migrator != null && itemType == "Content")
+        try
         {
-            // it might be the case that the property needs to be split into variants. 
-            // if this is the case a ISyncVariationPropertyEditor will exist and it can 
-            // split a single value into a collection split by culture
-            var vortoElement = GetVariedValueNode(migrator, contentType, property.Name.LocalName, migrationProperty, context);
-            if (vortoElement != null) return vortoElement.AsEnumerableOfOne();
-        }
 
-        // we might want to split this property into multiple properties
-        var propertySplittingMigrator = context.Migrators.TryGetPropertySplittingMigrator(editorAlias);
-        if (propertySplittingMigrator != null)
-        {
-            var splitElements = GetSplitPropertyValueNodes(propertySplittingMigrator, contentType, property.Name.LocalName, migrationProperty, context);
-            return splitElements;
+            // convert the property .
+            _logger.LogDebug("ConvertPropertyValue: {itemType} {contentType} {editorAlias}", itemType, contentType, editorAlias);
+
+            var migrationProperty = new SyncMigrationContentProperty(
+                contentType, property.Name.LocalName, editorAlias, property.Value);
+
+            var propertyMigrator = context.Migrators.TryGetMigrator(
+                $"{migrationProperty.ContentTypeAlias}_{migrationProperty.PropertyAlias}", migrationProperty.EditorAlias);
+
+            if (propertyMigrator != null)
+            {
+                switch (propertyMigrator)
+                {
+                    case ISyncVariationPropertyMigrator variationPropertyMigrator:
+                        _logger.LogDebug("Variation Migrator {name}", variationPropertyMigrator.GetType().Name);
+                        var variationResult = GetVariedValueNode(variationPropertyMigrator, contentType, property.Name.LocalName, migrationProperty, context);
+                        if (variationResult != null) return variationResult.AsEnumerableOfOne();
+                        break;
+                    case ISyncPropertySplittingMigrator splittingMigrator:
+                        _logger.LogDebug("Splitting migrator {name}", splittingMigrator.GetType().Name);
+                        return GetSplitPropertyValueNodes(splittingMigrator, contentType, property.Name.LocalName, migrationProperty, context);
+                }
+            }
+
+            // default this value doesn't need to be split
+            // and we can 'just' migrate it on its own.
+            var migratedValue = MigrateContentValue(migrationProperty, context);
+            return new XElement(property.Name.LocalName,
+                        new XElement("Value", new XCData(migratedValue))).AsEnumerableOfOne();
         }
-        
-        // or this value doesn't need to be split
-        // and we can 'just' migrate it on its own.
-        var migratedValue = MigrateContentValue(migrationProperty, context);
-        return new XElement(property.Name.LocalName,
-                    new XElement("Value", new XCData(migratedValue))).AsEnumerableOfOne();
+        catch(Exception ex)
+        {
+            _logger.LogWarning("Failed to migrate property [{editorAlias} {property}] {ex}",
+                editorAlias, property.Name.LocalName, ex.Message);
+            throw new Exception($"Failed migrating [{editorAlias} - {property.Name.LocalName}] : {ex.Message}", ex);
+        }
     }
 
     protected virtual IEnumerable<XElement> GetSplitPropertyValueNodes(ISyncPropertySplittingMigrator propertySplittingMigrator, string contentType, string propertyAlias, SyncMigrationContentProperty migrationProperty, SyncMigrationContext context)
@@ -199,7 +211,10 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
 
         if (string.IsNullOrWhiteSpace(migrationProperty.EditorAlias)) return migrationProperty.Value;
 
-        var migrator = context.Migrators.TryGetMigrator(migrationProperty.EditorAlias);
+        var migrator = context.Migrators.TryGetMigrator(
+            $"{migrationProperty.ContentTypeAlias}_{migrationProperty.PropertyAlias}", migrationProperty.EditorAlias);
+
+        // var migrator = context.Migrators.TryGetMigrator(migrationProperty.EditorAlias);
         if (migrator != null)
         {
             return migrator?.GetContentValue(migrationProperty, context) ?? migrationProperty.Value;
