@@ -2,6 +2,7 @@
 using Umbraco.Cms.Core.Composing;
 using uSync.Migrations.Context;
 using uSync.Migrations.Migrators.Models;
+using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Migrators;
 
@@ -55,4 +56,25 @@ public interface ISyncPropertySplittingMigrator
 
 
     IEnumerable<SplitPropertyInfo> GetSplitProperties(string contentTypeAlias, string propertyAlias, string propertyName, SyncMigrationContext context);
+}
+
+/// <summary>
+///  interface to call when we are merging properties together. 
+/// </summary>
+public interface ISyncPropertyMergingMigrator
+{
+    /// <summary>
+    ///  list of content types this merger will work for. 
+    /// </summary>
+    string[] ContentTypes { get; }
+
+    /// <summary>
+    ///  Get what the merged property will be called - and create it.
+    /// </summary>
+    SplitPropertyInfo GetMergedProperty(string contentTypeAlias, string propertyAlias, string propertyName, SyncMigrationContext context);
+
+    /// <summary>
+    ///  get the merged values 
+    /// </summary>
+    string GetMergedContentValues(IEnumerable<MergingPropertyValue> mergingPropertyValues, SyncMigrationContext context);
 }

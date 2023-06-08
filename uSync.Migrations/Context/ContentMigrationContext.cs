@@ -1,15 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
+
+using CSharpTest.Net.Collections;
+
+using uSync.Migrations.Migrators;
+using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Context;
 public class ContentMigrationContext
 {
-
 	private Dictionary<Guid, string> _contentKeys { get; set; } = new();
 	private Dictionary<Guid, string> _contentPaths { get; set; } = new();
+
+	private Dictionary<string, MergingPropertiesConfig> _mergedProperties { get;set; } = new(StringComparer.InvariantCultureIgnoreCase);
 
 	/// <summary>
 	///  add the path for a content item to context. 
@@ -35,4 +42,12 @@ public class ContentMigrationContext
 	public string GetAliasByKey(Guid key)
 		=> _contentKeys?.TryGetValue(key, out var alias) == true ? alias : string.Empty;
 
+
+	public void AddMergedProperty(string contentType, MergingPropertiesConfig config)
+	{
+		_ = _mergedProperties.TryAdd(contentType, config);
+	}
+
+	public MergingPropertiesConfig? GetMergedProperties(string contentType)
+		=> _mergedProperties?.TryGetValue(contentType, out MergingPropertiesConfig? properties) == true ? properties : null;
 }

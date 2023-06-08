@@ -51,6 +51,9 @@ public static class SyncMigrationsBuilderExtensions
             .WithCollectionBuilder<SyncBlockMigratorCollectionBuilder>()
                 .Add(() => builder.TypeLoader.GetTypes<ISyncBlockMigrator>());
         
+        builder
+            .WithCollectionBuilder<SyncPropertyMergingCollectionBuilder>()
+                .Append(builder.TypeLoader.GetTypes<ISyncPropertyMergingMigrator>());
 
         builder.Services.AddTransient<ISyncMigrationFileService, SyncMigrationFileService>();
 
