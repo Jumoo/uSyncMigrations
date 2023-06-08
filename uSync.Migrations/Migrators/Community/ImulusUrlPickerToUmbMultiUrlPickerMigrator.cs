@@ -1,6 +1,8 @@
 ﻿using Newtonsoft.Json;
 using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.PropertyEditors;
+using Umbraco.Extensions;
+
 using uSync.Migrations.Context;
 using uSync.Migrations.Migrators.Models;
 using uSync.Migrations.Migrators.Models.UrlPicker;
@@ -22,46 +24,74 @@ public class ImulusUrlPickerToUmbMultiUrlPickerMigrator : SyncPropertyMigratorBa
 
     public override string? GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
     {
-        var urlPicker = JsonConvert.DeserializeObject<UrlPicker>(contentProperty.Value);
+        if (contentProperty?.Value == null) return contentProperty?.Value;
 
-        var values = new Dictionary<string, string>();
-        if (urlPicker != null)
+        var pickers = GetPickerValues(contentProperty.Value);
+        if (!pickers.Any()) return contentProperty?.Value;
+
+
+        var links = new List<MultiUrlPickerValueEditor.LinkDto>();
+
+        foreach (var picker in pickers)
         {
-            values.Add("name", urlPicker.Value.Meta.Title);
-            bool.TryParse(urlPicker.Value.Meta.NewWindow, out var newWindow);
+            if (picker?.Meta == null || picker.TypeData == null) continue;
 
-            if (newWindow) { values.Add("target", "_blank"); }
+            var link = new MultiUrlPickerValueEditor.LinkDto
+            {
+                Name = picker.Meta.Title ?? ""
+            };
 
-            switch (urlPicker.Value.Type)
+            if (bool.TryParse(picker.Meta.NewWindow, out var newWindow))
+            {
+                if (newWindow) link.Target = "_blank";
+            }
+
+            switch (picker.Type)
             {
                 case UrlPickerTypes.Content:
-
-                    var guid = context.GetKey(int.Parse(urlPicker.Value.TypeData.ContentId));
-                    if (guid != Guid.Empty)
-                    {
-                        var contentUdi = Udi.Create(UmbConstants.UdiEntityType.Document, guid);
-                        values.Add("udi", contentUdi.ToString());
-                    }
-
+                    var contentLink = GetUdiValueFromIntString(picker.TypeData.ContentId, picker.Type, context);
+                    link.Udi = contentLink ?? null;
                     break;
                 case UrlPickerTypes.Media:
-
-                    guid = context.GetKey(int.Parse(urlPicker.Value.TypeData.MediaId));
-                    if (guid != Guid.Empty)
-                    {
-                        var contentUdi = Udi.Create(UmbConstants.UdiEntityType.Media, guid);
-                        values.Add("udi", contentUdi.ToString());
-                    }
+                    var mediaLink = GetUdiValueFromIntString(picker.TypeData.MediaId, picker.Type, context);
+                    link.Udi = mediaLink ?? null;
                     break;
-
                 case UrlPickerTypes.Url:
-                    values.Add("url", urlPicker.Value.TypeData.Url);
+                    link.Url = picker.TypeData.Url ?? null;
                     break;
 
                 default: break;
             }
+
+            links.Add(link);
         }
-        return JsonConvert.SerializeObject(values);
+        return JsonConvert.SerializeObject(links, Formatting.Indented);
+    }
+
+
+    private IEnumerable<UrlPickerValue> GetPickerValues(string? contentValue)
+    {
+        if (contentValue == null) return Enumerable.Empty<UrlPickerValue>();
+
+        if (contentValue.StartsWith("["))
+        {
+            return JsonConvert.DeserializeObject<IEnumerable<UrlPickerValue>>(contentValue) ?? Enumerable.Empty<UrlPickerValue>();
+        }
+
+        return JsonConvert.DeserializeObject<UrlPicker>(contentValue)?.Value.AsEnumerableOfOne() ?? Enumerable.Empty<UrlPickerValue>();
+    }
+
+    private GuidUdi? GetUdiValueFromIntString(string? idValue, UrlPickerTypes pickerType, SyncMigrationContext context) 
+    {
+        if (string.IsNullOrWhiteSpace(idValue)) return null;
+        
+        if (!int.TryParse(idValue, out int valueIntId)) { return null; }       
+
+        var guid = context.GetKey(valueIntId);
+        if (guid == Guid.Empty) return null;
+        
+        var entityType = pickerType == UrlPickerTypes.Content ? UmbConstants.UdiEntityType.Document : UmbConstants.UdiEntityType.Media;
+        return Udi.Create(entityType, guid) as GuidUdi;
     }
 
 }
