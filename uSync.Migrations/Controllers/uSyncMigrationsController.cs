@@ -19,6 +19,8 @@ using uSync.Migrations.Services;
 
 namespace uSync.Migrations.Controllers;
 
+
+[Authorize(Policy = uSyncMigrationsAuthorizationPolicies.MigrationsTreeAccess)]
 public class uSyncMigrationsController : UmbracoAuthorizedApiController
 {
     private readonly IShortStringHelper _shortStringHelper;
@@ -69,14 +71,9 @@ public class uSyncMigrationsController : UmbracoAuthorizedApiController
 
         if (file.Length > 0)
         {
-            var safename = Path.GetFileNameWithoutExtension(file.FileName)
-                .ToSafeFileName(_shortStringHelper) + ".zip";
+            var tempFile = GetSafeTempFileName(file.FileName);
 
-            Directory.CreateDirectory(_tempPath);
-
-            var tempFile = Path.Combine(_tempPath, safename);
-
-            using(var stream = new FileStream(tempFile, FileMode.Create))
+            using (var stream = new FileStream(tempFile, FileMode.Create))
             {
                 await file.CopyToAsync(stream);
             }
@@ -111,15 +108,13 @@ public class uSyncMigrationsController : UmbracoAuthorizedApiController
         throw new Exception("Unsupported");
     }
 
-    private string GetRelativeFolderPath(string folder)
+    private string GetSafeTempFileName(string filename)
     {
-        if (folder.StartsWith(_siteRoot, StringComparison.OrdinalIgnoreCase))
-        {
-            return folder.Substring(_siteRoot.Length+1)
-                .Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-        }
+        var safeFileName = Path.GetFileNameWithoutExtension(filename)
+               .ToSafeFileName(_shortStringHelper) + ".zip";
 
-        return string.Empty;
+        Directory.CreateDirectory(_tempPath);
+        return Path.Combine(_tempPath, safeFileName);
     }
 
 
@@ -141,13 +136,10 @@ public class uSyncMigrationsController : UmbracoAuthorizedApiController
 
     [HttpGet]
     public object GetMigrationOptions(int version)
-    {
-        return new
-        {
+        => new {
             hasPending = true,
             handlers = _migrationService.HandlerTypes(version).Select(x => new HandlerOption { Name = x, Include = false })
         };
-    }
 
     [HttpPost]
     public MigrationResults? Migrate(MigrationStatus status)
@@ -155,11 +147,11 @@ public class uSyncMigrationsController : UmbracoAuthorizedApiController
         if (status?.Plan == null) return null;
 
         var profile = _profileConfigService.GetPlan(status.Plan);
-        if (profile == null) return null;   
+        if (profile == null) return null;
 
         var options = _migrationStatusService.ConvertToOptions(status, profile.Options);
 
-        if (options == null) return null;   
+        if (options == null) return null;
         var results = _migrationService.MigrateFiles(options);
 
         if (results.Success)
@@ -171,8 +163,6 @@ public class uSyncMigrationsController : UmbracoAuthorizedApiController
         return results;
     }
 
-
-
     [HttpGet]
     public IEnumerable<ISyncMigrationPlan> GetProfiles(string groupAlias)
         => _profileConfigService.GetPlans(groupAlias);
@@ -181,7 +171,7 @@ public class uSyncMigrationsController : UmbracoAuthorizedApiController
     public IDictionary<string, string> GetPreferedMigrators(string planName)
     {
         var plan = _profileConfigService.GetPlan(planName);
-        return plan?.Options?.PreferredMigrators ?? new Dictionary<string,string>();
+        return plan?.Options?.PreferredMigrators ?? new Dictionary<string, string>();
     }
 
     [HttpGet]
@@ -234,11 +224,11 @@ public class uSyncMigrationsController : UmbracoAuthorizedApiController
             .GetPlan(status.Plan ?? nameof(UpgradeUmbracoSevenPlan));
 
         if (defaultProfile == null) throw new InvalidOperationException(nameof(defaultProfile));
-        
+
         var options = _migrationStatusService.ConvertToOptions(status, defaultProfile.Options);
         return _migrationService.Validate(options);
     }
-        
+
 
     [HttpGet]
     public IEnumerable<MigrationStatus> GetMigrations()
@@ -257,7 +247,7 @@ public class uSyncMigrationsController : UmbracoAuthorizedApiController
         }
         else
         {
-            _ = _migrationStatusService.Get(status.Id) 
+            _ = _migrationStatusService.Get(status.Id)
                 ?? throw new InvalidOperationException("can't find status");
 
             _migrationStatusService.SaveStatus(status.Root, status);

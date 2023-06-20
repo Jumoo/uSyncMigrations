@@ -41,3 +41,9 @@ public static class uSyncMigrations
         public const int Media = 110;
     }
 }
+
+
+public static class uSyncMigrationsAuthorizationPolicies
+{
+    public const string MigrationsTreeAccess = nameof(MigrationsTreeAccess);
+}

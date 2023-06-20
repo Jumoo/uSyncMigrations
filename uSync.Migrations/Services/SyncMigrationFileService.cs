@@ -62,11 +62,21 @@ internal class SyncMigrationFileService : ISyncMigrationFileService
     public void CopyMigrationToFolder(Guid id, string targetFolder)
         => _uSyncService.ReplaceFiles(GetMigrationFolder(id), targetFolder, false); // NOTE: `true` = clean/delete existing
 
-    public string GetMigrationFolder(string folder)
+    public string GetMigrationFolder(string folder, bool clean)
     {
         var path = Path.Combine(_webHostEnvironment.MapPathContentRoot(folder));
         if (!path.StartsWith(_uSyncRoot, StringComparison.OrdinalIgnoreCase))
             throw new AccessViolationException("Cannot migrate outside the uSync folder");
+
+        if (clean && Directory.Exists(path))
+        {
+            try
+            {
+                Directory.Delete(path, true);
+            }
+            catch { }
+        }
+           
 
         Directory.CreateDirectory(path);
 
