@@ -60,7 +60,7 @@ internal class SyncMigrationService : ISyncMigrationService
 
     public int DetectVersion(string folder)
     {
-        var uSyncFolder = _migrationFileService.GetMigrationFolder(folder);
+        var uSyncFolder = _migrationFileService.GetMigrationFolder(folder, false);
         return MigrationIoHelpers.DetectVersion(uSyncFolder);   
     }
 
@@ -81,7 +81,7 @@ internal class SyncMigrationService : ISyncMigrationService
             };
         }
 
-        options.Source = _migrationFileService.GetMigrationFolder(options.Source);
+        options.Source = _migrationFileService.GetMigrationFolder(options.Source, false);
         options.SourceVersion = MigrationIoHelpers.DetectVersion(options.Source);
 
         var messages = new List<MigrationMessage>();
@@ -112,8 +112,9 @@ internal class SyncMigrationService : ISyncMigrationService
         var sw = Stopwatch.StartNew();
 
         var migrationId = Guid.NewGuid();
-        var sourceRoot = _migrationFileService.GetMigrationFolder(options.Source);
-        var targetRoot = _migrationFileService.GetMigrationFolder(options.Target);
+        var sourceRoot = _migrationFileService.GetMigrationFolder(options.Source, false);
+        var targetRoot = _migrationFileService.GetMigrationFolder(options.Target, true);
+
 
         // make sure its here.
         _logger.LogInformation("Migrating from {source} to {target}", sourceRoot, targetRoot);
