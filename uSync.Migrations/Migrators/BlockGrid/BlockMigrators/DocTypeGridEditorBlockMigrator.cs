@@ -22,7 +22,7 @@ internal class DocTypeGridEditorBlockMigrator : ISyncBlockMigrator
 		_contentTypeService = contentTypeService;
 	}
 
-	public string[] Aliases => new[] { "docType" };
+	public string[] Aliases => new[] { "docType", "doctypegrideditor"};
 
 	/// <summary>
 	///  the DTGE doesn't generate any new content types, 
