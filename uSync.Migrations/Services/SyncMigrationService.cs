@@ -28,6 +28,7 @@ internal class SyncMigrationService : ISyncMigrationService
     private readonly uSyncConfigService _usyncConfig;
     private readonly SyncPropertyMigratorCollection _migrators;
     private readonly ArchetypeMigrationConfigurerCollection _archetypeConfigurers;
+    private readonly SyncPropertyMergingCollection _mergingCollection;
 
     public SyncMigrationService(
         ILogger<SyncMigrationService> logger,
@@ -36,7 +37,8 @@ internal class SyncMigrationService : ISyncMigrationService
         uSyncConfigService usyncConfig,
         SyncMigrationValidatorCollection migrationValidators,
         SyncPropertyMigratorCollection migrators,
-        ArchetypeMigrationConfigurerCollection archetypeConfigurers)
+        ArchetypeMigrationConfigurerCollection archetypeConfigures,
+        SyncPropertyMergingCollection mergingCollection)
     {
         _logger = logger;
 
@@ -45,7 +47,8 @@ internal class SyncMigrationService : ISyncMigrationService
         _usyncConfig = usyncConfig;
         _migrationValidators = migrationValidators;
         _migrators = migrators;
-        _archetypeConfigurers = archetypeConfigurers;
+        _archetypeConfigurers = archetypeConfigures;
+        _mergingCollection = mergingCollection;
     }
 
     public IEnumerable<string> HandlerTypes(int version)
@@ -221,6 +224,8 @@ internal class SyncMigrationService : ISyncMigrationService
 
         AddMigrators(context, options.PreferredMigrators);
 
+        AddMergers(context, options.MergingProperties);
+
         // let the handlers run through their prep (populate all the lookups)
         GetHandlers(options.SourceVersion)?
             .OrderBy(x => x.Priority)
@@ -245,6 +250,25 @@ internal class SyncMigrationService : ISyncMigrationService
             {
                 context.Migrators.AddPropertyMigration(item.EditorAlias, item.Migrator);
             }
+        }
+    }
+
+    private void AddMergers(SyncMigrationContext context, Dictionary<string, MergingPropertiesConfig> mergingProperties)
+    {
+        _logger.LogInformation("Adding property mergers");
+
+        foreach (var mergingProperty in mergingProperties)
+        {
+            // find the merger. 
+            var merger = _mergingCollection.GetByName(mergingProperty.Value.Merger);
+            if (merger == null) continue;
+
+            // add the merger to the context. 
+            _logger.LogInformation("Loading Merger {merger} for {contentType}", merger.GetType().Name, mergingProperty.Key);
+            context.Migrators.AddMergingMigrator(mergingProperty.Key, merger);
+
+            // the merging properties. 
+            context.Content.AddMergedProperty(mergingProperty.Key, mergingProperty.Value);
         }
     }
 }

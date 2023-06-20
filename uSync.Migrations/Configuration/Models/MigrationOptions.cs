@@ -1,6 +1,8 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
+using uSync.Migrations.Models;
+
 namespace uSync.Migrations.Configuration.Models;
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
@@ -50,6 +52,12 @@ public class MigrationOptions
     public List<TabOptions>? ChangeTabs { get; set; }
 
     public string? ArchetypeMigrationConfigurer { get; set; }
+
+    /// <summary>
+    ///  things we might want to merge. 
+    /// </summary>
+    public Dictionary<string, MergingPropertiesConfig> MergingProperties { get; set; } = new(StringComparer.InvariantCultureIgnoreCase);
+
 }
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]

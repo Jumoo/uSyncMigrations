@@ -1,6 +1,9 @@
 ﻿using System.Xml.Linq;
 
+using Microsoft.CodeAnalysis.FlowAnalysis;
 using Microsoft.Extensions.Logging;
+
+using Polly;
 
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
@@ -8,9 +11,12 @@ using Umbraco.Cms.Core.Strings;
 using Umbraco.Extensions;
 
 using uSync.Core;
+using uSync.Migrations.Composing;
 using uSync.Migrations.Context;
+using uSync.Migrations.Extensions;
 using uSync.Migrations.Migrators;
 using uSync.Migrations.Migrators.Models;
+using uSync.Migrations.Models;
 using uSync.Migrations.Services;
 
 namespace uSync.Migrations.Handlers.Shared;
@@ -18,7 +24,7 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
     where TEntity : ContentBase
 {
     protected readonly IShortStringHelper _shortStringHelper;
-    
+   
     protected readonly HashSet<string> _ignoredProperties = new(StringComparer.OrdinalIgnoreCase);
     protected readonly Dictionary<string, string> _mediaTypeAliasForFileExtension = new(StringComparer.OrdinalIgnoreCase);
 
@@ -101,6 +107,11 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
                 propertiesList.Add(newProperty);
             }
         }
+
+        var mergedProperties = context.Content.GetMergedProperties(contentType);
+        if (mergedProperties != null) 
+            MergeContentProperties(contentType, mergedProperties, propertiesList, context);
+            
 
         target.Add(propertiesList);
 
@@ -273,4 +284,87 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
         }
     }
 
+
+    /// <summary>
+    ///  Merge multiple properties into one single property. 
+    /// </summary>
+    /// <remarks>
+    ///     this method gathers the required properties from all the properties, 
+    ///     and then by culture will pass them on to a MergeProperties 'migrator' or something 
+    ///     to do the actual work.
+    /// </remarks>
+    protected virtual void MergeContentProperties(string contentType, MergingPropertiesConfig config, XElement? propertiesElement, SyncMigrationContext context)
+    {
+        // don't do the merge if... 
+        // we can merge all this, but this is readable. 
+        if (propertiesElement == null) return;
+
+        var merger = context.Migrators.GetMergingMigrator(contentType);
+        if (merger == null) return; 
+
+        if (config == null) return;
+        if (!config.MergedProperties.Any()) return;
+
+        var mergingPropertiesByCulture = GetMergingPropertiesByCulture(contentType, config, propertiesElement, context);
+        if (mergingPropertiesByCulture.Count == 0) return; // nothing to merge 
+
+        var targetElement = MergePropertiesToXElement(mergingPropertiesByCulture, merger, config, context);
+        if (targetElement != null)
+            propertiesElement.Add(targetElement);
+
+        if (config.RemoveMergedProperties)
+            propertiesElement.RemoveByName(config.MergedProperties);
+    } 
+
+    /// <summary>
+    ///  get the properties and values that we want to merge sorted by culture. 
+    /// </summary>
+    private Dictionary<string, List<MergingPropertyValue>> GetMergingPropertiesByCulture(string contentType, MergingPropertiesConfig config, XElement propertyElementValues, SyncMigrationContext context)
+    {
+        Dictionary<string, List<MergingPropertyValue>> mergingPropertiesByCulture = new();
+
+        foreach (var property in propertyElementValues.Elements())
+        {
+            if (!config.MergedProperties.InvariantContains(property.Name.LocalName)) continue;
+
+            var editorAlias = context.ContentTypes.GetEditorAliasByTypeAndProperty(contentType, property.Name.LocalName)?.OriginalEditorAlias ?? string.Empty;
+
+            var propertyValuesByCulture = property.GetPropertyValueByCultures();
+            if (propertyValuesByCulture == null) continue;
+
+            foreach (var cultureValue in propertyValuesByCulture)
+            {
+                if (!mergingPropertiesByCulture.ContainsKey(cultureValue.Key))
+                    mergingPropertiesByCulture[cultureValue.Key] = new();
+
+                mergingPropertiesByCulture[cultureValue.Key].Add(
+                    new MergingPropertyValue(property.Name.LocalName, editorAlias, cultureValue.Value));
+            }
+        }
+
+        return mergingPropertiesByCulture;
+    }
+
+    /// <summary>
+    ///  get the merged value and create hte value element required (by culture if needed)
+    /// </summary>
+    private XElement? MergePropertiesToXElement(Dictionary<string, List<MergingPropertyValue>> mergingPropertiesByCulture, ISyncPropertyMergingMigrator merger, MergingPropertiesConfig config, SyncMigrationContext context)
+    {
+        if (merger == null) return null;
+
+        var targetElement = new XElement(config.TargetPropertyAlias);
+        // merge the properties. 
+        foreach (var cultureProperties in mergingPropertiesByCulture)
+        {
+            var mergedValue = merger.GetMergedContentValues(cultureProperties.Value, context);
+            if (string.IsNullOrEmpty(mergedValue)) continue;
+
+            // add this as a value element to the xml
+            targetElement.Add(mergedValue.CreateValueElement(cultureProperties.Key));
+        }
+
+        // add the new target to the element.
+        return targetElement;
+    }
+        
 }
