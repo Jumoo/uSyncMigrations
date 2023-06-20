@@ -46,10 +46,17 @@ public class SyncBlockMigratorCollection
 
 	public ISyncBlockMigrator? GetMigrator(GridValue.GridEditor gridEditor)
 	{
-		var migrator = GetMigrator(gridEditor?.View);
-		if (migrator != null) return migrator;
 
-		migrator = GetMigrator(gridEditor?.Alias);
+        ISyncBlockMigrator? migrator;
+        
+		var viewName = Path.GetFileNameWithoutExtension(gridEditor?.View ?? "");
+		if (!string.IsNullOrWhiteSpace(viewName))
+		{
+            migrator = GetMigrator(viewName);
+            if (migrator != null) return migrator;
+        }
+
+        migrator = GetMigrator(gridEditor?.Alias);
 		if (migrator != null) return migrator;
 
 		return GetDefaultMigrator();
@@ -57,11 +64,17 @@ public class SyncBlockMigratorCollection
 
 	public ISyncBlockMigrator? GetMigrator(IGridEditorConfig editorConfig)
 	{
-		// we look in a number of places when in a grid editor
+        // we look in a number of places when in a grid editor
 
-		// 1. view
-		var migrator = GetMigrator(editorConfig?.View);
-		if (migrator != null) return migrator;
+        ISyncBlockMigrator? migrator;
+
+        // 1. view
+        var viewName = Path.GetFileNameWithoutExtension(editorConfig?.View ?? "");
+		if (!string.IsNullOrWhiteSpace(viewName))
+		{
+			migrator = GetMigrator(viewName);
+			if (migrator != null) return migrator;
+		}
 
 		// 2. alias
 		migrator = GetMigrator(editorConfig?.Alias);
