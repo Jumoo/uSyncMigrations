@@ -10,6 +10,7 @@ using Umbraco.Cms.Web.BackOffice.Authorization;
 using uSync.Migrations.Configuration;
 using uSync.Migrations.Configuration.Models;
 using uSync.Migrations.Handlers;
+using uSync.Migrations.Legacy.Grid;
 using uSync.Migrations.Migrators;
 using uSync.Migrations.Migrators.BlockGrid.BlockMigrators;
 using uSync.Migrations.Migrators.BlockGrid.Extensions;
@@ -45,6 +46,8 @@ public static class SyncMigrationsBuilderExtensions
         }
 
         builder.Services.AddSingleton<GridConventions>();
+
+        builder.Services.AddSingleton<ILegacyGridConfig, LegacyGridConfig>();
 
         builder
             .WithCollectionBuilder<SyncPropertyMigratorCollectionBuilder>()

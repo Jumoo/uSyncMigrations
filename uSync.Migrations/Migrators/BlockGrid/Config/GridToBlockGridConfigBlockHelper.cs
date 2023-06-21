@@ -1,9 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
 
-using Umbraco.Cms.Core.Configuration.Grid;
 using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Extensions;
+
 using uSync.Migrations.Context;
+using uSync.Migrations.Legacy.Grid;
 using uSync.Migrations.Migrators.BlockGrid.BlockMigrators;
 using uSync.Migrations.Migrators.BlockGrid.Extensions;
 
@@ -29,7 +30,7 @@ internal class GridToBlockGridConfigBlockHelper
     {
         // add each thing in the config, as a 'new' doctype
         // the content handler will then either create or ignore these if they are already there. 
-        foreach (var editor in gridToBlockContext.GridConfig.EditorsConfig.Editors)
+        foreach (var editor in gridToBlockContext.GridEditorsConfig.Editors)
         {
             if (editor.View == null)
             {
@@ -64,7 +65,7 @@ internal class GridToBlockGridConfigBlockHelper
     public void AddContentBlocks(GridToBlockGridConfigContext gridBlockContext, SyncMigrationContext context)
     {
         // add the grid elements to the block config 
-        var gridContentTypeKeys = AddGridContentBlocksToConfig(gridBlockContext.GridConfig, gridBlockContext, context);
+        var gridContentTypeKeys = AddGridContentBlocksToConfig(gridBlockContext.GridEditorsConfig, gridBlockContext, context);
 
         // now add the editor to the right bit of the blocks.
         AddEditorsToAllowedAreasInBlocks(gridContentTypeKeys, gridBlockContext, context);
@@ -113,13 +114,13 @@ internal class GridToBlockGridConfigBlockHelper
     /// <summary>
     ///  returns all the allowed/known content types for a section of the grid.
     /// </summary>
-    private Dictionary<string, Guid[]> AddGridContentBlocksToConfig(IGridConfig gridConfig, GridToBlockGridConfigContext gridBlockContext, SyncMigrationContext context)
+    private Dictionary<string, Guid[]> AddGridContentBlocksToConfig(ILegacyGridEditorsConfig gridEditorsConfig, GridToBlockGridConfigContext gridBlockContext, SyncMigrationContext context)
     {
         var referencedEditors = gridBlockContext.AllEditors().ToList();
 
         var allowedContentTypes = new Dictionary<string, Guid[]>();
 
-        foreach (var editor in gridConfig.EditorsConfig.Editors
+        foreach (var editor in gridEditorsConfig.Editors
             .Where(x => referencedEditors.Contains("*") ||
             referencedEditors.InvariantContains(x.Alias)))
         {

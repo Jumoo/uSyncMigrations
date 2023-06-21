@@ -8,9 +8,9 @@ namespace uSync.Migrations.Context;
 /// </summary>
 public class SyncMigrationContext : IDisposable
 {
-    public SyncMigrationContext(Guid migrationId, string sourceFolder, int version)
+    public SyncMigrationContext(Guid migrationId, string sourceFolder, string siteFolder, bool siteIsSite, int version)
     {
-        Metadata = new MigrationContextMetadata(migrationId, sourceFolder, version);
+        Metadata = new MigrationContextMetadata(migrationId, sourceFolder, siteFolder, siteIsSite, version);
     }
 
     /// <summary>
@@ -44,7 +44,7 @@ public class SyncMigrationContext : IDisposable
     /// </summary>
     public TemplateMigratorContext Templates { get; } = new TemplateMigratorContext();
 
-    // generic stuff (applys to all types).
+    // generic stuff (applies to all types).
 
     private HashSet<string> _blockedTypes = new(StringComparer.OrdinalIgnoreCase);
     private Dictionary<int, Guid> _idKeyMap { get; set; } = new();

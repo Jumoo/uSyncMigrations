@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using uSync.Migrations.Migrators;
+﻿using uSync.Migrations.Migrators;
 
 namespace uSync.Migrations.Context;
 public class MigratorsContext
@@ -77,28 +71,28 @@ public class MigratorsContext
 		return null;
 	}
 
-	/// <summary>
-	/// A cache of dictionary items that can be used if you need to store/retrieve custom data between 
-	/// config and content mappings
-	/// </summary>
-	private Dictionary<string, Dictionary<string, object>> _migratorCache = new(StringComparer.OrdinalIgnoreCase);
+    /// <summary>
+    /// A cache of dictionary items that can be used if you need to store/retrieve custom data between 
+    /// config and content mappings
+    /// </summary>
+    private Dictionary<string, Dictionary<string, object>> _migratorCache = new(StringComparer.OrdinalIgnoreCase);
 
 	/// <summary>
 	///  add a dictionary of custom values for this datatype alias.
 	/// </summary>
 	/// <remarks>
-	///  It is the migrators responsibility to make sure this custom set of values is uniqe and 
+	///  It is the migrators responsibility to make sure this custom set of values is unique and 
 	///  does not clash. recommendation is to use the datatype's alias. 
 	/// </remarks>
 	public void AddCustomValues(string alias, Dictionary<string, object> values)
 		=> _ = _migratorCache.TryAdd(alias, values);
 
-	/// <summary>
-	///  retreive a dictionary of custom values.
-	/// </summary>
-	/// <param name="alias"></param>
-	/// <returns></returns>
-	public Dictionary<string, object> GetCustomValues(string alias)
+    /// <summary>
+    ///  retrieve a dictionary of custom values.
+    /// </summary>
+    /// <param name="alias"></param>
+    /// <returns></returns>
+    public Dictionary<string, object> GetCustomValues(string alias)
 		=> _migratorCache.TryGetValue(alias, out Dictionary<string, object>? values)
 			? values : new Dictionary<string, object>();
 

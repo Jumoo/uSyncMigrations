@@ -13,6 +13,7 @@ using Umbraco.Extensions;
 using uSync.BackOffice.Configuration;
 using uSync.Core;
 using uSync.Migrations.Configuration.Models;
+using uSync.Migrations.Context;
 using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Validation;
@@ -25,14 +26,14 @@ internal class VersionValidator : ISyncMigrationValidator
         _webHostEnvironment = webHostEnvironment;
     }
 
-    public IEnumerable<MigrationMessage> Validate(MigrationOptions options)
+    public IEnumerable<MigrationMessage> Validate(SyncValidationContext validationContext)
     {
         // gets us the folder above where uSync saves stuff (usually uSync/v9 so this returns uSync); 
-        var trunkatedPath = options.Source.Substring(_webHostEnvironment.ContentRootPath.Length);
+        var truncatedPath = validationContext.Metadata.SourceFolder.Substring(_webHostEnvironment.ContentRootPath.Length);
 
         return new MigrationMessage("Version", "uSync Folder", MigrationMessageType.Success)
         {
-            Message = $"{trunkatedPath} contains uSync version {options.SourceVersion} files"
+            Message = $"{truncatedPath} contains uSync version {validationContext.Metadata.SourceVersion} files"
         }.AsEnumerableOfOne();
     }
 }

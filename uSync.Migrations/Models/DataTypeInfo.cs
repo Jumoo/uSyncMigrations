@@ -10,5 +10,5 @@ public class DataTypeInfo
 
     public string EditorAlias { get; }
 
-	public string DataTypeName { get; }
+    public string DataTypeName { get; }
 }

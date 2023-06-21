@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 
 using Microsoft.Extensions.Logging;
@@ -25,16 +26,16 @@ internal class SyncMigrationService : ISyncMigrationService
 
     private readonly SyncMigrationHandlerCollection _migrationHandlers;
     private readonly SyncMigrationValidatorCollection _migrationValidators;
-    private readonly uSyncConfigService _usyncConfig;
+    private readonly uSyncConfigService _uSyncConfig;
     private readonly SyncPropertyMigratorCollection _migrators;
-    private readonly ArchetypeMigrationConfigurerCollection _archetypeConfigurers;
+    private readonly ArchetypeMigrationConfigurerCollection _archetypeConfigures;
     private readonly SyncPropertyMergingCollection _mergingCollection;
 
     public SyncMigrationService(
         ILogger<SyncMigrationService> logger,
         ISyncMigrationFileService migrationFileService,
         SyncMigrationHandlerCollection migrationHandlers,
-        uSyncConfigService usyncConfig,
+        uSyncConfigService uSyncConfig,
         SyncMigrationValidatorCollection migrationValidators,
         SyncPropertyMigratorCollection migrators,
         ArchetypeMigrationConfigurerCollection archetypeConfigures,
@@ -44,10 +45,10 @@ internal class SyncMigrationService : ISyncMigrationService
 
         _migrationFileService = migrationFileService;
         _migrationHandlers = migrationHandlers;
-        _usyncConfig = usyncConfig;
+        _uSyncConfig = uSyncConfig;
         _migrationValidators = migrationValidators;
         _migrators = migrators;
-        _archetypeConfigurers = archetypeConfigures;
+        _archetypeConfigures = archetypeConfigures;
         _mergingCollection = mergingCollection;
     }
 
@@ -68,7 +69,7 @@ internal class SyncMigrationService : ISyncMigrationService
     }
 
      /// <summary>
-    ///  validate things before we run through them and do an actuall migration.
+    ///  validate things before we run through them and do an actual migration.
     /// </summary>
     /// <param name="options"></param>
     /// <returns></returns>
@@ -87,13 +88,17 @@ internal class SyncMigrationService : ISyncMigrationService
         options.Source = _migrationFileService.GetMigrationFolder(options.Source, false);
         options.SourceVersion = MigrationIoHelpers.DetectVersion(options.Source);
 
+        var siteFolder = _migrationFileService.GetWebSitePath(options.SiteFolder);
+        var siteFolderIsSameAsWebsite = siteFolder.Equals(_migrationFileService.GetWebSitePath("/"));
+        var validationContext = new SyncValidationContext(options, Guid.Empty, options.Source, siteFolder, siteFolderIsSameAsWebsite, options.SourceVersion);
+
         var messages = new List<MigrationMessage>();
 
         foreach(var validator in _migrationValidators)
         {
             try
             {
-                messages.AddRange(validator.Validate(options));
+                messages.AddRange(validator.Validate(validationContext));
             }
             catch
             {
@@ -117,7 +122,6 @@ internal class SyncMigrationService : ISyncMigrationService
         var migrationId = Guid.NewGuid();
         var sourceRoot = _migrationFileService.GetMigrationFolder(options.Source, false);
         var targetRoot = _migrationFileService.GetMigrationFolder(options.Target, true);
-
 
         // make sure its here.
         _logger.LogInformation("Migrating from {source} to {target}", sourceRoot, targetRoot);
@@ -155,7 +159,6 @@ internal class SyncMigrationService : ISyncMigrationService
                 Messages = results
             };
         }
-
     }
 
     private IOrderedEnumerable<ISyncMigrationHandler> GetHandlers(int sourceVersion, HashSet<string>? itemTypes = null)
@@ -190,11 +193,14 @@ internal class SyncMigrationService : ISyncMigrationService
     {
         _logger.LogInformation("PrepareContext {id} {source}", migrationId, sourceRoot);
 
-        var context = new SyncMigrationContext(migrationId, sourceRoot, options.SourceVersion);
+        var siteFolder = _migrationFileService.GetWebSitePath(options.SiteFolder);
+        var siteFolderIsSameAsWebsite = siteFolder.Equals(_migrationFileService.GetWebSitePath("/"));
+
+        var context = new SyncMigrationContext(migrationId, sourceRoot, siteFolder, siteFolderIsSameAsWebsite, options.SourceVersion);
 
         if (options.BlockListViews)
         {
-            context.AddBlocked(nameof(DataType), UmbConstants.PropertyEditors.Aliases.ListView);
+            context.AddBlocked(nameof(Umbraco.Cms.Core.Models.DataType), UmbConstants.PropertyEditors.Aliases.ListView);
         }
 
         if (options.BlockCommonTypes)
@@ -233,7 +239,7 @@ internal class SyncMigrationService : ISyncMigrationService
             .ForEach(x => x.PrepareMigrations(context));
 
         // add configurer for Archetype migrations
-        context.ContentTypes.ArchetypeMigrationConfigurer = _archetypeConfigurers.FirstOrDefault(c => c.GetType().Name == options.ArchetypeMigrationConfigurer) 
+        context.ContentTypes.ArchetypeMigrationConfigurer = _archetypeConfigures.FirstOrDefault(c => c.GetType().Name == options.ArchetypeMigrationConfigurer) 
             ?? new DefaultArchetypeMigrationConfigurer();
 
         return context;

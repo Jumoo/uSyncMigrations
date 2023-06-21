@@ -11,7 +11,7 @@ public class EditorAliasInfo
 
     public string OriginalEditorAlias { get; }
 
-	public string UpdatedEditorAlias { get; }
+    public string UpdatedEditorAlias { get; }
 
     public Guid? DataTypeDefinition { get; set; }
 }

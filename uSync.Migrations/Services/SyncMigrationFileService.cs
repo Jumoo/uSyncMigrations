@@ -11,7 +11,6 @@ using uSync.BackOffice.Services;
 using uSync.Core;
 using uSync.Migrations.Helpers;
 using uSync.Migrations.Models;
-
 using IHostingEnvironment = Umbraco.Cms.Core.Hosting.IHostingEnvironment;
 
 namespace uSync.Migrations.Services;
@@ -61,6 +60,9 @@ internal class SyncMigrationFileService : ISyncMigrationFileService
 
     public void CopyMigrationToFolder(Guid id, string targetFolder)
         => _uSyncService.ReplaceFiles(GetMigrationFolder(id), targetFolder, false); // NOTE: `true` = clean/delete existing
+
+    public string GetWebSitePath(string folder)
+        => Path.Combine(_webHostEnvironment.MapPathContentRoot(folder));
 
     public string GetMigrationFolder(string folder, bool clean)
     {

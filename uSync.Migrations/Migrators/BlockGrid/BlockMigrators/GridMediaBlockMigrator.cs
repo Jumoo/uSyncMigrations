@@ -1,12 +1,12 @@
 ﻿using Newtonsoft.Json;
 
 using Umbraco.Cms.Core;
-using Umbraco.Cms.Core.Configuration.Grid;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Strings;
 using Umbraco.Extensions;
 
 using uSync.Migrations.Context;
+using uSync.Migrations.Legacy.Grid;
 
 namespace uSync.Migrations.Migrators.BlockGrid.BlockMigrators;
 
@@ -18,7 +18,7 @@ public class GridMediaBlockMigrator : GridBlockMigratorSimpleBase, ISyncBlockMig
 
 	public string[] Aliases => new[] { "media" };
 
-	public override string GetEditorAlias(IGridEditorConfig editor) => "Media Picker";
+	public override string GetEditorAlias(ILegacyGridEditorConfig editor) => "Media Picker";
 
 	public override Dictionary<string, object> GetPropertyValues(GridValue.GridControl control, SyncMigrationContext context)
 	{

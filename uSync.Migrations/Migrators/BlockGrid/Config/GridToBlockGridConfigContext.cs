@@ -1,7 +1,7 @@
-﻿using Umbraco.Cms.Core.Configuration.Grid;
-using Umbraco.Cms.Core.PropertyEditors;
+﻿using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Extensions;
 
+using uSync.Migrations.Legacy.Grid;
 using uSync.Migrations.Migrators.BlockGrid.Extensions;
 
 namespace uSync.Migrations.Migrators.BlockGrid.Config;
@@ -10,14 +10,14 @@ namespace uSync.Migrations.Migrators.BlockGrid.Config;
 ///  lets us pass around the context of our conversion of the block grid. 
 /// </summary>
 /// <remarks>
-///  this makes it much easier to block up the code (espeically around layout/templates)
+///  this makes it much easier to block up the code (especially around layout/templates)
 ///  
-///  i think in a perfect world we will be able to refactor this context out of existantce. 
+///  i think in a perfect world we will be able to refactor this context out of existence. 
 /// </remarks>
 internal class GridToBlockGridConfigContext
 {
     public GridConfiguration GridConfiguration { get; }
-    public IGridConfig GridConfig { get; }
+    public ILegacyGridEditorsConfig GridEditorsConfig { get; }
     public int? GridColumns { get; }
 
     public List<BlockGridConfiguration.BlockGridGroupConfiguration> BlockGroups { get; } = new();
@@ -40,9 +40,9 @@ internal class GridToBlockGridConfigContext
 	};
 
 
-	public GridToBlockGridConfigContext(GridConfiguration gridConfiguration, IGridConfig gridConfig)
+	public GridToBlockGridConfigContext(GridConfiguration gridConfiguration, ILegacyGridEditorsConfig gridConfig)
     {
-        GridConfig = gridConfig;
+        GridEditorsConfig = gridConfig;
         GridConfiguration = gridConfiguration;
         GridColumns = gridConfiguration.GetGridColumns();
 

@@ -23,10 +23,10 @@ public interface ISyncPropertyMigrator : IDiscoverable
 
 
 /// <summary>
-///  interface to impliment if you want to completly replace a datatype with something else ? 
+///  interface to implement if you want to completely replace a datatype with something else ? 
 /// </summary>
 /// <remarks>
-///  if you impliment this then the migrator will not migrate the datatype, but it will
+///  if you implement this then the migrator will not migrate the datatype, but it will
 ///  use the replacement info suppled to make sure all contenttypes and content use the 
 ///  replacement datatype.
 /// </remarks>
@@ -45,7 +45,7 @@ public interface ISyncVariationPropertyMigrator
 }
 
 /// <summary>
-/// interface to implemenet if your property splits up a value into separate properties
+/// interface to implement if your property splits up a value into separate properties
 /// </summary>
 public interface ISyncPropertySplittingMigrator
 {

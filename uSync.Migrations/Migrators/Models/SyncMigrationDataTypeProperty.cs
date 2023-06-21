@@ -1,5 +1,4 @@
 ﻿using System.Collections.ObjectModel;
-
 using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Migrators.Models;

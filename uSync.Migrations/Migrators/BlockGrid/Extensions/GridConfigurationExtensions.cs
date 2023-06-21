@@ -1,12 +1,10 @@
-﻿using System.Text.RegularExpressions;
+﻿using Newtonsoft.Json.Linq;
 
-using Newtonsoft.Json.Linq;
-
-using Umbraco.Cms.Core.Configuration.Grid;
 using Umbraco.Cms.Core.PropertyEditors;
-using Umbraco.Cms.Core.Strings;
 using Umbraco.Extensions;
+
 using uSync.Migrations.Context;
+using uSync.Migrations.Legacy.Grid;
 using uSync.Migrations.Migrators.BlockGrid.BlockMigrators;
 using uSync.Migrations.Migrators.BlockGrid.Models;
 
@@ -36,7 +34,7 @@ internal static class GridConfigurationExtensions
     /// <summary>
     ///  returns all the allowed content type aliases for a given grid editor config block
     /// </summary>
-    public static IEnumerable<string> GetAllowedContentTypeAliasesForBlock(this IGridEditorConfig editorConfig, SyncMigrationContext context, SyncBlockMigratorCollection blockMigrators)
+    public static IEnumerable<string> GetAllowedContentTypeAliasesForBlock(this ILegacyGridEditorConfig editorConfig, SyncMigrationContext context, SyncBlockMigratorCollection blockMigrators)
     {
         // mainly a doctypegrid thing, but also for generic text, rtes
 
@@ -48,7 +46,7 @@ internal static class GridConfigurationExtensions
     /// <summary>
     ///  Converts a GriddEditorConfig into a BlockGridBlock 
     /// </summary>
-    public static IEnumerable<BlockGridConfiguration.BlockGridBlockConfiguration> ConvertToBlockGridBlocks(this IGridEditorConfig editorConfig, SyncMigrationContext context, SyncBlockMigratorCollection blockMigrators, Guid groupKey)
+    public static IEnumerable<BlockGridConfiguration.BlockGridBlockConfiguration> ConvertToBlockGridBlocks(this ILegacyGridEditorConfig editorConfig, SyncMigrationContext context, SyncBlockMigratorCollection blockMigrators, Guid groupKey)
     {
         foreach (var allowedAlias in editorConfig.GetAllowedContentTypeAliasesForBlock(context, blockMigrators))
         {
@@ -70,7 +68,7 @@ internal static class GridConfigurationExtensions
     /// </summary>
     /// <param name="editorConfig"></param>
     /// <returns></returns>
-    public static string GetBlockname(this IGridEditorConfig? editorConfig)
+    public static string GetBlockname(this ILegacyGridEditorConfig? editorConfig)
     {
         if (editorConfig?.Config.TryGetValue("nameTemplate", out var nameTemplateValue) == true)
         {

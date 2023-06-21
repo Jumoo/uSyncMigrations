@@ -18,7 +18,7 @@ public class MigrationStatus
     public int Version { get; set; } = 0;
 
     public string? Name { get; set; } = "Unknown";
-    
+
     /// <summary>
     ///  where the uSync files are
     /// </summary>
