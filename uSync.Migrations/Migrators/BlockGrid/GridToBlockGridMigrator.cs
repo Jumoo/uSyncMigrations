@@ -17,7 +17,7 @@ using uSync.Migrations.Migrators.Models;
 namespace uSync.Migrations.Migrators.BlockGrid;
 
 [SyncMigrator(UmbConstants.PropertyEditors.Aliases.Grid)]
-[SyncMigratorVersion(8)]
+[SyncMigratorVersion(7,8)]
 public class GridToBlockGridMigrator : SyncPropertyMigratorBase
 {
 	private readonly ILegacyGridConfig _gridConfig;

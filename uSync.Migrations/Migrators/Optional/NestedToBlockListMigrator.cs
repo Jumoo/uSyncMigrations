@@ -6,6 +6,8 @@ using Newtonsoft.Json.Linq;
 using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Models.Blocks;
 using Umbraco.Cms.Core.PropertyEditors;
+using Umbraco.Extensions;
+
 using uSync.Migrations.Context;
 using uSync.Migrations.Extensions;
 using uSync.Migrations.Migrators.Models;
@@ -117,6 +119,9 @@ public class NestedToBlockListMigrator : SyncPropertyMigratorBase
 
         foreach (var row in rowValues)
         {
+            if (row.Id == Guid.Empty)
+                row.Id = $"{contentProperty.EditorAlias}{contentProperty.ContentTypeAlias}{row.ContentTypeAlias}{row.Name}".ToGuid();
+
             var contentTypeKey = context.ContentTypes.GetKeyByAlias(row.ContentTypeAlias);
             var blockUdi = Udi.Create(UdiEntityType.Element, row.Id);
 
