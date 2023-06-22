@@ -59,7 +59,13 @@ public abstract class GridBlockMigratorSimpleBase
 		=> control.Editor.Alias.GetBlockElementContentTypeAlias(_shortStringHelper);
 
 	public virtual string GetContentTypeAlias(ILegacyGridEditorConfig editorConfig)
-		=> editorConfig.Alias.GetBlockElementContentTypeAlias(_shortStringHelper);
+	{
+		var alias = string.IsNullOrEmpty(editorConfig.Alias) 
+			? Path.GetFileNameWithoutExtension(editorConfig.View)
+			: editorConfig.Alias;
+
+		return alias.GetBlockElementContentTypeAlias(_shortStringHelper);
+	}
 
 	public virtual Dictionary<string, object> GetPropertyValues(GridValue.GridControl control, SyncMigrationContext context)
 	{

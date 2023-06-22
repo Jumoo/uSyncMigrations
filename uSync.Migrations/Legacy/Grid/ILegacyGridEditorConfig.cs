@@ -26,7 +26,7 @@ public class LegacyGridEditorConfig : ILegacyGridEditorConfig
 
     public string? NameTemplate { get; set; }
 
-    public string Alias { get; internal set; } = string.Empty;
+    public string Alias { get; set; }
 
     public string? View { get; set; }
 
