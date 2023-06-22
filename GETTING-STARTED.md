@@ -10,7 +10,7 @@ This is a quick guide to starting your migration journey with uSync.Migrations.
 
 uSync Packers are simple packages for Umbraco 7 and Umbraco 8, that use gather up the files from that version of Umbraco and give you something you can kick-start your migration with. 
 
-### On your source site install one of hte uSync.Migration.Packer packages
+### On your source site install one of the uSync.Migration.Packer packages
 
 | Umbraco 7 | Umbraco 8
 | - | -
