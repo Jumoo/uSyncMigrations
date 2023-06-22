@@ -5,33 +5,33 @@ using uSync.Migrations.Migrators.Optional;
 
 namespace uSync.Migrations.Configuration.CoreProfiles;
 
-public class BlockListMigrationPlan : ISyncMigrationPlan
+public class FullSevenToElevenAllTheThingsPlan : ISyncMigrationPlan
 {
     private readonly SyncMigrationHandlerCollection _migrationHandlers;
 
-    public BlockListMigrationPlan(SyncMigrationHandlerCollection migrationHandlers)
+    public FullSevenToElevenAllTheThingsPlan(SyncMigrationHandlerCollection migrationHandlers)
     {
         _migrationHandlers = migrationHandlers;
     }
 
-    public int Order => 200;
+    public int Order => 300;
 
-    public string Name => "Convert Nested Content to BlockLists";
+    public string Name => "One step upgrade (blocklist, block grid)";
 
-    public string Icon => "icon-brick color-green";
+    public string Icon => "icon-bang";
 
-    public string Description => "Convert Nested content to BlockLists";
+    public string Description => "Does everything at once, upgrades all the things and converts" +
+        "nested content to BlockList and Grids to BlockGrids";
 
     public MigrationOptions Options => new MigrationOptions
     {
-        Group = "Convert",
-        Source = "uSync/v9",
         Target = $"{uSyncMigrations.MigrationFolder}/{DateTime.Now:yyyyMMdd_HHmmss}",
-        Handlers = _migrationHandlers.SelectGroup(8, string.Empty),
-        SourceVersion = 8,
+        Handlers = _migrationHandlers.SelectGroup(7, string.Empty),
+        SourceVersion = 7,
         PreferredMigrators = new Dictionary<string, string>
         {
             { UmbConstants.PropertyEditors.Aliases.NestedContent, nameof(NestedToBlockListMigrator) },
+            { UmbConstants.PropertyEditors.Aliases.Grid, nameof(GridToBlockGridMigrator) }
         }
     };
 }

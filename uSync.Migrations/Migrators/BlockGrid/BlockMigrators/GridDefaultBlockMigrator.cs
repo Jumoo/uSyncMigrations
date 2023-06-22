@@ -1,5 +1,6 @@
-﻿using Umbraco.Cms.Core.Configuration.Grid;
-using Umbraco.Cms.Core.Strings;
+﻿using Umbraco.Cms.Core.Strings;
+
+using uSync.Migrations.Legacy.Grid;
 
 namespace uSync.Migrations.Migrators.BlockGrid.BlockMigrators;
 
@@ -12,7 +13,7 @@ public class GridDefaultBlockMigrator : GridBlockMigratorSimpleBase, ISyncBlockM
 	{}
 
 	public string[] Aliases => new[] { "___default___" };
-	public override string GetEditorAlias(IGridEditorConfig editor) => "Label (string)";
+	public override string GetEditorAlias(ILegacyGridEditorConfig editor) => "Label (string)";
 }
 
 

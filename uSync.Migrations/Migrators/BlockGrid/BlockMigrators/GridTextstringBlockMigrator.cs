@@ -1,12 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using Umbraco.Cms.Core.Strings;
 
-using Org.BouncyCastle.Math.EC.Rfc7748;
-
-using Umbraco.Cms.Core.Configuration.Grid;
-using Umbraco.Cms.Core.Strings;
-
-using uSync.Core.Mapping;
-using uSync.Migrations.Services;
+using uSync.Migrations.Legacy.Grid;
 
 namespace uSync.Migrations.Migrators.BlockGrid.BlockMigrators;
 
@@ -23,7 +17,7 @@ public class GridTextstringBlockMigrator : GridBlockMigratorSimpleBase, ISyncBlo
 
 	public string[] Aliases => new[] { "textstring" };
 
-	public override string GetEditorAlias(IGridEditorConfig editor) => "Textstring";
+	public override string GetEditorAlias(ILegacyGridEditorConfig editor) => "Textstring";
 }
 
 

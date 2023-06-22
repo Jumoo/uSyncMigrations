@@ -1,25 +1,26 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Extensions.Logging;
 
-using Umbraco.Cms.Core.Configuration.Grid;
+using Newtonsoft.Json;
+
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Cms.Core.Strings;
 
+using uSync.Migrations.Context;
+using uSync.Migrations.Legacy.Grid;
 using uSync.Migrations.Migrators.BlockGrid.BlockMigrators;
-using uSync.Migrations.Migrators.BlockGrid.Content;
 using uSync.Migrations.Migrators.BlockGrid.Config;
+using uSync.Migrations.Migrators.BlockGrid.Content;
 using uSync.Migrations.Migrators.BlockGrid.Extensions;
 using uSync.Migrations.Migrators.Models;
-using uSync.Migrations.Context;
-using Microsoft.Extensions.Logging;
 
 namespace uSync.Migrations.Migrators.BlockGrid;
 
 [SyncMigrator(UmbConstants.PropertyEditors.Aliases.Grid)]
-[SyncMigratorVersion(8)]
+[SyncMigratorVersion(7,8)]
 public class GridToBlockGridMigrator : SyncPropertyMigratorBase
 {
-	private readonly IGridConfig _gridConfig;
+	private readonly ILegacyGridConfig _gridConfig;
 	private readonly SyncBlockMigratorCollection _blockMigrators;
 	private readonly ILoggerFactory _loggerFactory;
 	private readonly ILogger<GridToBlockGridMigrator> _logger;
@@ -27,7 +28,7 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
 	private readonly GridConventions _conventions;
 
     public GridToBlockGridMigrator(
-        IGridConfig gridConfig,
+        ILegacyGridConfig gridConfig,
         SyncBlockMigratorCollection blockMigrators,
         IShortStringHelper shortStringHelper,
         ILoggerFactory loggerFactory)
@@ -56,7 +57,9 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
 		if (gridConfiguration == null)
 			return new BlockGridConfiguration();
 
-		var gridToBlockContext = new GridToBlockGridConfigContext(gridConfiguration, _gridConfig);
+
+		var legacyGridEditorsConfig = GetGridConfig(context);
+		var gridToBlockContext = new GridToBlockGridConfigContext(gridConfiguration, legacyGridEditorsConfig);
 
 		var contentBlockHelper = new GridToBlockGridConfigBlockHelper(_blockMigrators, _loggerFactory.CreateLogger<GridToBlockGridConfigBlockHelper>());
 		var layoutBlockHelper = new GridToBlockGridConfigLayoutBlockHelper(_conventions, _loggerFactory.CreateLogger<GridToBlockGridConfigLayoutBlockHelper>());
@@ -79,7 +82,12 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
 		return result;
 	}
 
-	public override string? GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
+	private ILegacyGridEditorsConfig GetGridConfig(SyncMigrationContext context)
+	{
+		return _gridConfig.EditorsByContext(context);
+    }
+
+    public override string? GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
 	{
 		if (string.IsNullOrWhiteSpace(contentProperty.Value))
 			return string.Empty;

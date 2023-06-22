@@ -2,13 +2,11 @@
 
 using Newtonsoft.Json.Linq;
 
-using Polly;
-
-using Umbraco.Cms.Core.Configuration.Grid;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Extensions;
 using uSync.Migrations.Context;
+using uSync.Migrations.Legacy.Grid;
 using uSync.Migrations.Migrators.Models;
 using uSync.Migrations.Models;
 
@@ -29,10 +27,10 @@ internal class DocTypeGridEditorBlockMigrator : ISyncBlockMigrator
 	///  because all the content types it uses are already
 	///  in the migration.
 	/// </summary>
-	public IEnumerable<NewContentTypeInfo> AdditionalContentTypes(IGridEditorConfig editorConfig)
+	public IEnumerable<NewContentTypeInfo> AdditionalContentTypes(ILegacyGridEditorConfig editorConfig)
 		=> Enumerable.Empty<NewContentTypeInfo>();
 
-	public IEnumerable<string> GetAllowedContentTypes(IGridEditorConfig config, SyncMigrationContext context)
+	public IEnumerable<string> GetAllowedContentTypes(ILegacyGridEditorConfig config, SyncMigrationContext context)
 	{
 		if (config?.Config.TryGetValue("allowedDocTypes", out var allowedDocTypesValue) == true
 				  && allowedDocTypesValue is JArray allowedDocTypes)
@@ -74,10 +72,10 @@ internal class DocTypeGridEditorBlockMigrator : ISyncBlockMigrator
 	///  that are using in the DTGE so we don't actually have to pass 
 	///  things back to the migration process at this point
 	/// </remarks>
-	public string GetContentTypeAlias(IGridEditorConfig editorConfig)
+	public string GetContentTypeAlias(ILegacyGridEditorConfig editorConfig)
 		=> string.Empty;
 
-	public string GetEditorAlias(IGridEditorConfig editor)
+	public string GetEditorAlias(ILegacyGridEditorConfig editor)
 		=> string.Empty;
 
 	public Dictionary<string, object> GetPropertyValues(GridValue.GridControl control, SyncMigrationContext context)

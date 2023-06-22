@@ -186,6 +186,7 @@ internal class SyncMigrationStatusService : ISyncMigrationStatusService
         {
             Source = status.Source,
             Target = status.Target,
+            SiteFolder = status.SiteFolder ?? "/",
             SourceVersion = status.Version,
             ArchetypeMigrationConfigurer = defaultOptions.ArchetypeMigrationConfigurer,
             BlockCommonTypes = defaultOptions.BlockCommonTypes,

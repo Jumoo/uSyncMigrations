@@ -1,8 +1,9 @@
 ﻿using Umbraco.Extensions;
 
 using uSync.Migrations.Configuration.Models;
-using uSync.Migrations.Models;
+using uSync.Migrations.Context;
 using uSync.Migrations.Services;
+using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Validation;
 
@@ -15,9 +16,9 @@ internal class FileStructureValidator : ISyncMigrationValidator
         _migrationFileService = migrationFileService;
     }
 
-    public IEnumerable<MigrationMessage> Validate(MigrationOptions options)
+    public IEnumerable<MigrationMessage> Validate(SyncValidationContext validationContext)
     {
-        var result = _migrationFileService.ValdateMigrationSource(options.SourceVersion, options.Source);
+        var result = _migrationFileService.ValdateMigrationSource(validationContext.Metadata.SourceVersion, validationContext.Options.Source);
 
         var message = new MigrationMessage("FileValidator", "Files",
             result.Success ? MigrationMessageType.Success : MigrationMessageType.Error);
@@ -28,7 +29,7 @@ internal class FileStructureValidator : ISyncMigrationValidator
         }
         else
         {
-            message.Message = $"File structure looks like it's Umbraco {options.SourceVersion} 🤷";
+            message.Message = $"File structure looks like it's Umbraco {validationContext.Metadata.SourceVersion} 🤷";
         }
 
         return message.AsEnumerableOfOne();

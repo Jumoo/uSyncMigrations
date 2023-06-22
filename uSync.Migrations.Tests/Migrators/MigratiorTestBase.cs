@@ -19,7 +19,7 @@ public abstract class MigratiorTestBase
     [SetUp]
     public virtual void Setup()
     {
-        _context = new SyncMigrationContext(Guid.NewGuid(), "", 7);
+        _context = new SyncMigrationContext(Guid.NewGuid(), "", "", true, 7);
     }
 
     protected string ConvertResultToJsonTestResult(object? value)

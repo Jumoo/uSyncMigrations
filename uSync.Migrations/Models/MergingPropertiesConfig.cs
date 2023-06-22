@@ -33,5 +33,5 @@ public class MergingPropertyValue
 
     public string PropertyAlias { get; set; }
     public string EditorAlias { get; set; }
-    public string Value { get; set; }   
+    public string Value { get; set; }
 }

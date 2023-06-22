@@ -104,12 +104,12 @@ internal class DataTypeMigrationHandler : SharedDataTypeHandler, ISyncMigrationH
     }
 
 
-    public IEnumerable<MigrationMessage> Validate(MigrationOptions options)
+    public IEnumerable<MigrationMessage> Validate(SyncValidationContext validationContext)
     {
         var messages = new List<MigrationMessage>();
 
-        var dataTypes = Path.Combine(options.Source, ItemType);
-        var migrators = _migrators.GetPreferredMigratorList(options.PreferredMigrators);
+        var dataTypes = Path.Combine(validationContext.Options.Source, ItemType);
+        var migrators = _migrators.GetPreferredMigratorList(validationContext.Options.PreferredMigrators);
 
         foreach (var file in Directory.GetFiles(dataTypes, "*.config", SearchOption.AllDirectories))
         {

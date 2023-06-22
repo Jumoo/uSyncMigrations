@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Umbraco.Cms.Core.Configuration.Grid;
-
-using uSync.Migrations.Configuration.Models;
+﻿using uSync.Migrations.Configuration.Models;
+using uSync.Migrations.Context;
+using uSync.Migrations.Legacy.Grid;
 using uSync.Migrations.Migrators.BlockGrid;
 using uSync.Migrations.Migrators.BlockGrid.BlockMigrators;
 using uSync.Migrations.Models;
@@ -14,35 +8,48 @@ using uSync.Migrations.Models;
 namespace uSync.Migrations.Validation;
 internal class BlockGridValidator : ISyncMigrationValidator
 {
-    private readonly IGridConfig _gridConfig;
+    private readonly ILegacyGridConfig _gridConfig;
     private readonly SyncBlockMigratorCollection _blockMigrators;
 
-    public BlockGridValidator(IGridConfig gridConfig, SyncBlockMigratorCollection blockMigrators)
+    public BlockGridValidator(ILegacyGridConfig gridConfig, SyncBlockMigratorCollection blockMigrators)
     {
         this._gridConfig = gridConfig;
         _blockMigrators = blockMigrators;
     }
 
-    public IEnumerable<MigrationMessage> Validate(MigrationOptions options)
+    public IEnumerable<MigrationMessage> Validate(SyncValidationContext validationContext)
     {
-        if (options.SourceVersion == 7) return Enumerable.Empty<MigrationMessage>();
-        if (options.PreferredMigrators == null) return Enumerable.Empty<MigrationMessage>();
+        if (validationContext.Metadata.SourceVersion == 7) return Enumerable.Empty<MigrationMessage>();
+        if (validationContext.Options.PreferredMigrators == null) return Enumerable.Empty<MigrationMessage>();
 
-        if (!options.PreferredMigrators.ContainsKey(UmbConstants.PropertyEditors.Aliases.Grid)
-            || options.PreferredMigrators[UmbConstants.PropertyEditors.Aliases.Grid] != nameof(GridToBlockGridMigrator)) 
+        if (!validationContext.Options.PreferredMigrators.ContainsKey(UmbConstants.PropertyEditors.Aliases.Grid)
+            || validationContext.Options.PreferredMigrators[UmbConstants.PropertyEditors.Aliases.Grid] != nameof(GridToBlockGridMigrator)) 
         {
             return Enumerable.Empty<MigrationMessage>();
         }
 
-        // validates that we have a block migrator for all the elements in the grid. 
-        var results = new List<MigrationMessage>();
+        // TODO: Ideally we should have worked out if the site folder is the root, before here
+        //       but at the moment validate doesn't create a context. 
+        var legacyGridEditorsConfig = validationContext.Metadata.SiteFolderIsSite 
+            ? _gridConfig.EditorsConfig : _gridConfig.EditorsFromFolder(validationContext.Metadata.SiteFolder);
 
-        foreach(var editor in _gridConfig.EditorsConfig.Editors)
+        // validates that we have a block migrator for all the elements in the grid. 
+        var results = new List<MigrationMessage>
+        {
+            new MigrationMessage("BlockGird", "Config", MigrationMessageType.Success)
+            {
+                Message = $"Loaded {legacyGridEditorsConfig.Editors.Count} editors from grid config"
+            }
+        };
+
+        foreach (var editor in legacyGridEditorsConfig.Editors)
         {
             var migrator = _blockMigrators.GetMigrator(editor);
 
             var message = new MigrationMessage("BlockGrid", "Editor",
                 migrator is GridDefaultBlockMigrator ? MigrationMessageType.Warning : MigrationMessageType.Success);
+
+            var thing = !string.IsNullOrEmpty(editor.Alias) ? editor.Alias : editor.View;
 
             if (migrator == null)
             {
@@ -51,11 +58,11 @@ internal class BlockGridValidator : ISyncMigrationValidator
             }
             else if (migrator is GridDefaultBlockMigrator)
             {
-                message.Message = $"No migrator found for '{editor.Alias}' or '{editor.View}' default will be used";
+                message.Message = $"No migrator found for '{thing}' default will be used";
             }
             else
             {
-                message.Message = $"Found '{migrator.GetType().Name}' for '{editor.Alias}'";
+                message.Message = $"Found '{migrator.GetType().Name}' for '{thing}'";
             }
 
             results.Add(message);
