@@ -2,7 +2,7 @@
 
 uSync Migrations is a tool to help you migrate your site settings and content from Umbraco 7.x to the latest and greatest versions of Umbraco.
 
-![](/assets/Screenshots/dashboard.png)
+![](/assets/migrations-dashboard.png)
 
 # How to use this
 
