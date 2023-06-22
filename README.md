@@ -6,16 +6,20 @@ uSync Migrations is a tool to help you migrate your site settings and content fr
 
 # How to use this
 
-Runs on Umbraco 10 (and soon 11!)
+Runs on Umbraco 10, 11 & 12
 
 ## Getting Started
 
-You need the latest uSync beta 
-```
-dotnet add package uSync --version 10.3.1-beta001
-```
 
-then uSync.Migrations.
+### SEE our [GETTING STARTED](GETTING-STARTED.md) guide for more details
+
+
+
+Install uSync
+```
+dotnet add package uSync 
+```
+uSync.Migrations.
 
 ```
 dotnet add package uSync.Migrations --prerelease

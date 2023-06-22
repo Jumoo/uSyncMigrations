@@ -12,10 +12,11 @@ uSync Packers are simple packages for Umbraco 7 and Umbraco 8, that use gather u
 
 ### On your source site install one of hte uSync.Migration.Packer packages
 
-
 | Umbraco 7 | Umbraco 8
 | - | -
-| uSync.Migrations.Packer v7 | uSync.Miugrations.Packer v8
+| [uSync.Migrations.Packer v7](https://clients.jumoo.co.uk/migrations/uSync.Migrations.Packer_7.0.1.zip) | [uSync.Miugrations.Packer v8](https://clients.jumoo.co.uk/migrations/uSync.Migrations.Packer_8.0.0.zip)
+
+> All Packers packages are avalible at https://clients.jumoo.co.uk/migrations/
 
 
 A package will create a new uSync export, and grab some extra files such as the css/script and a sepecially generated `grid.config.js` file and put them all into a .zip package. 
