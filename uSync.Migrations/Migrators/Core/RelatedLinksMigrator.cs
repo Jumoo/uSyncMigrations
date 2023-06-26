@@ -29,20 +29,22 @@ public class RelatedLinksMigrator : SyncPropertyMigratorBase
     }
 
     private string WrapGuidsWithQuotes(string value)
-    {       
-      string guidRegEx = @"\b[A-Fa-f0-9]{8}(?:-[A-Fa-f0-9]{4}){3}-[A-Fa-f0-9]{12}\b";
-        HashSet<string> uniqueMatches = new HashSet<string>();
+    {
+		string guidRegEx = @"(""internal""|""link""): (\b[A-Fa-f0-9]{8}(?:-[A-Fa-f0-9]{4}){3}-[A-Fa-f0-9]{12}\b)";
+		HashSet<string> uniqueMatches = new HashSet<string>();
 
-        foreach (Match m in Regex.Matches(value, guidRegEx)) {
-            uniqueMatches.Add(m.Value);
-        }
+		foreach (Match m in Regex.Matches(value, guidRegEx))
+		{
+			uniqueMatches.Add(m.Groups[2].Value);
+		}
 
-        foreach (var guid in uniqueMatches) { 
-          value = value.Replace(guid, "\"" + guid + "\"")
-                .Replace("\"\"", "\"");
-        }
-        return value;
-    }
+		foreach (var guid in uniqueMatches)
+		{
+			value = value.Replace(guid, "\"" + guid + "\"")
+				.Replace("\"\"", "\"");
+		}
+		return value;
+	}
 
     public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
         => UmbConstants.PropertyEditors.Aliases.MultiUrlPicker;
