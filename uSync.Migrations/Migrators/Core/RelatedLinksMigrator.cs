@@ -28,24 +28,6 @@ public class RelatedLinksMigrator : SyncPropertyMigratorBase
         };
     }
 
-    private string WrapGuidsWithQuotes(string value)
-    {
-		string guidRegEx = @"(""internal""|""link""): (\b[A-Fa-f0-9]{8}(?:-[A-Fa-f0-9]{4}){3}-[A-Fa-f0-9]{12}\b)";
-		HashSet<string> uniqueMatches = new HashSet<string>();
-
-		foreach (Match m in Regex.Matches(value, guidRegEx))
-		{
-			uniqueMatches.Add(m.Groups[2].Value);
-		}
-
-		foreach (var guid in uniqueMatches)
-		{
-			value = value.Replace(guid, "\"" + guid + "\"")
-				.Replace("\"\"", "\"");
-		}
-		return value;
-	}
-
     public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
         => UmbConstants.PropertyEditors.Aliases.MultiUrlPicker;
 
@@ -67,7 +49,8 @@ public class RelatedLinksMigrator : SyncPropertyMigratorBase
         {
             //uSync Content edition turns RelatedLinks Ids into Guids for syncing between environments, but they are not wrapped in double quotes, and so in this context can't be deserialized
             //so we need to 'fangle' the Value here to wrap any guids in the json in double quotes before it's parsed.
-            var wrappedValue = WrapGuidsWithQuotes(contentProperty.Value);
+            var regex = @"(""internal""|""link""): (\b[A-Fa-f0-9]{8}(?:-[A-Fa-f0-9]{4}){3}-[A-Fa-f0-9]{12}\b)";
+            var wrappedValue = GuidExtensions.WrapGuidsWithQuotes(contentProperty.Value, regex, 2);
             var items = JsonConvert.DeserializeObject<List<RelatedLink>>(wrappedValue);
             if (items?.Any() == true)
             {
