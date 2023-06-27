@@ -95,8 +95,10 @@ internal abstract class MigrationHandlerBase<TObject>
         {
             var source = XElement.Load(file);   
             PrepareFile(source, context);
-            
         }
+
+        // load anything handler specific. 
+        Prepare(context);
 
         sw.Stop();
         _logger.LogInformation("[{type}] Migration Prep completed ({elapsed}ms)", typeof(TObject).Name, sw.ElapsedMilliseconds);
