@@ -54,6 +54,8 @@ internal class SyncMigrationStatusService : ISyncMigrationStatusService
     {
         var migrations = new List<MigrationStatus>();
 
+        if (!Directory.Exists(_migrateRoot)) return migrations;
+
         foreach(var migrationFolder in Directory.GetDirectories(_migrateRoot))
         {
             var status = this.LoadStatus(migrationFolder);
