@@ -17,22 +17,18 @@ public class VortoMapper : SyncPropertyMigratorBase,
     ISyncReplacablePropertyMigrator,
     ISyncVariationPropertyMigrator
 {
-    private readonly IDataTypeService _dataTypeService;
-
-    public VortoMapper(IDataTypeService dataTypeService)
-    {
-        _dataTypeService = dataTypeService;
-    }
+    public VortoMapper()
+    { }
 
     public override object? GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
         => string.Empty;
 
     public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
-        var wrappedDataType = GetWrappedDatatype(dataTypeProperty.PreValues);
-        if (wrappedDataType != null)
+        var wrappedDataType = GetWrappedDatatype(dataTypeProperty.PreValues, context);
+        if (wrappedDataType.dataTypeInfo != null)
         {
-            return wrappedDataType.EditorAlias;
+            return wrappedDataType.dataTypeInfo.EditorAlias;
         }
 
         return string.Empty;
@@ -47,10 +43,10 @@ public class VortoMapper : SyncPropertyMigratorBase,
     /// <returns></returns>
     public ReplacementDataTypeInfo? GetReplacementEditorId(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
-        var wrappedDataType = GetWrappedDatatype(dataTypeProperty.PreValues);
-        if (wrappedDataType != null)
+        var wrappedDataType = GetWrappedDatatype(dataTypeProperty.PreValues, context);
+        if (wrappedDataType.dataTypeInfo != null)
         {
-            return new ReplacementDataTypeInfo(wrappedDataType.Key, wrappedDataType.EditorAlias)
+            return new ReplacementDataTypeInfo(wrappedDataType.key, wrappedDataType.dataTypeInfo.EditorAlias)
             {
                 Variation = "Culture"
             };
@@ -59,23 +55,23 @@ public class VortoMapper : SyncPropertyMigratorBase,
         return null;
     }
 
-    private IDataType? GetWrappedDatatype(IReadOnlyCollection<PreValue>? preValues)
+    private (Guid key, DataTypeInfo? dataTypeInfo) GetWrappedDatatype(IReadOnlyCollection<PreValue>? preValues, SyncMigrationContext context)
     {
-        if (preValues == null) return null;
+        if (preValues == null) return (Guid.Empty, null); ;
 
         var dataType = preValues.FirstOrDefault(x => x.Alias.Equals("dataType"));
-        if (dataType == null) return null;
+        if (dataType == null) return (Guid.Empty, null); ;
 
         var value = JsonConvert.DeserializeObject<JObject>(dataType.Value);
-        if (value is null) return null;
+        if (value is null) return (Guid.Empty, null); ;
 
         // guid is the guid of the wrapped datatype. 
         var attempt = value.Value<string>("guid").TryConvertTo<Guid>();
 
         if (attempt)
-            return _dataTypeService.GetDataType(attempt.Result);
+            return (attempt.Result, context.DataTypes.GetByDefinition(attempt.Result));
 
-        return null;
+        return (Guid.Empty, null);
     }
 
     public Attempt<CulturedPropertyValue> GetVariedElements(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
