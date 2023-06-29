@@ -54,8 +54,24 @@ internal class GridToBlockContentHelper
 
         var blockLayouts = new List<BlockGridLayoutItem>();
 
-        foreach (var (sectionColums, rows) in sections)
+        var rootSection = new BlockItemData
         {
+          Udi = Udi.Create(UmbConstants.UdiEntityType.Element, Guid.NewGuid()),
+          ContentTypeKey = sectionKey,
+          ContentTypeAlias = sectionContentTypeAlias
+        };
+        block.ContentData.Add(rootSection);
+        var rootLayoutItem = new BlockGridLayoutItem
+        {
+          ContentUdi = rootSection.Udi,
+          ColumnSpan = gridColumns,
+          RowSpan = 1
+        };
+        var rootLayoutAreas = new List<BlockGridLayoutAreaItem>();
+
+        foreach (var item in sections.Select((value, sectionIndex) => new {sectionIndex, value}))
+        {
+            var (sectionColums, rows) = item.value;
             var sectionIsFullWidth = sectionColums == gridColumns;
 
             foreach (var row in rows)
@@ -115,6 +131,21 @@ internal class GridToBlockContentHelper
             }
 
             // section 
+            if (!sectionIsFullWidth)
+            {
+                var areaItem = new BlockGridLayoutAreaItem
+                {
+                  Key = _conventions.GridAreaConfigAlias(_conventions.AreaAlias(item.sectionIndex)).ToGuid(),
+                  Items = blockLayouts.ToArray()
+                };
+                rootLayoutAreas.Add(areaItem);
+                blockLayouts.Clear();
+            }
+        }
+        if (rootLayoutAreas.Count > 1)
+        {
+          rootLayoutItem.Areas = rootLayoutAreas.ToArray();
+          blockLayouts.Add(rootLayoutItem);
         }
 
         // end - process layouts into block format. 
