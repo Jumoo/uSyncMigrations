@@ -44,6 +44,8 @@ internal class GridToBlockContentHelper
 
         var sectionContentTypeAlias = _conventions.SectionContentTypeAlias(source.Name);
 
+        var sectionKey = context.ContentTypes.GetKeyByAlias(sectionContentTypeAlias);
+
         var sections = source.Sections
             .Select(x => (Grid: x.Grid.GetIntOrDefault(0), x.Rows))
             .ToArray();
