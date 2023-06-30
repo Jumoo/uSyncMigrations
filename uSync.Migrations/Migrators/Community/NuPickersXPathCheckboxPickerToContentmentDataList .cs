@@ -17,9 +17,6 @@ namespace uSync.Migrations.Migrators.Community
 
             if (nuPickersConfig == null) return null;
 
-            //XPath datasource is now erroring out if the XPath starts with a // so replacing with $root as a catch all.
-            if (nuPickersConfig.XPath.StartsWith("//")) nuPickersConfig.XPath = nuPickersConfig.XPath.ReplaceFirst("//", "$root/");
-
             //Using an anonymous object for now, but ideally this should be replaced with Contentment objects (when they're created).
             var dataSource = new[]
             {
