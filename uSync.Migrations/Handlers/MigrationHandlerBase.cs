@@ -35,7 +35,7 @@ internal abstract class MigrationHandlerBase<TObject>
         var attribute = GetType().GetCustomAttribute<SyncMigrationHandlerAttribute>();
         if (attribute == null)
         {
-            throw new ArgumentException("Handler must has SyncMigrationAttribute to use base class");
+            throw new ArgumentException("Handler must have SyncMigrationAttribute to use base class");
         }
 
         ItemType = typeof(TObject).Name;
@@ -102,7 +102,7 @@ internal abstract class MigrationHandlerBase<TObject>
         _logger.LogInformation("[{type}] Migration Prep completed ({elapsed}ms)", typeof(TObject).Name, sw.ElapsedMilliseconds);
     }
 
-    // for global prepapre stuff. 
+    // for global prepare stuff. 
     public virtual void Prepare(SyncMigrationContext context) { }
 
     public virtual IEnumerable<MigrationMessage> DoMigration(SyncMigrationContext context)
