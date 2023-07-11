@@ -4,10 +4,11 @@ using uSync.Migrations.Migrators;
 using uSync.Migrations.Migrators.Models;
 using uSync.Migrations.Models;
 
+
 namespace uSync.Migrations.Tests.Migrators;
 
 [TestFixture]
-public class RadioButtonListTests : MigratiorTestBase
+public class RadioButtonListTests : MigratorTestBase
 {
     [SetUp]
     public override void Setup()
@@ -45,7 +46,7 @@ public class RadioButtonListTests : MigratiorTestBase
 
     [Test]
     public override void EditorAliasAsExpected() =>
-        EditorAliasAsExpectedbase(UmbConstants.PropertyEditors.Aliases.RadioButtonList);
+        EditorAliasAsExpectedBase(UmbConstants.PropertyEditors.Aliases.RadioButtonList);
 
     [Test]
     public override void ConfigValueAsExpected()
@@ -75,8 +76,8 @@ public class RadioButtonListTests : MigratiorTestBase
         Assert.AreEqual(expected, ConvertResultToJsonTestResult(configFile));
     }
 
-    public override void ContentValueAsExpeceted(string value, string expected)
+    public override void ContentValueAsExpected(string value, string expected)
     {
-        ContentValueAsExpecetedBase(value, expected);
+        ContentValueAsExpectedBase(value, expected);
     }
 }
