@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Models.Blocks;
@@ -88,8 +88,7 @@ public class StackedContentToBlockListMigrator : SyncPropertyMigratorBase
                     continue;
                 }
 
-                var migrator = _migrators.Value
-                    .FirstOrDefault(x => x.Editors.InvariantContains(editorAlias.OriginalEditorAlias));
+                var migrator = context.Migrators.TryGetMigrator(editorAlias.OriginalEditorAlias);
 
                 if (migrator == null)
                 {
