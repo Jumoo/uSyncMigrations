@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Umbraco.Extensions;
 using uSync.Migrations.Context;
 using uSync.Migrations.Extensions;
 using uSync.Migrations.Migrators.Models;
@@ -17,8 +16,8 @@ namespace uSync.Migrations.Migrators.Community
 
             if (nuPickersConfig == null) return null;
 
-            //XPath datasource is now erroring out if the XPath starts with a // so replacing with $root as a catch all.
-            if (nuPickersConfig.XPath.StartsWith("//")) nuPickersConfig.XPath = nuPickersConfig.XPath.ReplaceFirst("//", "$root/");
+            // replace non-standard token '$ancestorOrSelf' parsed by nuPickers, into a Contentment '$current' placeholder token
+            nuPickersConfig.XPath = nuPickersConfig.XPath.Replace("$ancestorOrSelf", "$current");
 
             //Using an anonymous object for now, but ideally this should be replaced with Contentment objects (when they're created).
             var dataSource = new[]
