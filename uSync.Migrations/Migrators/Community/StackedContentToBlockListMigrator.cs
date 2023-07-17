@@ -42,10 +42,7 @@ public class StackedContentToBlockListMigrator : SyncPropertyMigratorBase
 
         if (blocks?.Any() == true)
         {
-            foreach (var elementTypeKey in blocks.Select(x => x.ContentElementTypeKey))
-            {
-                context.ContentTypes.AddElementType(elementTypeKey);
-            }
+            context.ContentTypes.AddElementTypes(blocks.Select(x => x.ContentElementTypeKey), true);
         }
 
         var validationLimit = singleItemMode == 1
