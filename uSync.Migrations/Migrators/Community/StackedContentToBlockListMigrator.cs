@@ -9,7 +9,7 @@ using uSync.Migrations.Context;
 using uSync.Migrations.Extensions;
 using uSync.Migrations.Migrators.Models;
 
-namespace uSync.Migrations.Migrators;
+namespace uSync.Migrations.Migrators.Community;
 
 [SyncMigrator("Our.Umbraco.StackedContent")]
 public class StackedContentToBlockListMigrator : SyncPropertyMigratorBase
@@ -27,7 +27,8 @@ public class StackedContentToBlockListMigrator : SyncPropertyMigratorBase
     public override object? GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
         var contentTypes = dataTypeProperty.PreValues?.GetPreValueOrDefault("contentTypes", "[]") ?? "[]";
-        var maxItems = dataTypeProperty.PreValues?.GetPreValueOrDefault("maxItems", 0) ?? 0;
+        var maxItems = dataTypeProperty.PreValues?.GetPreValueOrDefault("maxItems", default(int?)) ?? default(int?);
+        maxItems = maxItems == 0 ? null : maxItems;
         var singleItemMode = dataTypeProperty.PreValues?.GetPreValueOrDefault("singleItemMode", 0) ?? 0;
 
         var blocks = JsonConvert
