@@ -7,7 +7,7 @@ using uSync.Migrations.Models;
 namespace uSync.Migrations.Tests.Migrators;
 
 [TestFixture]
-public class CheckboxListTests : MigratiorTestBase
+public class CheckboxListTests : MigratorTestBase
 {
     [SetUp]
     public override void Setup()
@@ -24,7 +24,7 @@ public class CheckboxListTests : MigratiorTestBase
     {
         var value = "Two, Three";
         var expected = $"[{Environment.NewLine}  \"Two\",{Environment.NewLine}  \"Three\"{Environment.NewLine}]";
-        ContentValueAsExpecetedBase(value, expected);
+        ContentValueAsExpectedBase(value, expected);
     }
 
     [Test]
@@ -33,7 +33,7 @@ public class CheckboxListTests : MigratiorTestBase
 
     [Test]
     public override void EditorAliasAsExpected()
-        => EditorAliasAsExpectedbase(UmbConstants.PropertyEditors.Aliases.CheckBoxList);
+        => EditorAliasAsExpectedBase(UmbConstants.PropertyEditors.Aliases.CheckBoxList);
 
     protected override SyncMigrationContentProperty GetMigrationContentProperty(string value)
         => new SyncMigrationContentProperty("Test", "Checkbox list", UmbConstants.PropertyEditors.Aliases.CheckBoxList, value);
@@ -48,7 +48,7 @@ public class CheckboxListTests : MigratiorTestBase
                 new PreValue { SortOrder = 1, Alias = "2", Value = "Three"},
             });
 
-    public override void ContentValueAsExpeceted(string value, string expected)
+    public override void ContentValueAsExpected(string value, string expected)
     {
         // 
     }

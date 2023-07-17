@@ -16,13 +16,22 @@ public class RadioButtonListMigrator : SyncPropertyMigratorBase
         var config = new ValueListConfiguration();
         if (dataTypeProperty.PreValues == null) return config;
 
-        foreach (var item in dataTypeProperty.PreValues)
+        // Default the order to the sort order of the prevalues
+        var preValues = dataTypeProperty.PreValues.OrderBy(x => x.SortOrder);
+        
+        // Start a counter as we can't rely on the sort order entirely
+        var count = 0;
+
+        foreach (var item in preValues)
         {
             config.Items.Add(new ValueListConfiguration.ValueListItem
             {
-                Id = item.SortOrder,
+                Id = count, // Using the count ensure it is unique
                 Value = item.Value
             });
+            
+            // Increment the counter before the next iteration
+            count++;
         }
 
         return config;

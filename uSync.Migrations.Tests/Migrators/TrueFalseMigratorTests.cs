@@ -9,7 +9,7 @@ using uSync.Migrations.Models;
 namespace uSync.Migrations.Tests.Migrators;
 
 [TestFixture]
-internal class TrueFalseMigratorTests : MigratiorTestBase
+internal class TrueFalseMigratorTests : MigratorTestBase
 {
     [SetUp]
     public override void Setup()
@@ -46,8 +46,8 @@ internal class TrueFalseMigratorTests : MigratiorTestBase
 
     [TestCase("1", "1")]
     [TestCase("0", "0")]
-    public override void ContentValueAsExpeceted(string value, string expected)
-        => ContentValueAsExpecetedBase(value, expected);
+    public override void ContentValueAsExpected(string value, string expected)
+        => ContentValueAsExpectedBase(value, expected);
 
     [Test]
     public override void DatabaseTypeAsExpected()
@@ -55,5 +55,5 @@ internal class TrueFalseMigratorTests : MigratiorTestBase
 
     [Test]
     public override void EditorAliasAsExpected()
-        => EditorAliasAsExpectedbase("Umbraco.TrueFalse");
+        => EditorAliasAsExpectedBase("Umbraco.TrueFalse");
 }

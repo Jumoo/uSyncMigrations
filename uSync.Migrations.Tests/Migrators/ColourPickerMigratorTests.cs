@@ -7,7 +7,7 @@ using uSync.Migrations.Models;
 namespace uSync.Migrations.Tests.Migrators;
 
 [TestFixture]
-public class ColourPickerMigratorTests : MigratiorTestBase
+public class ColourPickerMigratorTests : MigratorTestBase
 {
     private IList<PreValue> _preValues = new List<PreValue>();
 
@@ -70,7 +70,7 @@ public class ColourPickerMigratorTests : MigratiorTestBase
 
     [Test]
     public override void EditorAliasAsExpected()
-        => EditorAliasAsExpectedbase(UmbConstants.PropertyEditors.Aliases.ColorPicker);
+        => EditorAliasAsExpectedBase(UmbConstants.PropertyEditors.Aliases.ColorPicker);
 
     [TestCase(
 @"{""label"":""Blue"",""value"":""0000FF""}",
@@ -80,7 +80,7 @@ public class ColourPickerMigratorTests : MigratiorTestBase
   ""sortOrder"": 1,
   ""id"": ""1""
 }")]
-    public override void ContentValueAsExpeceted(string value, string expected)
-        => ContentValueAsExpecetedBase(value, expected);
+    public override void ContentValueAsExpected(string value, string expected)
+        => ContentValueAsExpectedBase(value, expected);
 
 }

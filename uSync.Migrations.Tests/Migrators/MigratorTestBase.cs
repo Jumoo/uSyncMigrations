@@ -11,7 +11,7 @@ using uSync.Migrations.Serialization;
 
 namespace uSync.Migrations.Tests.Migrators;
 
-public abstract class MigratiorTestBase
+public abstract class MigratorTestBase
 {
     protected SyncMigrationContext? _context;
     protected ISyncPropertyMigrator?  _migrator;
@@ -47,16 +47,16 @@ public abstract class MigratiorTestBase
     }
 
     public abstract void EditorAliasAsExpected();
-    protected void EditorAliasAsExpectedbase(string expectedAlias)
+    protected void EditorAliasAsExpectedBase(string expectedAlias)
     {
         var editorAlias = _migrator!.GetEditorAlias(GetMigrationDataTypeProperty(), _context!);
         Assert.AreEqual(expectedAlias, editorAlias);
     }
 
     public abstract void ConfigValueAsExpected();
-    public abstract void ContentValueAsExpeceted(string value, string expected);
+    public abstract void ContentValueAsExpected(string value, string expected);
 
-    protected void ContentValueAsExpecetedBase(string value, string expected)
+    protected void ContentValueAsExpectedBase(string value, string expected)
     {
         var contentValue = _migrator!.GetContentValue(GetMigrationContentProperty(value), _context!);
         Assert.AreEqual(expected, contentValue);
