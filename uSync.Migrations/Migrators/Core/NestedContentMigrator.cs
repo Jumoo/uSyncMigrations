@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 
 using Umbraco.Cms.Core.PropertyEditors;
 
@@ -27,7 +27,7 @@ public class NestedContentMigrator : SyncPropertyMigratorBase
         var config = (NestedContentConfiguration?)new NestedContentConfiguration().MapPreValues(dataTypeProperty.PreValues);
         if (config?.ContentTypes == null) return new NestedContentConfiguration();
 
-        foreach(var contentTypeAlias in config.ContentTypes.Select(x => x.Alias))
+        foreach (var contentTypeAlias in config.ContentTypes.Select(x => x.Alias))
         {
             if (string.IsNullOrWhiteSpace(contentTypeAlias)) continue;
 
@@ -43,7 +43,7 @@ public class NestedContentMigrator : SyncPropertyMigratorBase
     {
         if (string.IsNullOrWhiteSpace(contentProperty.Value)) return string.Empty;
 
-        var rowValues = JsonConvert.DeserializeObject<IList<NestedContentRowValue>>(contentProperty.Value);
+        var rowValues = JsonConvert.DeserializeObject<IList<NestedContentRowValue>>(contentProperty.Value, new JsonSerializerSettings() { DateParseHandling = DateParseHandling.None });
         if (rowValues == null) return string.Empty;
 
         foreach (var row in rowValues)
@@ -69,7 +69,7 @@ public class NestedContentMigrator : SyncPropertyMigratorBase
                                 context);
                     }
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     throw new Exception($"Nested Error: [{editorAlias.OriginalEditorAlias} -{property.Key}] : {ex.Message}", ex);
                 }

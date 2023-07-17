@@ -66,7 +66,7 @@ public class StackedContentToBlockListMigrator : SyncPropertyMigratorBase
             return string.Empty;
         }
 
-        var items = JsonConvert.DeserializeObject<IList<StackedContentItem>>(contentProperty.Value);
+        var items = JsonConvert.DeserializeObject<IList<StackedContentItem>>(contentProperty.Value, new JsonSerializerSettings() { DateParseHandling = DateParseHandling.None });
         if (items?.Any() != true)
         {
             return string.Empty;

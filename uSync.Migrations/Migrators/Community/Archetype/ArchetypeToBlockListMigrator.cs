@@ -104,7 +104,7 @@ public class ArchetypeToBlockListMigrator : SyncPropertyMigratorBase
             return string.Empty;
         }
 
-        var archetype = JsonConvert.DeserializeObject<ArchetypeModel>(contentProperty.Value);
+        var archetype = JsonConvert.DeserializeObject<ArchetypeModel>(contentProperty.Value, new JsonSerializerSettings() { DateParseHandling = DateParseHandling.None });
         if (archetype == null)
         {
             return string.Empty;
