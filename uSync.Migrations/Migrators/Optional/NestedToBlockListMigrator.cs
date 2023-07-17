@@ -10,6 +10,7 @@ using Umbraco.Extensions;
 
 using uSync.Migrations.Context;
 using uSync.Migrations.Extensions;
+using uSync.Migrations.Migrators.Core;
 using uSync.Migrations.Migrators.Models;
 
 using static Umbraco.Cms.Core.Constants;
@@ -91,7 +92,7 @@ public class NestedToBlockListMigrator : SyncPropertyMigratorBase
                 var contentTypeKey = context.ContentTypes.GetKeyByAlias(item.Alias);
 
                 // tell the process we need this to be an element type
-                context.ContentTypes.AddElementType(contentTypeKey);
+                context.ContentTypes.AddElementTypes(new[] { contentTypeKey }, true);
 
                 blocks.Add(new BlockListConfiguration.BlockConfiguration
                 {
