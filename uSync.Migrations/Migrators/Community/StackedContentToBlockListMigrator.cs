@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Models.Blocks;
@@ -9,7 +9,7 @@ using uSync.Migrations.Context;
 using uSync.Migrations.Extensions;
 using uSync.Migrations.Migrators.Models;
 
-namespace uSync.Migrations.Migrators;
+namespace uSync.Migrations.Migrators.Community;
 
 [SyncMigrator("Our.Umbraco.StackedContent")]
 public class StackedContentToBlockListMigrator : SyncPropertyMigratorBase
@@ -27,7 +27,8 @@ public class StackedContentToBlockListMigrator : SyncPropertyMigratorBase
     public override object? GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
         var contentTypes = dataTypeProperty.PreValues?.GetPreValueOrDefault("contentTypes", "[]") ?? "[]";
-        var maxItems = dataTypeProperty.PreValues?.GetPreValueOrDefault("maxItems", 0) ?? 0;
+        var maxItems = dataTypeProperty.PreValues?.GetPreValueOrDefault("maxItems", default(int?)) ?? default(int?);
+        maxItems = maxItems == 0 ? null : maxItems;
         var singleItemMode = dataTypeProperty.PreValues?.GetPreValueOrDefault("singleItemMode", 0) ?? 0;
 
         var blocks = JsonConvert
@@ -62,7 +63,7 @@ public class StackedContentToBlockListMigrator : SyncPropertyMigratorBase
             return string.Empty;
         }
 
-        var items = JsonConvert.DeserializeObject<IList<StackedContentItem>>(contentProperty.Value);
+        var items = JsonConvert.DeserializeObject<IList<StackedContentItem>>(contentProperty.Value, new JsonSerializerSettings() { DateParseHandling = DateParseHandling.None });
         if (items?.Any() != true)
         {
             return string.Empty;
@@ -85,8 +86,7 @@ public class StackedContentToBlockListMigrator : SyncPropertyMigratorBase
                     continue;
                 }
 
-                var migrator = _migrators.Value
-                    .FirstOrDefault(x => x.Editors.InvariantContains(editorAlias.OriginalEditorAlias));
+                var migrator = context.Migrators.TryGetMigrator(editorAlias.OriginalEditorAlias);
 
                 if (migrator == null)
                 {

@@ -1,4 +1,6 @@
-﻿namespace uSync.Migrations.Extensions;
+﻿using System.Text.RegularExpressions;
+
+namespace uSync.Migrations.Extensions;
 
 public static class GuidExtensions
 {
@@ -40,5 +42,59 @@ public static class GuidExtensions
         var bytes = new byte[16];
         BitConverter.GetBytes(value).CopyTo(bytes, 0);
         return new Guid(bytes);
+    }
+
+    /// <summary>
+    /// Utility function to wrap guids inside double quotes to ensure Json strings are valid
+    /// </summary>
+    /// <param name="value">the Json string to be parsed</param>
+    /// <param name="regex">The regex string</param>
+    /// <param name="group">The regex group position, 0 = whole match > 1 each individual group match</param>
+    /// <returns>string</returns>
+    public static string WrapGuidsWithQuotes(string value, string regex, int group)
+    {
+        string guidRegEx = regex;
+
+        HashSet<string> uniqueMatches = new HashSet<string>();
+
+        foreach (Match m in Regex.Matches(value, guidRegEx))
+        {
+            uniqueMatches.Add(m.Groups[group].Value);
+        }
+
+        foreach (var guid in uniqueMatches)
+        {
+            value = value.Replace(guid, "\"" + guid + "\"")
+                .Replace("\"\"", "\"");
+        }
+        return value;
+    }
+
+    public static string LocalLink2Udi(string value)
+    {
+        string guidRegEx = @"(href|data-id)=""/?({|%7B)?(localLink:)?\b[A-Fa-f0-9]{8}(?:-[A-Fa-f0-9]{4}){3}-[A-Fa-f0-9]{12}\b(}|%7D)?""";
+
+        HashSet<string> uniqueMatches = new HashSet<string>();
+
+        foreach (Match m in Regex.Matches(value, guidRegEx))
+        {
+            uniqueMatches.Add(m.Value);
+        }
+
+        foreach (var guid in uniqueMatches)
+        {
+            if (guid.Contains("data-id"))
+            {
+                var newValue = guid.Replace("data-id", "data-udi").Insert(10, "umb://document/");
+                value = value.Replace(guid, newValue);
+            }
+            else if (guid.Contains("href"))
+            {
+                var colonPos = guid.IndexOf(':');
+                var newValue = guid.Insert(colonPos + 1, "umb://document/");
+                value = value.Replace(guid, newValue);
+            }
+        }
+        return value;
     }
 }
