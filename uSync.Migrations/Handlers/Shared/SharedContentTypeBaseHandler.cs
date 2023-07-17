@@ -1,4 +1,4 @@
-﻿using System.Xml.Linq;
+using System.Xml.Linq;
 
 using Microsoft.Extensions.Logging;
 
@@ -180,17 +180,24 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
         var propertyAlias = property.Element("Alias")?.ValueOrDefault(string.Empty) ?? string.Empty;
         var propertyName = property.Element("Name")?.ValueOrDefault(string.Empty) ?? string.Empty;
         var splitProperties = propertySplittingMigrator.GetSplitProperties(contentTypeAlias, propertyAlias, propertyName, context);
-        
+        var isFirst = true;
         foreach (var splitProperty in splitProperties)
         {
             var updatedProperty = GetUpdatedProperty(source, contentTypeAlias, property, context);
             if (updatedProperty != null)
             {
+                if (!isFirst) // prevent duplicate keys by generating a new key for all except the first property
+                {
+                    updatedProperty.CreateOrSetElement("Key", $"{contentTypeAlias}_{splitProperty.Alias}".ToGuid());
+                }
+
                 updatedProperty.CreateOrSetElement("Alias", splitProperty.Alias);
                 updatedProperty.CreateOrSetElement("Name", splitProperty.Name);
                 updatedProperty.CreateOrSetElement("Type", splitProperty.DataTypeAlias);
                 updatedProperty.CreateOrSetElement("Definition", splitProperty.DataTypeDefinition);
                 yield return updatedProperty;
+
+                isFirst = false;
             }
         }
     }
