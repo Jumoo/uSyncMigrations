@@ -2,6 +2,7 @@
 
 using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Models;
+using Umbraco.Cms.Core.Services;
 using Umbraco.Cms.Core.Strings;
 using Umbraco.Extensions;
 
@@ -12,35 +13,57 @@ namespace uSync.Migrations.Migrators.BlockGrid.BlockMigrators;
 
 public class GridMediaBlockMigrator : GridBlockMigratorSimpleBase, ISyncBlockMigrator
 {
-	public GridMediaBlockMigrator(IShortStringHelper shortStringHelper)
-		 : base(shortStringHelper)
-	{}
+    private readonly IMediaService _mediaService;
+    public GridMediaBlockMigrator(IShortStringHelper shortStringHelper, IMediaService mediaService)
+         : base(shortStringHelper)
+    {
+        _mediaService = mediaService;
+    }
 
-	public string[] Aliases => new[] { "media" };
+    public string[] Aliases => new[] { "media" };
 
-	public override string GetEditorAlias(ILegacyGridEditorConfig editor) => "Media Picker";
+    public override string GetEditorAlias(ILegacyGridEditorConfig editor) => "Media Picker";
 
-	public override Dictionary<string, object> GetPropertyValues(GridValue.GridControl control, SyncMigrationContext context)
-	{
-		var properties = new Dictionary<string, object>();
-		if (control.Value == null) return properties;
+    public override Dictionary<string, object> GetPropertyValues(GridValue.GridControl control, SyncMigrationContext context)
+    {
+        var properties = new Dictionary<string, object>();
+        if (control.Value == null) return properties;
 
-		var udiString = control.Value.Value<string>("udi");
-		if (udiString == null) return properties;
+        var udiString = control.Value.Value<string>("udi");
+        GuidUdi udiFromId = null;
+        if (udiString == null)
+        {
+            var idValue = control.Value.Value<string>("id");
+            if (string.IsNullOrWhiteSpace(idValue)) return properties;
 
-		// 
-		if (UdiParser.TryParse(udiString, out Udi? udi) && udi is GuidUdi guidUdi) {
+            if (!int.TryParse(idValue, out var id)) return properties;
 
-			var values = new
-			{
-				key = Guid.NewGuid(),
-				mediaKey = guidUdi.Guid
-			}.AsEnumerableOfOne();
+            var mediaItem = _mediaService.GetById(id);
+            if (mediaItem == null) return properties;
+            udiFromId = mediaItem.GetUdi();
+        }
 
-			properties.Add("media", JsonConvert.SerializeObject(values));
-		}
-		return properties;
-	}
+        Guid mediaKeyGuid = new Guid();
+
+        if (UdiParser.TryParse(udiString, out Udi? udi) && udi is GuidUdi guidUdi)
+        {
+            mediaKeyGuid = guidUdi.Guid;
+        }
+        else if(udiFromId != null)
+        {
+            mediaKeyGuid = udiFromId.Guid;
+        }
+
+        var values = new
+        {
+            key = Guid.NewGuid(),
+            mediaKey = mediaKeyGuid
+        }.AsEnumerableOfOne();
+
+        properties.Add("media", JsonConvert.SerializeObject(values));
+
+        return properties;
+    }
 }
 
 
