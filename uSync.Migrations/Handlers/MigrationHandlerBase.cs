@@ -104,7 +104,7 @@ internal abstract class MigrationHandlerBase<TObject>
         _logger.LogInformation("[{type}] Migration Prep completed ({elapsed}ms)", typeof(TObject).Name, sw.ElapsedMilliseconds);
     }
 
-    // for global prepapre stuff. 
+    // for global prepare stuff. 
     public virtual void Prepare(SyncMigrationContext context) { }
 
     public virtual IEnumerable<MigrationMessage> DoMigration(SyncMigrationContext context)
