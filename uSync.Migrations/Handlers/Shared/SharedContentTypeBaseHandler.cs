@@ -1,13 +1,10 @@
+﻿using Microsoft.Extensions.Logging;
 using System.Xml.Linq;
-
-using Microsoft.Extensions.Logging;
-
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Notifications;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Extensions;
-
 using uSync.Core;
 using uSync.Migrations.Composing;
 using uSync.Migrations.Context;
@@ -275,7 +272,7 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
             // if this has been blocked don't add it. 
 			if (context.IsBlocked(this.ItemType, contentType.Alias)) continue;
 
-            var source = contentType.MakeXMLFromNewDocType(_dataTypeService);
+            var source = contentType.MakeXMLFromNewDocType(_dataTypeService, context);
 
 			var migratingNotification = new SyncMigratingNotification<TEntity>(source, context);
 			if (_eventAggregator.PublishCancelable(migratingNotification) == true)
