@@ -16,7 +16,7 @@ public class NuPickersDotNetTypeaheadListPickerToContentmentDataList : NuPickers
         SyncMigrationContext context)
     {
         var nuPickersConfig =
-            JsonConvert.DeserializeObject<NuPickersEnumConfig>(
+            JsonConvert.DeserializeObject<NuPickersDotNetTypeConfig>(
                 dataTypeProperty.PreValues.GetPreValueOrDefault("dataSource", string.Empty));
 
         if (nuPickersConfig == null)
@@ -27,11 +27,9 @@ public class NuPickersDotNetTypeaheadListPickerToContentmentDataList : NuPickers
         {
             new
             {
-                key = "Umbraco.Community.Contentment.DataEditors.EnumDataListSource, Umbraco.Community.Contentment",
-                value = new
-                {
-                    enumType = new[] { MapAssembly(nuPickersConfig?.AssemblyName.TrimEnd(".dll")) , MapNamespace(nuPickersConfig?.EnumName) }
-                }
+                key =
+                    $"{MapNamespace(nuPickersConfig?.ClassName)}, {MapAssembly(nuPickersConfig?.AssemblyName.TrimEnd(".dll"))}",
+                value = ""
             }
         }.ToList();
 
@@ -56,7 +54,8 @@ public class NuPickersDotNetTypeaheadListPickerToContentmentDataList : NuPickers
         return config;
     }
 
-    public NuPickersDotNetTypeaheadListPickerToContentmentDataList(IOptions<NuPickerMigrationOptions> options) : base(options)
+    public NuPickersDotNetTypeaheadListPickerToContentmentDataList(IOptions<NuPickerMigrationOptions> options) :
+        base(options)
     {
     }
 }

@@ -37,14 +37,22 @@ public abstract class NuPickersToContentmentDataListBase : SyncPropertyMigratorB
         return JsonConvert.SerializeObject(values, Formatting.Indented);
     }
 
-    public virtual string MapAssembly(string assemblyName)
+    public virtual string? MapAssembly(string? assemblyName)
     {
+        if (assemblyName == null)
+        {
+            return assemblyName;
+        }
         return _options?.Value?.AssembliesMapping?.FirstOrDefault(x => x.Key.Equals(assemblyName)).Value ??
                assemblyName;
     }
 
-    public virtual string MapNamespace(string nameSpace)
+    public virtual string? MapNamespace(string? nameSpace)
     {
+        if (nameSpace == null)
+        {
+            return nameSpace;
+        }
         var namespaceOverride = _options.Value.NamespacesMapping?.OrderByDescending(x => x.Key.Length)
             .Where(x => nameSpace.Contains(x.Key));
 
