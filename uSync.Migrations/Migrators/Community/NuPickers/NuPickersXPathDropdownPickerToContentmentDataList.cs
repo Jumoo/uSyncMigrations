@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Xml.Serialization;
+using Microsoft.Extensions.Options;
 using Umbraco.Cms.Core;
 using Umbraco.Extensions;
 using uSync.Migrations.Context;
@@ -114,6 +115,10 @@ namespace uSync.Migrations.Migrators.Community
             }
 
             return string.Empty;
+        }
+
+        public NuPickersXPathDropdownPickerToContentmentDataList(IOptions<NuPickerMigrationOptions> options) : base(options)
+        {
         }
     }
     internal class NuPickerValue
