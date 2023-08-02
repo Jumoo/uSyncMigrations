@@ -87,6 +87,14 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
                 context.DataTypes.AddVariation(dtd, replacementInfo.Variation);
             }
         }
+    }
+
+    public void PrePrepareFiles(XElement source, SyncMigrationContext context)
+    {
+        var editorAlias = GetEditorAlias(source);
+        var (alias, dtd) = GetAliasAndKey(source);
+
+        if (dtd == Guid.Empty || string.IsNullOrEmpty(editorAlias)) return;
 
         var isSplitPropertyEditor = IsSplitPropertyEditor(editorAlias, context);
         if (isSplitPropertyEditor)
@@ -94,6 +102,8 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
             // if this editor is to be split, then by default we won't migrate the data type
             return;
         }
+
+        var dataTypeName = GetDataTypeName(source);
 
         // add alias, (won't update if replacement was added)
         context.DataTypes.AddDefinition(dtd, new Models.DataTypeInfo(editorAlias, dataTypeName));
