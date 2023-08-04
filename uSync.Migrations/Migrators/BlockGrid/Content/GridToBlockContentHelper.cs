@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
-
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 using Umbraco.Cms.Core;
@@ -230,6 +230,16 @@ internal class GridToBlockContentHelper
         {
             _logger.LogWarning("No contentTypeAlias from migrator {migrator}", blockMigrator.GetType().Name);
             return null;
+        }
+
+        if(contentTypeAlias == "BlockElement_macro")
+        {
+            var macroObject = JsonConvert.DeserializeObject<MacroObject>(control.Value.ToString());
+
+            if (macroObject != null)
+            {
+                contentTypeAlias = macroObject.MacroEditorAlias;
+            }
         }
 
         var contentTypeKey = context.ContentTypes.GetKeyByAlias(contentTypeAlias);
