@@ -1,6 +1,7 @@
 ﻿using uSync.Migrations.Migrators;
 
 namespace uSync.Migrations.Context;
+
 public class MigratorsContext
 {
 	private Dictionary<string, ISyncPropertyMigrator> _migrators { get; set; } = new(StringComparer.OrdinalIgnoreCase);
@@ -99,11 +100,9 @@ public class MigratorsContext
 		=> _migratorCache.TryGetValue(alias, out Dictionary<string, object>? values)
 			? values : new Dictionary<string, object>();
 
-
 	public void AddMergingMigrator(string contentType, ISyncPropertyMergingMigrator mergingMigrator)
 		=> _ = _mergingMigrators.TryAdd(contentType, mergingMigrator);
 
 	public ISyncPropertyMergingMigrator? GetMergingMigrator(string contentType)
 		=> _mergingMigrators.TryGetValue(contentType, out var migrator) == true ? migrator : null;
-
 }

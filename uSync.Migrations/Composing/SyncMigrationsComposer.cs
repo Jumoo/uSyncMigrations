@@ -39,7 +39,7 @@ public static class SyncMigrationsBuilderExtensions
     /// </remarks>
     public static IUmbracoBuilder AdduSyncMigrations(this IUmbracoBuilder builder)
     {
-        // stop a double add. 
+        // stop a double add.
         if (builder.Services.Any(x => x.ServiceType == typeof(ISyncMigrationFileService)))
         {
             return builder;
@@ -56,7 +56,7 @@ public static class SyncMigrationsBuilderExtensions
         builder
             .WithCollectionBuilder<SyncBlockMigratorCollectionBuilder>()
                 .Add(() => builder.TypeLoader.GetTypes<ISyncBlockMigrator>());
-        
+
         builder
             .WithCollectionBuilder<SyncPropertyMergingCollectionBuilder>()
                 .Append(builder.TypeLoader.GetTypes<ISyncPropertyMergingMigrator>());
@@ -79,7 +79,7 @@ public static class SyncMigrationsBuilderExtensions
             .WithCollectionBuilder<ArchetypeMigrationConfigurerCollectionBuilder>()
                 .Add(() => builder.TypeLoader.GetTypes<IArchetypeMigrationConfigurer>());
 
-        builder.Services.AddAuthorization(o => 
+        builder.Services.AddAuthorization(o =>
             CreatePolicies(o, Constants.Security.BackOfficeAuthenticationType));
 
         builder.Services.AddTransient<ISyncMigrationStatusService, SyncMigrationStatusService>();

@@ -24,7 +24,7 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
     where TEntity : ContentBase
 {
     protected readonly IShortStringHelper _shortStringHelper;
-   
+
     protected readonly HashSet<string> _ignoredProperties = new(StringComparer.OrdinalIgnoreCase);
     protected readonly Dictionary<string, string> _mediaTypeAliasForFileExtension = new(StringComparer.OrdinalIgnoreCase);
 
@@ -32,7 +32,7 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
         IEventAggregator eventAggregator,
         ISyncMigrationFileService migrationFileService,
         IShortStringHelper shortStringHelper,
-        ILogger<SharedContentBaseHandler<TEntity>> logger) 
+        ILogger<SharedContentBaseHandler<TEntity>> logger)
         : base(eventAggregator, migrationFileService, logger)
     {
         _shortStringHelper = shortStringHelper;
@@ -109,9 +109,9 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
         }
 
         var mergedProperties = context.Content.GetMergedProperties(contentType);
-        if (mergedProperties != null) 
+        if (mergedProperties != null)
             MergeContentProperties(contentType, mergedProperties, propertiesList, context);
-            
+
 
         target.Add(propertiesList);
 
@@ -158,7 +158,7 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
             return new XElement(property.Name.LocalName,
                         new XElement("Value", new XCData(migratedValue))).AsEnumerableOfOne();
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             _logger.LogWarning("Failed to migrate property [{editorAlias} {property}] {ex}",
                 editorAlias, property.Name.LocalName, ex.Message);
@@ -282,7 +282,6 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
         }
     }
 
-
     /// <summary>
     ///  Merge multiple properties into one single property. 
     /// </summary>
@@ -298,7 +297,7 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
         if (propertiesElement == null) return;
 
         var merger = context.Migrators.GetMergingMigrator(contentType);
-        if (merger == null) return; 
+        if (merger == null) return;
 
         if (config == null) return;
         if (!config.MergedProperties.Any()) return;
@@ -312,7 +311,7 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
 
         if (config.RemoveMergedProperties)
             propertiesElement.RemoveByName(config.MergedProperties);
-    } 
+    }
 
     /// <summary>
     ///  get the properties and values that we want to merge sorted by culture. 
@@ -364,5 +363,4 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
         // add the new target to the element.
         return targetElement;
     }
-        
 }

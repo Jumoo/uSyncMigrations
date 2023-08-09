@@ -1,8 +1,8 @@
 # Getting Started.
 
-This is a quick guide to starting your migration journey with uSync.Migrations.
+This is a quick guide to starting your migration journey with uSync Migrations.
 
-> **Please Note:** uSync.Migrations isn't going to be one button - here is your new site migration. uSync.Migrations will help you with your settings and content, you will need to look at code, templates and all that other stuff.
+> **Please Note:** uSync Migrations isn't going to be one button - here is your new site migration. uSync Migrations will help you with your settings and content, you will need to look at code, templates and all that other stuff.
 
 
 ## Step One : Pick a packer
@@ -10,7 +10,7 @@ This is a quick guide to starting your migration journey with uSync.Migrations.
 
 uSync Packers are simple packages for Umbraco 7 and Umbraco 8, that use gather up the files from that version of Umbraco and give you something you can kick-start your migration with.
 
-### On your source site install one of the uSync.Migration.Packer packages
+### On your source site install one of the `uSync.Migration.Packer` packages
 
 | Umbraco 7 | Umbraco 8
 | - | -
@@ -21,7 +21,7 @@ uSync Packers are simple packages for Umbraco 7 and Umbraco 8, that use gather u
 
 A package will create a new uSync export, and grab some extra files such as the css/script and a specially generated `grid.config.js` file and put them all into a .zip package.
 
-you can then use the .zip package on uSync migrations to start the process properly.
+you can then use the .zip package on uSync Migrations to start the process properly.
 
 ## Step Two: Migrate!
 
@@ -39,7 +39,7 @@ dotnet add package uSync
 dotnet add package uSync.Migrations --prerelease
 ```
 
-3. Run your site, and navigate to the uSync.Migrations section :
+3. Run your site, and navigate to the uSync Migrations section :
 
 ![Migrations dashboard.](assets/migrations-new.png)
 
@@ -51,24 +51,25 @@ dotnet add package uSync.Migrations --prerelease
 
 5. When uploading you should select the "migration plan" which controls the type of migration your want.
 
-![pick a plan](assets/migrations-pickplan.png)
+![Pick a plan](assets/migrations-pickplan.png)
 
 6. Submit.
 
 ## Convert
 
-The first step of any migration with uSync migrations is the conversion.
+The first step of any migration with uSync Migrations is the conversion.
 
 Converting the files takes the original uSync files and converts them to the latest version and depending on your plan it changes types, and upgrades things as it goes.
 
-> This is the step that can convert files from nested content to block list, and grids to block grids. The actual changes don't occur until you import but the conversion is where the magic happens.
+> This is the step that can convert files from Nested Content to Block List, and Grids to Block Grids. The actual changes don't occur until you import but the conversion is where the magic happens.
 
 ### Validation
-Before a conversion occurs uSync.Migrations will validate the folders and tell you of anything it doesn't know how to do.
+
+Before a conversion occurs uSync Migrations will validate the folders and tell you of anything it doesn't know how to do.
 
 ![Validation results](assets/migrations-validate.png)
 
-> uSync.Migrations comes with lots of mappers to convert old content types to new, but if it's missing one you need you can always write that converter and contribute back to the core uSync.Migrations for others to benefit.
+> uSync Migrations comes with lots of mappers to convert old content types to new, but if it's missing one you need you can always write that converter and contribute back to the core uSync Migrations for others to benefit.
 
 ### Convert
 
@@ -84,24 +85,24 @@ Importing is the same as a normal uSync import except it comes from the migratio
 
 ![Import results](assets/migrations-import-results.png)
 
-## Enjoy & Start the long journey
+## Enjoy & start the long journey
 
-At this point, if everything has gone well you should have all your content and settings imported into your new site. Lovingly converted to new types (if you chose to do that) and ready for you to complete the migration.
+At this point, if everything has gone well you should have all your content and settings imported into your new site. Lovingly converted to new types (if you choose to do that) and ready for you to complete the migration.
 
-All you have to do now is :
+All you have to do now is:
 - Find replacements for all those packages you use to have.
 - rewrite all the templates and views 😰
 - Rewrite all your controllers, services, etc.
 
-**It's going to take a little while longer than the migration just did**
+**It's going to take a little while longer than the migration just did.**
 
-## Remember You can always do it again.
+## Remember, you can always do it again.
 
-uSync.Migrations is designed so you can run the same migration again and again. You might run a migration once (or more) to get it right - but it's likely you will need to do it again before you go live. If you visit the uSync.Migrations dashboard, you will now see a table of migrations that you have ran.
+uSync Migrations is designed so you can run the same migration again and again. You might run a migration once (or more) to get it right - but it's likely you will need to do it again before you go live. If you visit the uSync Migrations dashboard, you will now see a table of migrations that you have ran.
 
 ![Dashboard](assets/migrations-dashboard.png)
 
-From the dashboard, you can rerun conversions, re-import things and generally tweak your migration process.
+From the dashboard, you can re-run conversions, re-import things and generally tweak your migration process.
 
 
-> Always have a backup, don't blame us if it goes wrong, wear sunscreen, and enjoy. 
+> Always have a backup, don't blame us if it goes wrong, wear sunscreen, and enjoy.

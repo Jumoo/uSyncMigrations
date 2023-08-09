@@ -62,7 +62,6 @@ internal abstract class MigrationHandlerBase<TObject>
     protected string? SourceFolderName { get; init; }
     protected string? DestinationFolderName { get; init; }
 
-
     protected virtual string GetSourceFolder(string sourceRoot)
         => Path.Combine(sourceRoot, SourceFolderName ?? string.Empty);
 
@@ -83,7 +82,7 @@ internal abstract class MigrationHandlerBase<TObject>
     public virtual void PrepareMigrations(SyncMigrationContext context)
     {
         Stopwatch sw = Stopwatch.StartNew();
-        
+
         _logger.LogInformation("[{type}] Preparing Migration {source}", typeof(TObject).Name, context.Metadata.SourceFolder);
         var files = GetSourceFiles(context.Metadata.SourceFolder);
         if (files == null)
@@ -116,30 +115,29 @@ internal abstract class MigrationHandlerBase<TObject>
         return messages;
     }
 
-
     /// <summary>
     ///  so handlers can run things before main DoMigrationLoop
     /// </summary>
     /// <param name="context"></param>
     /// <returns></returns>
-	protected virtual IEnumerable<MigrationMessage> PreDoMigration(SyncMigrationContext context)
-		=> Enumerable.Empty<MigrationMessage>();
+    protected virtual IEnumerable<MigrationMessage> PreDoMigration(SyncMigrationContext context)
+        => Enumerable.Empty<MigrationMessage>();
 
     /// <summary>
     ///  So Handlers can run things post main DoMigrationLoop
     /// </summary>
     /// <param name="context"></param>
     /// <returns></returns>
-	protected virtual IEnumerable<MigrationMessage> PostDoMigration(SyncMigrationContext context)
-		=> Enumerable.Empty<MigrationMessage>();
+    protected virtual IEnumerable<MigrationMessage> PostDoMigration(SyncMigrationContext context)
+        => Enumerable.Empty<MigrationMessage>();
 
-	/// <summary>
-	///  migrate a folder 
-	/// </summary>
-	/// <remarks>
-	///  We have to do it like this for v7 because it did level by folder structure.
-	/// </remarks>
-	private IEnumerable<MigrationMessage> MigrateFolder(string folder, int level, SyncMigrationContext context)
+    /// <summary>
+    ///  migrate a folder 
+    /// </summary>
+    /// <remarks>
+    ///  We have to do it like this for v7 because it did level by folder structure.
+    /// </remarks>
+    private IEnumerable<MigrationMessage> MigrateFolder(string folder, int level, SyncMigrationContext context)
     {
         if (Directory.Exists(folder) == false)
         {
@@ -178,7 +176,7 @@ internal abstract class MigrationHandlerBase<TObject>
                     messages.Add(SaveTargetXml(context.Metadata.MigrationId, target));
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex, "Error while processing {file}", file);
 
@@ -218,5 +216,4 @@ internal abstract class MigrationHandlerBase<TObject>
     /// <param name="source"></param>
     /// <returns></returns>
     protected abstract (string alias, Guid key) GetAliasAndKey(XElement source);
-        
 }

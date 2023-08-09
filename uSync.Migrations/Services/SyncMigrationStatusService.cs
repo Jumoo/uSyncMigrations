@@ -36,7 +36,6 @@ internal class SyncMigrationStatusService : ISyncMigrationStatusService
         { 8, nameof(BlockMigrationPlan) }
     };
 
-
     private readonly IShortStringHelper _shortStringHelper;
     private readonly IWebHostEnvironment _webHostEnvironment;
 
@@ -49,14 +48,13 @@ internal class SyncMigrationStatusService : ISyncMigrationStatusService
         _migrateRoot = _webHostEnvironment.MapPathContentRoot(_migrationsFolderName);
     }
 
-
     public IEnumerable<MigrationStatus> GetAll()
     {
         var migrations = new List<MigrationStatus>();
 
         if (!Directory.Exists(_migrateRoot)) return migrations;
 
-        foreach(var migrationFolder in Directory.GetDirectories(_migrateRoot))
+        foreach (var migrationFolder in Directory.GetDirectories(_migrateRoot))
         {
             var status = this.LoadStatus(migrationFolder);
 
@@ -134,7 +132,7 @@ internal class SyncMigrationStatusService : ISyncMigrationStatusService
 
     public MigrationStatus? CreateNew(MigrationStatus status)
     {
-        if (status == null || status.Source == null ) return null;
+        if (status == null || status.Source == null) return null;
 
         status.Id = status.Name?.ToSafeFileName(_shortStringHelper) ??
             Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
@@ -157,7 +155,6 @@ internal class SyncMigrationStatusService : ISyncMigrationStatusService
         return null;
     }
 
-
     public void SaveStatus(string? folder, MigrationStatus status)
     {
         if (string.IsNullOrWhiteSpace(folder)) return;
@@ -172,14 +169,12 @@ internal class SyncMigrationStatusService : ISyncMigrationStatusService
         File.WriteAllText(statusFile, json, Encoding.UTF8);
     }
 
-
     private static string GetStatusFilePath(string folder)
         => Path.Combine(folder, _statusFileName);
 
     private string GetSiteRelativePath(string folder)
-        => folder.Substring(_webHostEnvironment.ContentRootPath.Length+1);
- 
-    
+        => folder.Substring(_webHostEnvironment.ContentRootPath.Length + 1);
+
     public MigrationOptions? ConvertToOptions(MigrationStatus status, MigrationOptions defaultOptions)
     {
         if (status.Source == null || status.Target == null) return null;
@@ -202,9 +197,7 @@ internal class SyncMigrationStatusService : ISyncMigrationStatusService
             MigrationType = defaultOptions.MigrationType,
             PreferredMigrators = defaultOptions.PreferredMigrators,
             PropertyMigrators = defaultOptions.PropertyMigrators,
-            MergingProperties = defaultOptions.MergingProperties,           
+            MergingProperties = defaultOptions.MergingProperties,
         };
     }
-
 }
-

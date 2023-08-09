@@ -25,7 +25,7 @@ public class MigrationOptions
     public IDictionary<string, string>? PreferredMigrators { get; set; }
 
     /// <summary>
-    ///  migrators by property name. 
+    ///  migrators by property name.
     /// </summary>
     /// <remarks>
     ///  property migrators will be searched by property alias
@@ -44,7 +44,7 @@ public class MigrationOptions
     public Dictionary<string, List<string>>? BlockedItems { get; set; }
 
     /// <summary>
-    ///  Blocked properties use (alias of something to block.) syntax?. 
+    ///  Blocked properties use (alias of something to block.) syntax?.
     /// </summary>
     public List<string>? IgnoredProperties { get; set; }
 
@@ -58,10 +58,9 @@ public class MigrationOptions
     public string? ArchetypeMigrationConfigurer { get; set; }
 
     /// <summary>
-    ///  things we might want to merge. 
+    ///  things we might want to merge.
     /// </summary>
     public Dictionary<string, MergingPropertiesConfig> MergingProperties { get; set; } = new(StringComparer.InvariantCultureIgnoreCase);
-
 }
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
