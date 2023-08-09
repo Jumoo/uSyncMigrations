@@ -6,4 +6,6 @@ public class NewContentTypeProperty
     public string Alias { get; set; }
     public string DataTypeAlias { get; set; }
     public string OriginalEditorAlias { get; set; }
+
+    public string TabAlias { get; set; } = "block";
 }
