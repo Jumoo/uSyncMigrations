@@ -56,7 +56,7 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
             var propertySplittingMigrator = context.Migrators.TryGetPropertySplittingMigrator(editorAlias);
             if (propertySplittingMigrator != null)
             {
-                context.ContentTypes.AddProperty(contentTypeAlias, alias, editorAlias, "none"); // add the original property so we can reference the original EditorAlias later
+                context.ContentTypes.AddProperty(contentTypeAlias, alias, editorAlias, "none", definition); // add the original property so we can reference the original EditorAlias later
 
                 var splitProperties = propertySplittingMigrator.GetSplitProperties(contentTypeAlias, alias, propertyName, context);
                 foreach (var splitProperty in splitProperties)
@@ -70,7 +70,7 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
             else
             {
                 context.ContentTypes.AddProperty(contentTypeAlias, alias,
-                    editorAlias, context.DataTypes.GetByDefinition(definition)?.EditorAlias);
+                    editorAlias, context.DataTypes.GetByDefinition(definition)?.EditorAlias, definition);
 
                 context.ContentTypes.AddDataTypeAlias(contentTypeAlias, alias,
                     context.DataTypes.GetAlias(definition));
@@ -307,7 +307,7 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
             if (dataType != null)
             {
                 context.ContentTypes.AddProperty(contentType.Alias, property.Alias,
-                    property.OriginalEditorAlias ?? dataType.EditorAlias, dataType.EditorAlias);
+                    property.OriginalEditorAlias ?? dataType.EditorAlias, dataType.EditorAlias, dataType.Key);
             }
 		}
 	}
