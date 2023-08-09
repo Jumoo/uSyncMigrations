@@ -61,14 +61,13 @@ internal class SyncMigrationService : ISyncMigrationService
     public IEnumerable<ISyncMigrationHandler> GetHandlers(int version)
         => _migrationHandlers.Where(x => x.SourceVersion == version);
 
-
     public int DetectVersion(string folder)
     {
         var uSyncFolder = _migrationFileService.GetMigrationFolder(folder, false);
-        return MigrationIoHelpers.DetectVersion(uSyncFolder);   
+        return MigrationIoHelpers.DetectVersion(uSyncFolder);
     }
 
-     /// <summary>
+    /// <summary>
     ///  validate things before we run through them and do an actual migration.
     /// </summary>
     /// <param name="options"></param>
@@ -94,7 +93,7 @@ internal class SyncMigrationService : ISyncMigrationService
 
         var messages = new List<MigrationMessage>();
 
-        foreach(var validator in _migrationValidators)
+        foreach (var validator in _migrationValidators)
         {
             try
             {
@@ -105,7 +104,7 @@ internal class SyncMigrationService : ISyncMigrationService
                 // TODO: what do we do if the validator fails ???
             }
         }
-  
+
         return new MigrationResults
         {
             Messages = messages,
@@ -113,7 +112,6 @@ internal class SyncMigrationService : ISyncMigrationService
             Success = !messages.Any(x => x.MessageType == MigrationMessageType.Error)
         };
     }
-
 
     public MigrationResults MigrateFiles(MigrationOptions options)
     {
@@ -239,13 +237,13 @@ internal class SyncMigrationService : ISyncMigrationService
             .ForEach(x => x.PrepareMigrations(context));
 
         // add configurer for Archetype migrations
-        context.ContentTypes.ArchetypeMigrationConfigurer = _archetypeConfigures.FirstOrDefault(c => c.GetType().Name == options.ArchetypeMigrationConfigurer) 
+        context.ContentTypes.ArchetypeMigrationConfigurer = _archetypeConfigures.FirstOrDefault(c => c.GetType().Name == options.ArchetypeMigrationConfigurer)
             ?? new DefaultArchetypeMigrationConfigurer();
 
         return context;
     }
 
-    private void AddMigrators(SyncMigrationContext context, IDictionary<string,string>? preferredMigrators)
+    private void AddMigrators(SyncMigrationContext context, IDictionary<string, string>? preferredMigrators)
     {
         _logger.LogInformation("Adding migrators");
 
