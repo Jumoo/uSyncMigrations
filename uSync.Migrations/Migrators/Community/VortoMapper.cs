@@ -2,8 +2,6 @@
 using Newtonsoft.Json.Linq;
 
 using Umbraco.Cms.Core;
-using Umbraco.Cms.Core.Models;
-using Umbraco.Cms.Core.Services;
 using Umbraco.Extensions;
 
 using uSync.Migrations.Context;
@@ -35,7 +33,7 @@ public class VortoMapper : SyncPropertyMigratorBase,
     }
 
     /// <summary>
-    ///  vorto properties don't actually need to be on the target - the properties they wrap should already be there. 
+    ///  Vorto properties don't actually need to be on the target - the properties they wrap should already be there.
     ///  so the migrator needs to actually tell the process what should be here.
     /// </summary>
     /// <param name="dataTypeProperty"></param>
@@ -57,17 +55,16 @@ public class VortoMapper : SyncPropertyMigratorBase,
 
     private (Guid key, DataTypeInfo? dataTypeInfo) GetWrappedDatatype(IReadOnlyCollection<PreValue>? preValues, SyncMigrationContext context)
     {
-        if (preValues == null) return (Guid.Empty, null); ;
+        if (preValues == null) return (Guid.Empty, null);
 
         var dataType = preValues.FirstOrDefault(x => x.Alias.Equals("dataType"));
-        if (dataType == null) return (Guid.Empty, null); ;
+        if (dataType == null) return (Guid.Empty, null);
 
         var value = JsonConvert.DeserializeObject<JObject>(dataType.Value);
-        if (value is null) return (Guid.Empty, null); ;
+        if (value is null) return (Guid.Empty, null);
 
-        // guid is the guid of the wrapped datatype. 
+        // guid is the guid of the wrapped datatype.
         var attempt = value.Value<string>("guid").TryConvertTo<Guid>();
-
         if (attempt)
             return (attempt.Result, context.DataTypes.GetByDefinition(attempt.Result));
 
@@ -82,9 +79,38 @@ public class VortoMapper : SyncPropertyMigratorBase,
         try
         {
             var culturedValues = JsonConvert.DeserializeObject<CulturedPropertyValue>(contentProperty.Value);
-            return culturedValues != null
-                ? Attempt<CulturedPropertyValue>.Succeed(culturedValues)
-                : Attempt<CulturedPropertyValue>.Fail(new ArgumentNullException("Null value in vorto"));
+            if (culturedValues is not null)
+            {
+                var dataType = context.DataTypes.GetByDefinition(culturedValues.DtdGuid);
+                if (dataType is not null)
+                {
+                    var migrator = context.Migrators.TryGetMigrator(
+                        $"{contentProperty.ContentTypeAlias}_{contentProperty.PropertyAlias}", dataType.EditorAlias);
+
+                    if (migrator != null)
+                    {
+                        foreach (var cultureValue in culturedValues.Values)
+                        {
+                            var val = migrator.GetContentValue(
+                                new SyncMigrationContentProperty(
+                                    contentProperty.ContentTypeAlias,
+                                    contentProperty.PropertyAlias,
+                                    contentProperty.ContentTypeAlias,
+                                    cultureValue.Value),
+                                context);
+
+                            if (val is not null)
+                            {
+                                culturedValues.Values[cultureValue.Key] = val;
+                            }
+                        }
+                    }
+                }
+
+                return Attempt<CulturedPropertyValue>.Succeed(culturedValues);
+            }
+
+            return Attempt<CulturedPropertyValue>.Fail(new ArgumentNullException("Null value in Vorto"));
         }
         catch (Exception ex)
         {

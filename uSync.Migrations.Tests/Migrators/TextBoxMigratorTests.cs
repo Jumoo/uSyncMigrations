@@ -7,7 +7,7 @@ using uSync.Migrations.Models;
 namespace uSync.Migrations.Tests.Migrators;
 
 [TestFixture]
-internal class TextBoxMigratorTests : MigratiorTestBase
+internal class TextBoxMigratorTests : MigratorTestBase
 {
     [SetUp]
     public override void Setup()
@@ -28,8 +28,8 @@ internal class TextBoxMigratorTests : MigratiorTestBase
     }
 
     [TestCase("Some Text in a box", "Some Text in a box")]
-    public override void ContentValueAsExpeceted(string value, string expected)
-        => ContentValueAsExpecetedBase(value, expected);
+    public override void ContentValueAsExpected(string value, string expected)
+        => ContentValueAsExpectedBase(value, expected);
 
     [Test]
     public override void DatabaseTypeAsExpected()
@@ -37,7 +37,7 @@ internal class TextBoxMigratorTests : MigratiorTestBase
 
     [Test]
     public override void EditorAliasAsExpected()
-        => EditorAliasAsExpectedbase(UmbEditors.Aliases.TextBox);
+        => EditorAliasAsExpectedBase(UmbEditors.Aliases.TextBox);
 
     protected override SyncMigrationContentProperty GetMigrationContentProperty(string value)
         => new SyncMigrationContentProperty("Test", "Textbox", UmbEditors.Aliases.TextBox, value);

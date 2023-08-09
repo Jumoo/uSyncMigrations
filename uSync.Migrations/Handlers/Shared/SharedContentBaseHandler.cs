@@ -183,14 +183,14 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
     /// </summary>
     protected virtual XElement? GetVariedValueNode(ISyncVariationPropertyMigrator migrator, string contentTypeAlias, string propertyName, SyncMigrationContentProperty migrationProperty, SyncMigrationContext context)
     {
+        var newProperty = new XElement(propertyName);
+
         // Get varied elements from the migrator.
         var attempt = migrator.GetVariedElements(migrationProperty, context);
         if (attempt.Success && attempt.Result != null)
         {
             // this returns an object which tells us what datatype to use
-            // and a dictionary of cultuire / values we can migrate. 
-
-            var newProperty = new XElement(propertyName);
+            // and a dictionary of cultuire / values we can migrate.
 
             // get editor alias from dtdguid
             var variantDataType = context.DataTypes.GetByDefinition(attempt.Result.DtdGuid);
@@ -209,11 +209,9 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
                         new XCData(migratedValue)));
                 }
             }
-
-            return newProperty;
         }
 
-        return null;
+        return newProperty;
     }
 
     protected virtual string MigrateContentValue(SyncMigrationContentProperty migrationProperty, SyncMigrationContext context)

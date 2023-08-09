@@ -1,4 +1,4 @@
-﻿using System.Xml.Linq;
+using System.Xml.Linq;
 
 using Microsoft.Extensions.Logging;
 
@@ -56,7 +56,7 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
             var propertySplittingMigrator = context.Migrators.TryGetPropertySplittingMigrator(editorAlias);
             if (propertySplittingMigrator != null)
             {
-                context.ContentTypes.AddProperty(contentTypeAlias, alias, editorAlias, "none"); // add the original property so we can reference the original EditorAlias later
+                context.ContentTypes.AddProperty(contentTypeAlias, alias, editorAlias, "none", definition); // add the original property so we can reference the original EditorAlias later
 
                 var splitProperties = propertySplittingMigrator.GetSplitProperties(contentTypeAlias, alias, propertyName, context);
                 foreach (var splitProperty in splitProperties)
@@ -70,7 +70,7 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
             else
             {
                 context.ContentTypes.AddProperty(contentTypeAlias, alias,
-                    editorAlias, context.DataTypes.GetByDefinition(definition)?.EditorAlias);
+                    editorAlias, context.DataTypes.GetByDefinition(definition)?.EditorAlias, definition);
 
                 context.ContentTypes.AddDataTypeAlias(contentTypeAlias, alias,
                     context.DataTypes.GetAlias(definition));
@@ -180,17 +180,24 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
         var propertyAlias = property.Element("Alias")?.ValueOrDefault(string.Empty) ?? string.Empty;
         var propertyName = property.Element("Name")?.ValueOrDefault(string.Empty) ?? string.Empty;
         var splitProperties = propertySplittingMigrator.GetSplitProperties(contentTypeAlias, propertyAlias, propertyName, context);
-        
+        var isFirst = true;
         foreach (var splitProperty in splitProperties)
         {
             var updatedProperty = GetUpdatedProperty(source, contentTypeAlias, property, context);
             if (updatedProperty != null)
             {
+                if (!isFirst) // prevent duplicate keys by generating a new key for all except the first property
+                {
+                    updatedProperty.CreateOrSetElement("Key", $"{contentTypeAlias}_{splitProperty.Alias}".ToGuid());
+                }
+
                 updatedProperty.CreateOrSetElement("Alias", splitProperty.Alias);
                 updatedProperty.CreateOrSetElement("Name", splitProperty.Name);
                 updatedProperty.CreateOrSetElement("Type", splitProperty.DataTypeAlias);
                 updatedProperty.CreateOrSetElement("Definition", splitProperty.DataTypeDefinition);
                 yield return updatedProperty;
+
+                isFirst = false;
             }
         }
     }
@@ -307,7 +314,7 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
             if (dataType != null)
             {
                 context.ContentTypes.AddProperty(contentType.Alias, property.Alias,
-                    property.OriginalEditorAlias ?? dataType.EditorAlias, dataType.EditorAlias);
+                    property.OriginalEditorAlias ?? dataType.EditorAlias, dataType.EditorAlias, dataType.Key);
             }
 		}
 	}
