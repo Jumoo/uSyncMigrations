@@ -14,26 +14,38 @@ public class RadioButtonListMigrator : SyncPropertyMigratorBase
     public override object? GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
         var config = new ValueListConfiguration();
-        if (dataTypeProperty.PreValues == null) return config;
 
-        // Default the order to the sort order of the prevalues
-        var preValues = dataTypeProperty.PreValues.OrderBy(x => x.SortOrder);
-        
-        // Start a counter as we can't rely on the sort order entirely
-        var count = 0;
-
-        foreach (var item in preValues)
+        if (dataTypeProperty.PreValues is not null)
         {
-            config.Items.Add(new ValueListConfiguration.ValueListItem
+            foreach (var item in dataTypeProperty.PreValues.OrderBy(x => x.SortOrder))
             {
-                Id = count, // Using the count ensure it is unique
-                Value = item.Value
-            });
-            
-            // Increment the counter before the next iteration
-            count++;
+                config.Items.Add(new ValueListConfiguration.ValueListItem
+                {
+                    Id = int.TryParse(item.Alias, out var id) == true ? id : item.SortOrder,
+                    Value = item.Value
+                });
+            }
+
+            context.Migrators.AddCustomValues(
+                $"dataType_{dataTypeProperty.DataTypeAlias}_items",
+                config.Items.ToDictionary(x => x.Id.ToString(), x => (object)x.Value!));
         }
 
         return config;
+    }
+
+    public override string? GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
+    {
+        if (string.IsNullOrWhiteSpace(contentProperty.Value) == false)
+        {
+            var dataTypeAlias = context.ContentTypes.GetDataTypeAlias(contentProperty.ContentTypeAlias, contentProperty.PropertyAlias);
+            var items = context.Migrators.GetCustomValues($"dataType_{dataTypeAlias}_items");
+            if (items?.TryGetValue(contentProperty.Value, out var value) == true && value is string str)
+            {
+                return str;
+            }
+        }
+
+        return base.GetContentValue(contentProperty, context);
     }
 }
