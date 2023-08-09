@@ -43,6 +43,9 @@ public class MigratorsContext
 		_migrators.TryAdd(editorAlias, migrator);
 	}
 
+	public void AddPropertyAliasMigration(string propertyAlias, ISyncPropertyMigrator migrator)
+		=> _propertyMigrators.TryAdd(propertyAlias, migrator);
+
 	/// <summary>
 	///  get the variant version of a migrator (if there is one)
 	/// </summary>
