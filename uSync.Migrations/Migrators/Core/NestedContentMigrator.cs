@@ -1,13 +1,12 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 
 using Umbraco.Cms.Core.PropertyEditors;
-
-using uSync.Migrations.Composing;
+using Umbraco.Extensions;
 using uSync.Migrations.Context;
 using uSync.Migrations.Extensions;
 using uSync.Migrations.Migrators.Models;
 
-namespace uSync.Migrations.Migrators;
+namespace uSync.Migrations.Migrators.Core;
 
 [SyncMigrator(UmbConstants.PropertyEditors.Aliases.NestedContent, typeof(NestedContentConfiguration), IsDefaultAlias = true)]
 [SyncMigrator("Our.Umbraco.NestedContent")]
@@ -27,13 +26,12 @@ public class NestedContentMigrator : SyncPropertyMigratorBase
         var config = (NestedContentConfiguration?)new NestedContentConfiguration().MapPreValues(dataTypeProperty.PreValues);
         if (config?.ContentTypes == null) return new NestedContentConfiguration();
 
-        foreach(var contentTypeAlias in config.ContentTypes.Select(x => x.Alias))
-        {
-            if (string.IsNullOrWhiteSpace(contentTypeAlias)) continue;
+        var contentTypeKeys = config.ContentTypes.Select(x => x.Alias)
+            .WhereNotNull() // satisfy nullability requirement
+            .Where(a => !string.IsNullOrWhiteSpace(a))
+            .Select(context.ContentTypes.GetKeyByAlias);
 
-            var key = context.ContentTypes.GetKeyByAlias(contentTypeAlias);
-            context.ContentTypes.AddElementType(key);
-        }
+        context.ContentTypes.AddElementTypes(contentTypeKeys, true);
 
         return config;
     }
@@ -43,7 +41,7 @@ public class NestedContentMigrator : SyncPropertyMigratorBase
     {
         if (string.IsNullOrWhiteSpace(contentProperty.Value)) return string.Empty;
 
-        var rowValues = JsonConvert.DeserializeObject<IList<NestedContentRowValue>>(contentProperty.Value);
+        var rowValues = JsonConvert.DeserializeObject<IList<NestedContentRowValue>>(contentProperty.Value, new JsonSerializerSettings() { DateParseHandling = DateParseHandling.None });
         if (rowValues == null) return string.Empty;
 
         foreach (var row in rowValues)
@@ -69,7 +67,7 @@ public class NestedContentMigrator : SyncPropertyMigratorBase
                                 context);
                     }
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     throw new Exception($"Nested Error: [{editorAlias.OriginalEditorAlias} -{property.Key}] : {ex.Message}", ex);
                 }

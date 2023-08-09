@@ -75,7 +75,8 @@ internal class GridToBlockGridConfigLayoutBlockHelper
                 var area = new BlockGridConfiguration.BlockGridAreaConfiguration
                 {
                     Alias = $"area_{index}",
-                    ColumnSpan = section.Grid
+                    ColumnSpan = section.Grid,
+		    RowSpan = 1
                 };
 
                 var alias = _conventions.GridAreaConfigAlias(area.Alias);
@@ -105,7 +106,7 @@ internal class GridToBlockGridConfigLayoutBlockHelper
 
                 allowed.AddRange(gridBlockContext.GetRootAllowedLayouts());
 
-                continue;
+                //continue;
             }
 
             var contentTypeAlias = _conventions.TemplateContentTypeAlias(template.Name);

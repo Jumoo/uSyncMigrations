@@ -7,7 +7,7 @@ using uSync.Migrations.Migrators.Models;
 namespace uSync.Migrations.Migrators.Community;
 
 [SyncMigrator("nuPickers - base migrator, not used directly")]
-public class NuPickersToContentmentDataListBase : SyncPropertyMigratorBase
+public abstract class NuPickersToContentmentDataListBase : SyncPropertyMigratorBase
 {
     public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
         => "Umbraco.Community.Contentment.DataList";

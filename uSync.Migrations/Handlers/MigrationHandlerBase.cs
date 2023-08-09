@@ -35,7 +35,7 @@ internal abstract class MigrationHandlerBase<TObject>
         var attribute = GetType().GetCustomAttribute<SyncMigrationHandlerAttribute>();
         if (attribute == null)
         {
-            throw new ArgumentException("Handler must has SyncMigrationAttribute to use base class");
+            throw new ArgumentException("Handler must have SyncMigrationAttribute to use base class");
         }
 
         ItemType = typeof(TObject).Name;
