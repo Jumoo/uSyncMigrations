@@ -264,8 +264,4 @@ $RECYCLE.BIN/
 .idea
 /uSyncMigrationSite/config
 /uSyncMigrationSite/Views
-/uSyncMigrationSite/Views/Contact.cshtml
-/uSyncMigrationSite/Views/ContentPage.cshtml
-/uSyncMigrationSite/Views/Home.cshtml
-/uSyncMigrationSite/Views/Master.cshtml
-/uSyncMigrationSite/Views/People.cshtml
+
