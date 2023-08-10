@@ -226,6 +226,8 @@ internal class SyncMigrationService : ISyncMigrationService
         options.ChangeTabs?
             .ForEach(x => context.ContentTypes.AddChangedTabs(x));
 
+        AddPropertyMigrators(context, options.PropertyMigrators);
+
         AddMigrators(context, options.PreferredMigrators);
 
         AddMergers(context, options.MergingProperties);
@@ -243,7 +245,23 @@ internal class SyncMigrationService : ISyncMigrationService
         return context;
     }
 
-    private void AddMigrators(SyncMigrationContext context, IDictionary<string, string>? preferredMigrators)
+
+    private void AddPropertyMigrators(SyncMigrationContext context, IDictionary<string, string>? propertyMigrators)
+    {
+        if (propertyMigrators?.Count > 0)
+        {
+            foreach (var item in propertyMigrators)
+            {
+                var migrator = _migrators.GetMigrator(item.Value);
+                if (migrator is not null)
+                {
+                    context.Migrators.AddPropertyAliasMigration(item.Key, migrator);
+                }
+            }
+        }
+    }
+
+    private void AddMigrators(SyncMigrationContext context, IDictionary<string,string>? preferredMigrators)
     {
         _logger.LogInformation("Adding migrators");
 

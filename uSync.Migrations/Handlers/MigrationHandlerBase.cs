@@ -90,12 +90,14 @@ internal abstract class MigrationHandlerBase<TObject>
             return;
         }
 
-        foreach (var file in files)
-        {
-            var source = XElement.Load(file);   
-            PrepareFile(source, context);
-            
-        }
+        // load anything handler specific. 
+        Prepare(context);
+
+        // loop through the files
+        List<XElement> nodes = files.Select(XElement.Load).ToList();
+        nodes.ForEach(x => PrePrepareFile(x, context));
+        nodes.ForEach(x => PrepareFile(x, context));
+
 
         sw.Stop();
         _logger.LogInformation("[{type}] Migration Prep completed ({elapsed}ms)", typeof(TObject).Name, sw.ElapsedMilliseconds);
@@ -205,6 +207,7 @@ internal abstract class MigrationHandlerBase<TObject>
     }
 
     protected abstract void PrepareFile(XElement source, SyncMigrationContext context);
+    protected virtual void PrePrepareFile(XElement source, SyncMigrationContext context) { }
     protected abstract XElement? MigrateFile(XElement source, int level, SyncMigrationContext context);
 
     /// <summary>
