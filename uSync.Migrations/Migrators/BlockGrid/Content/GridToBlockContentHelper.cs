@@ -232,7 +232,7 @@ internal class GridToBlockContentHelper
             return null;
         }
 
-        if(contentTypeAlias == "BlockElement_macro")
+        if(control.Editor.Alias.InvariantEquals("macro"))
         {
             var macroObject = JsonConvert.DeserializeObject<MacroObject>(control.Value.ToString());
 
