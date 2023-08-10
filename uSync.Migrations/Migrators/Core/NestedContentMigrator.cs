@@ -80,7 +80,7 @@ public class NestedContentMigrator : SyncPropertyMigratorBase
     }
 }
 
-internal class NestedContentRowValue
+public class NestedContentRowValue
 {
     [JsonProperty("key")]
     public Guid Id { get; set; }
