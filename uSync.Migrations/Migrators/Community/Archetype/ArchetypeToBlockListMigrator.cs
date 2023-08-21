@@ -62,7 +62,7 @@ public class ArchetypeToBlockListMigrator : SyncPropertyMigratorBase
 
         foreach (var fieldset in archetypeConfiguration.Fieldsets)
         {
-            var alias = context.ContentTypes.ArchetypeMigrationConfigurer.GetBlockElementAlias(fieldset.Alias, context)+ (!_options.Value.NotMergableDocumentTypes?.Contains(fieldset.Alias) == true ? string.Empty: dataTypeProperty.DataTypeAlias.ToCleanString(_helper, CleanStringType.UnderscoreAlias));
+            var alias = context.ContentTypes.ArchetypeMigrationConfigurer.GetBlockElementAlias(fieldset, dataTypeProperty,context);
             var newContentType = new NewContentTypeInfo
             {
                 Key = alias.ToGuid(),
@@ -134,7 +134,7 @@ public class ArchetypeToBlockListMigrator : SyncPropertyMigratorBase
 
         foreach (var item in items)
         {
-            var blockElementAlias = context.ContentTypes.ArchetypeMigrationConfigurer.GetBlockElementAlias(item.Alias, context);
+            var blockElementAlias = context.ContentTypes.ArchetypeMigrationConfigurer.GetBlockElementAlias(item,contentProperty, context);
             var rawValues = new Dictionary<string, object?>();
             foreach (var property in item.Properties)
             {

@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using uSync.Migrations.Migrators.Community.Archetype;
 using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Configuration.Models;
@@ -55,7 +56,7 @@ public class MigrationOptions
     /// </summary>
     public List<TabOptions>? ChangeTabs { get; set; }
 
-    public string? ArchetypeMigrationConfigurer { get; set; }
+    public Type? ArchetypeMigrationConfigurer { get; set; } = typeof(DefaultArchetypeMigrationConfigurer);
 
     /// <summary>
     ///  things we might want to merge.
