@@ -1,10 +1,12 @@
 using Archetype.Models;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Models.Blocks;
 using Umbraco.Cms.Core.PropertyEditors;
+using Umbraco.Cms.Core.Strings;
 using Umbraco.Extensions;
 using uSync.Migrations.Context;
 using uSync.Migrations.Migrators.Models;
@@ -16,6 +18,15 @@ namespace uSync.Migrations.Migrators.Community.Archetype;
 [SyncMigratorVersion(7)]
 public class ArchetypeToBlockListMigrator : SyncPropertyMigratorBase
 {
+    private readonly IOptions<ArchetypeMigrationOptions> _options;
+    private readonly IShortStringHelper _helper;
+
+    public ArchetypeToBlockListMigrator(IOptions<ArchetypeMigrationOptions> options, IShortStringHelper helper)
+    {
+        _options = options;
+        _helper = helper;
+    }
+
     public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
         => UmbConstants.PropertyEditors.Aliases.BlockList;
 
@@ -51,11 +62,11 @@ public class ArchetypeToBlockListMigrator : SyncPropertyMigratorBase
 
         foreach (var fieldset in archetypeConfiguration.Fieldsets)
         {
-            var alias = context.ContentTypes.ArchetypeMigrationConfigurer.GetBlockElementAlias(fieldset.Alias, context);
+            var alias = context.ContentTypes.ArchetypeMigrationConfigurer.GetBlockElementAlias(fieldset.Alias, context)+ (!_options.Value.NotMergableDocumentTypes?.Contains(fieldset.Alias) == true ? string.Empty: dataTypeProperty.DataTypeAlias.ToCleanString(_helper, CleanStringType.UnderscoreAlias));
             var newContentType = new NewContentTypeInfo
             {
                 Key = alias.ToGuid(),
-                Alias = alias,
+                Alias = alias ,
                 Icon = string.IsNullOrWhiteSpace(fieldset.Icon) ? "icon-umb-content" : fieldset.Icon,
                 IsElement = true,
                 Name = fieldset.Label,
