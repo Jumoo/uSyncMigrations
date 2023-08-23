@@ -158,6 +158,9 @@ internal abstract class MigrationHandlerBase<TObject>
             {
                 var source = XElement.Load(file);
 
+                // if the file is a delete/rename/etc skip over it. 
+                if (source.IsEmptyItem()) continue;
+
                 var (alias, key) = GetAliasAndKey(source);
                 if (context.IsBlocked(ItemType, alias)) continue;
 
