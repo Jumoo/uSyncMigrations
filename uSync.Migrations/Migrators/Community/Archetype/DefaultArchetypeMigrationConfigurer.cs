@@ -43,7 +43,7 @@ public class DefaultArchetypeMigrationConfigurer : IArchetypeMigrationConfigurer
 
     private string PrepareAlias(string alias)
     {
-        var renamedDoctypes = _options.Value.RenamedDocumentTypes;
+        var renamedDoctypes = _options.Value.RenamedDocumentTypesAliases;
         if (renamedDoctypes!= null && renamedDoctypes.TryGetValue(alias, out var prepareAlias))
         {
             return prepareAlias;
