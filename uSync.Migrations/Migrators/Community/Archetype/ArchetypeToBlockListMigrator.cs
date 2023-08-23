@@ -18,15 +18,6 @@ namespace uSync.Migrations.Migrators.Community.Archetype;
 [SyncMigratorVersion(7)]
 public class ArchetypeToBlockListMigrator : SyncPropertyMigratorBase
 {
-    private readonly IOptions<ArchetypeMigrationOptions> _options;
-    private readonly IShortStringHelper _helper;
-
-    public ArchetypeToBlockListMigrator(IOptions<ArchetypeMigrationOptions> options, IShortStringHelper helper)
-    {
-        _options = options;
-        _helper = helper;
-    }
-
     public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
         => UmbConstants.PropertyEditors.Aliases.BlockList;
 
