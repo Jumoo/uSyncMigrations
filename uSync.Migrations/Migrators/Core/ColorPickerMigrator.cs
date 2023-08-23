@@ -8,6 +8,7 @@ using uSync.Migrations.Migrators.Models;
 
 namespace uSync.Migrations.Migrators;
 
+[SyncMigrator("Umbraco.ColorPicker")]
 [SyncMigrator("Umbraco.ColorPickerAlias")]
 public class ColorPickerMigrator : SyncPropertyMigratorBase
 {
