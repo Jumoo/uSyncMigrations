@@ -9,15 +9,15 @@
 
         <umb-editor-container class="form-horizontal">
 
-            <umb-box>
+            <umb-box ng-if="!vm.uploaded">
                 <umb-box-header title="Upload"
                                 description="upload a zip file containing files to migrate">
                 </umb-box-header>
 
                 <umb-box-content>
-                    <div class="usync-group-buttons flex items-center">
+                    <div class="usync-group-buttons flex items-stretch justify-between">
 
-                        <div>
+                        <div class="flx-g1 flex justify-stretch">
 
                             <input id="migrationupload"
                                    type="file"
@@ -29,16 +29,17 @@
                                    class="usync-import-upload-file" />
 
                             <label for="migrationupload"
-                                   class="btn btn-default umb-button--xl">
+                                   class="btn btn-default umb-button--xl flx-g1">
                                 <span ng-if="vm.file == null">Select migration zip</span>
-                                <span ng-if="vm.file != null">{{vm.file.name}}</span>
+                                <span ng-if="vm.file != null">{{vm.file.name}} <br/>
+                                <small><em>(Change file)</em></small></span>
                             </label>
                         </div>
 
                         <div ng-if="vm.file != null">
                             <umb-button type="button"
                                         button-style="action"
-                                        size="xl"
+                                        size="xl usync-migration-xl"
                                         action="vm.upload(vm.file)"
                                         label-key="general_upload"
                                         state="vm.buttonState"

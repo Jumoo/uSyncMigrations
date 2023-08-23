@@ -19,3 +19,12 @@
 .usync-table-migration-buttons {
     min-width: 180px;
 }
+
+.usync-file-label {
+    width: 100%;
+}
+
+.usync-migration-xl {
+    padding-top: 27px;
+    padding-bottom: 28px;
+}
