@@ -1,19 +1,19 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using uSync.Migrations.Context;
 using uSync.Migrations.Extensions;
 using uSync.Migrations.Migrators.Models;
 using uSync.Migrations.Migrators.Models.NuPickers;
-using Umbraco.Extensions;
 
 namespace uSync.Migrations.Migrators.Community
 {
-    [SyncMigrator("nuPickers.EnumCheckBoxPicker")]
-    public class NuPickersEnumCheckBoxPickerToContentmentDataList : NuPickersToContentmentDataListBase
+    [SyncMigrator("nuPickers.SqlDropdownPicker")]
+    public class NuPickersSqlDropdownPickerToContentmentDataList : NuPickersToContentmentDataListBase
     {
         public override object? GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
         {
-            var nuPickersConfig = JsonConvert.DeserializeObject<NuPickersEnumConfig>(dataTypeProperty.PreValues?.GetPreValueOrDefault("dataSource", string.Empty));
+            var nuPickersConfig = JsonConvert.DeserializeObject<NuPickersSqlConfig>(dataTypeProperty.PreValues?.GetPreValueOrDefault("dataSource", string.Empty) ?? string.Empty);
 
             if (nuPickersConfig == null) return null;
 
@@ -21,10 +21,13 @@ namespace uSync.Migrations.Migrators.Community
             var dataSource = new[]
             {
                 new
-                { key = "Umbraco.Community.Contentment.DataEditors.EnumDataListSource, Umbraco.Community.Contentment",
+                { key = "Umbraco.Community.Contentment.DataEditors.SqlDataListSource, Umbraco.Community.Contentment",
                     value = new
                     {
-                        enumType = new [] { nuPickersConfig?.AssemblyName.TrimEnd(".dll"), nuPickersConfig?.EnumName }
+                        Query = new [] {
+                            nuPickersConfig?.Query,
+                            nuPickersConfig?.ConnectionString
+                        }
                     }
                 }
             }.ToList();
@@ -32,10 +35,11 @@ namespace uSync.Migrations.Migrators.Community
             var listEditor = new[]
             {
                 new
-                { key = "Umbraco.Community.Contentment.DataEditors.CheckboxListDataListEditor, Umbraco.Community.Contentment",
+                { key = "Umbraco.Community.Contentment.DataEditors.DropdownListDataListEditor, Umbraco.Community.Contentment",
                     value = new
                     {
-                         checkAll = "false"
+                        allowEmpty = "1",
+                        htmlAttributes = Array.Empty<object>()
                     }
                 }
             }.ToList();
@@ -47,6 +51,10 @@ namespace uSync.Migrations.Migrators.Community
 
             return config;
 
+        }
+
+        public NuPickersSqlDropdownPickerToContentmentDataList(IOptions<NuPickerMigrationOptions> options) : base(options)
+        {
         }
     }
 }

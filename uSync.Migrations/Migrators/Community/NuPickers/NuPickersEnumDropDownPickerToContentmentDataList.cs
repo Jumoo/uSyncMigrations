@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Umbraco.Extensions;
 using uSync.Migrations.Context;
@@ -25,7 +26,7 @@ public class NuPickersEnumDropDownPickerToContentmentDataList : NuPickersToConte
             { key = "Umbraco.Community.Contentment.DataEditors.EnumDataListSource, Umbraco.Community.Contentment",
                 value = new
                 {
-                    enumType = new [] { nuPickersConfig?.AssemblyName.TrimEnd(".dll"), nuPickersConfig?.EnumName }
+                    enumType = new[] { MapAssembly(nuPickersConfig?.AssemblyName.TrimEnd(".dll")) , MapNamespace(nuPickersConfig?.EnumName) }
                 }
             }
         }.ToList();
@@ -48,5 +49,9 @@ public class NuPickersEnumDropDownPickerToContentmentDataList : NuPickersToConte
 
         return config;
 
+    }
+
+    public NuPickersEnumDropDownPickerToContentmentDataList(IOptions<NuPickerMigrationOptions> options) : base(options)
+    {
     }
 }

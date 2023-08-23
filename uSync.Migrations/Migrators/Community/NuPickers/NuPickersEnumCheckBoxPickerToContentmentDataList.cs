@@ -1,18 +1,20 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 using uSync.Migrations.Context;
 using uSync.Migrations.Extensions;
 using uSync.Migrations.Migrators.Models;
 using uSync.Migrations.Migrators.Models.NuPickers;
+using Umbraco.Extensions;
 
 namespace uSync.Migrations.Migrators.Community
 {
-    [SyncMigrator("nuPickers.SqlDropdownPicker")]
-    public class NuPickersSqlDropdownPickerToContentmentDataList : NuPickersToContentmentDataListBase
+    [SyncMigrator("nuPickers.EnumCheckBoxPicker")]
+    public class NuPickersEnumCheckBoxPickerToContentmentDataList : NuPickersToContentmentDataListBase
     {
         public override object? GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
         {
-            var nuPickersConfig = JsonConvert.DeserializeObject<NuPickersSqlConfig>(dataTypeProperty.PreValues?.GetPreValueOrDefault("dataSource", string.Empty) ?? string.Empty);
+            var nuPickersConfig = JsonConvert.DeserializeObject<NuPickersEnumConfig>(dataTypeProperty.PreValues?.GetPreValueOrDefault("dataSource", string.Empty));
 
             if (nuPickersConfig == null) return null;
 
@@ -20,13 +22,10 @@ namespace uSync.Migrations.Migrators.Community
             var dataSource = new[]
             {
                 new
-                { key = "Umbraco.Community.Contentment.DataEditors.SqlDataListSource, Umbraco.Community.Contentment",
+                { key = "Umbraco.Community.Contentment.DataEditors.EnumDataListSource, Umbraco.Community.Contentment",
                     value = new
                     {
-                        Query = new [] {
-                            nuPickersConfig?.Query,
-                            nuPickersConfig?.ConnectionString
-                        }
+                        enumType = new[] { MapAssembly(nuPickersConfig?.AssemblyName.TrimEnd(".dll")) , MapNamespace(nuPickersConfig?.EnumName) }
                     }
                 }
             }.ToList();
@@ -34,11 +33,10 @@ namespace uSync.Migrations.Migrators.Community
             var listEditor = new[]
             {
                 new
-                { key = "Umbraco.Community.Contentment.DataEditors.DropdownListDataListEditor, Umbraco.Community.Contentment",
+                { key = "Umbraco.Community.Contentment.DataEditors.CheckboxListDataListEditor, Umbraco.Community.Contentment",
                     value = new
                     {
-                        allowEmpty = "1",
-                        htmlAttributes = Array.Empty<object>()
+                         checkAll = "false"
                     }
                 }
             }.ToList();
@@ -50,6 +48,10 @@ namespace uSync.Migrations.Migrators.Community
 
             return config;
 
+        }
+
+        public NuPickersEnumCheckBoxPickerToContentmentDataList(IOptions<NuPickerMigrationOptions> options) : base(options)
+        {
         }
     }
 }

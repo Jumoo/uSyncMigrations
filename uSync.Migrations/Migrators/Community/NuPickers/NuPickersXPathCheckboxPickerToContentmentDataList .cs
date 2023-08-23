@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using uSync.Migrations.Context;
 using uSync.Migrations.Extensions;
@@ -49,6 +50,10 @@ namespace uSync.Migrations.Migrators.Community
 
             return config;
 
+        }
+
+        public NuPickersXPathCheckboxPickerToContentmentDataList(IOptions<NuPickerMigrationOptions> options) : base(options)
+        {
         }
     }
 }

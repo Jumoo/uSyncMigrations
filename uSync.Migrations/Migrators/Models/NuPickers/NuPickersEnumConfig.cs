@@ -4,6 +4,6 @@
     {
         public string AssemblyName { get; set; }
         public string ApiController { get; set; }
-        public string EnumName { get; set; }
+        public string? EnumName { get; set; }
     }
 }
