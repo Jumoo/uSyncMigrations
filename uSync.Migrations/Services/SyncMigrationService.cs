@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 
 using Microsoft.Extensions.Logging;
-
+using Microsoft.Extensions.Options;
 using NUglify.Helpers;
 
 using Umbraco.Cms.Core.Models;
@@ -10,6 +10,7 @@ using Umbraco.Extensions;
 
 using uSync.BackOffice.Configuration;
 using uSync.Migrations.Composing;
+using uSync.Migrations.Configuration;
 using uSync.Migrations.Configuration.Models;
 using uSync.Migrations.Context;
 using uSync.Migrations.Handlers;
@@ -22,6 +23,7 @@ namespace uSync.Migrations.Services;
 internal class SyncMigrationService : ISyncMigrationService
 {
     private readonly ISyncMigrationFileService _migrationFileService;
+    private readonly IOptions<uSyncMigrationOptions> _options;
     private readonly ILogger<SyncMigrationService> _logger;
 
     private readonly SyncMigrationHandlerCollection _migrationHandlers;
@@ -32,6 +34,7 @@ internal class SyncMigrationService : ISyncMigrationService
     private readonly SyncPropertyMergingCollection _mergingCollection;
 
     public SyncMigrationService(
+        IOptions<uSyncMigrationOptions> options,
         ILogger<SyncMigrationService> logger,
         ISyncMigrationFileService migrationFileService,
         SyncMigrationHandlerCollection migrationHandlers,
@@ -41,6 +44,7 @@ internal class SyncMigrationService : ISyncMigrationService
         ArchetypeMigrationConfigurerCollection archetypeConfigures,
         SyncPropertyMergingCollection mergingCollection)
     {
+        _options = options;
         _logger = logger;
 
         _migrationFileService = migrationFileService;
@@ -54,12 +58,13 @@ internal class SyncMigrationService : ISyncMigrationService
 
     public IEnumerable<string> HandlerTypes(int version)
         => _migrationHandlers
-            .Where(x => x.SourceVersion == version)
+            .Where(x =>HandlerMatches(x, _options.Value, version))
             .OrderBy(x => x.Priority)
             .Select(x => x.ItemType);
+    private static bool HandlerMatches( ISyncMigrationHandler handler, uSyncMigrationOptions options, int version)=> options.DisabledHandlers?.Any(x => handler.GetType().Name.InvariantEquals(x)) == false && handler.SourceVersion == version;
 
     public IEnumerable<ISyncMigrationHandler> GetHandlers(int version)
-        => _migrationHandlers.Where(x => x.SourceVersion == version);
+        => _migrationHandlers.Where(x => HandlerMatches(x, _options.Value, version));
 
     public int DetectVersion(string folder)
     {
@@ -163,13 +168,12 @@ internal class SyncMigrationService : ISyncMigrationService
     {
         if (itemTypes?.Any() == true)
         {
-            return _migrationHandlers
-                .Where(x => x.SourceVersion == sourceVersion && itemTypes.Contains(x.ItemType) == true)
+            return _migrationHandlers.Where(x =>HandlerMatches(x, _options.Value, sourceVersion))
+                .Where(x => itemTypes.Contains(x.ItemType) == true)
                 .OrderBy(x => x.Priority);
         }
 
-        return _migrationHandlers
-            .Where(x => x.SourceVersion == sourceVersion)
+        return _migrationHandlers.Where(x =>HandlerMatches(x, _options.Value, sourceVersion))
             .OrderBy(x => x.Priority);
     }
 
