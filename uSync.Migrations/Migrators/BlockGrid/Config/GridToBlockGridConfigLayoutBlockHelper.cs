@@ -165,6 +165,7 @@ internal class GridToBlockGridConfigLayoutBlockHelper
 
                 if (gridArea.Grid == gridBlockContext.GridColumns)
                 {
+                    gridBlockContext.AppendToRootEditors(allowed);
                     gridBlockContext.AppendToRootLayouts(allowed);
                     continue;
                 }

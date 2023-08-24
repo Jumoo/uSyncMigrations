@@ -68,6 +68,24 @@ internal class GridToBlockGridConfigContext
         AllowedLayouts[RootArea] = rootAllowed;
     }
 
+    public IEnumerable<string> GetAllowedEditors(BlockGridConfiguration.BlockGridAreaConfiguration area)
+    {
+        if (AllowedEditors.TryGetValue(area, out var allowed))
+            return allowed;
+
+        return Enumerable.Empty<string>();
+    }
+
+    public IEnumerable<string> GetRootAllowedEditors()
+        => GetAllowedEditors(RootArea);
+
+    public void AppendToRootEditors(IEnumerable<string> allowed)
+    {
+        var rootAllowed = GetRootAllowedEditors().ToList();
+        rootAllowed.AddRange(allowed);
+        AllowedEditors[RootArea] = rootAllowed;
+    }
+
     public IEnumerable<string> AllEditors()
         => AllowedEditors.SelectMany(x => x.Value).Distinct();
 

@@ -1,5 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
-
+using System.Text.RegularExpressions;
 using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Extensions;
 
@@ -50,16 +50,33 @@ internal static class GridConfigurationExtensions
     {
         foreach (var allowedAlias in editorConfig.GetAllowedContentTypeAliasesForBlock(context, blockMigrators))
         {
-            var elementKey = context.ContentTypes.GetKeyByAlias(allowedAlias);
-
-            yield return new BlockGridConfiguration.BlockGridBlockConfiguration
+            var keys = new List<Guid>();
+            if (Regex.IsMatch(allowedAlias, "\\W"))
             {
-                Label = editorConfig.GetBlockname(),
-                ContentElementTypeKey = elementKey,
-                GroupKey = groupKey != Guid.Empty ? groupKey.ToString() : null,
-                BackgroundColor = Grid.GridBlocks.Background,
-                IconColor = Grid.GridBlocks.Icon
-            };
+                var matchingAliases = context.ContentTypes.GetAllAliases().Where(x => Regex.IsMatch(x, allowedAlias)).ToList();
+                keys.AddRange(matchingAliases.Select(context.ContentTypes.GetKeyByAlias));
+            }
+            else
+            {
+                keys.Add(context.ContentTypes.GetKeyByAlias(allowedAlias));
+            }
+
+            foreach (var elementKey in keys)
+            {
+                var label = editorConfig.GetBlockname();
+                if (keys.Count > 0)
+                {
+                    label = $"{label} ({context.ContentTypes.GetAliasByKey(elementKey)})";
+                }
+                yield return new BlockGridConfiguration.BlockGridBlockConfiguration
+                {
+                    Label = editorConfig.GetBlockname(),
+                    ContentElementTypeKey = elementKey,
+                    GroupKey = groupKey != Guid.Empty ? groupKey.ToString() : null,
+                    BackgroundColor = Grid.GridBlocks.Background,
+                    IconColor = Grid.GridBlocks.Icon
+                };
+            }
         }
     }
 

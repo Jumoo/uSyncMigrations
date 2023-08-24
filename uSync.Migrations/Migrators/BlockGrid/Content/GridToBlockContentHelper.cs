@@ -56,19 +56,24 @@ internal class GridToBlockContentHelper
 
         var blockLayouts = new List<BlockGridLayoutItem>();
 
-        var rootSection = new BlockItemData
+        BlockGridLayoutItem? rootLayoutItem = null;
+
+        if (sectionKey != Guid.Empty)
         {
-          Udi = Udi.Create(UmbConstants.UdiEntityType.Element, Guid.NewGuid()),
-          ContentTypeKey = sectionKey,
-          ContentTypeAlias = sectionContentTypeAlias
-        };
-        block.ContentData.Add(rootSection);
-        var rootLayoutItem = new BlockGridLayoutItem
-        {
-          ContentUdi = rootSection.Udi,
-          ColumnSpan = gridColumns,
-          RowSpan = 1
-        };
+            var rootSection = new BlockItemData
+            {
+                Udi = Udi.Create(UmbConstants.UdiEntityType.Element, Guid.NewGuid()),
+                ContentTypeKey = sectionKey,
+                ContentTypeAlias = sectionContentTypeAlias
+            };
+            block.ContentData.Add(rootSection);
+            rootLayoutItem = new BlockGridLayoutItem
+            {
+                ContentUdi = rootSection.Udi,
+                ColumnSpan = gridColumns,
+                RowSpan = 1
+            };
+        }
         var rootLayoutAreas = new List<BlockGridLayoutAreaItem>();
 
         foreach (var item in sections.Select((value, sectionIndex) => new {sectionIndex, value}))
@@ -144,10 +149,10 @@ internal class GridToBlockContentHelper
                 blockLayouts.Clear();
             }
         }
-        if (rootLayoutAreas.Count > 1)
+        if (rootLayoutItem != null && rootLayoutAreas.Count > 1)
         {
-          rootLayoutItem.Areas = rootLayoutAreas.ToArray();
-          blockLayouts.Add(rootLayoutItem);
+            rootLayoutItem.Areas = rootLayoutAreas.ToArray();
+            blockLayouts.Add(rootLayoutItem);
         }
 
         // end - process layouts into block format. 
