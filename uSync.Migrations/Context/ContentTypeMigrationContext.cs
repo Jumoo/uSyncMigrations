@@ -34,7 +34,7 @@ public class ContentTypeMigrationContext
     ///  list of content types that need to be set as element types. 
     /// </summary>
     private HashSet<Guid> _elementContentTypes = new HashSet<Guid>();
-    public IArchetypeMigrationConfigurer ArchetypeMigrationConfigurer { get; set; } = new DefaultArchetypeMigrationConfigurer();
+    public IArchetypeMigrationConfigurer ArchetypeMigrationConfigurer { get; set; } 
 
     /// <summary>
     ///  Add a ccontent type key to the context.

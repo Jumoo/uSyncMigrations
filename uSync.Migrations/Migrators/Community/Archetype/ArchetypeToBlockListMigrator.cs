@@ -1,10 +1,12 @@
 using Archetype.Models;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Models.Blocks;
 using Umbraco.Cms.Core.PropertyEditors;
+using Umbraco.Cms.Core.Strings;
 using Umbraco.Extensions;
 using uSync.Migrations.Context;
 using uSync.Migrations.Migrators.Models;
@@ -51,11 +53,11 @@ public class ArchetypeToBlockListMigrator : SyncPropertyMigratorBase
 
         foreach (var fieldset in archetypeConfiguration.Fieldsets)
         {
-            var alias = context.ContentTypes.ArchetypeMigrationConfigurer.GetBlockElementAlias(fieldset.Alias, context);
+            var alias = context.ContentTypes.ArchetypeMigrationConfigurer.GetBlockElementAlias(fieldset, dataTypeProperty,context);
             var newContentType = new NewContentTypeInfo
             {
                 Key = alias.ToGuid(),
-                Alias = alias,
+                Alias = alias ,
                 Icon = string.IsNullOrWhiteSpace(fieldset.Icon) ? "icon-umb-content" : fieldset.Icon,
                 IsElement = true,
                 Name = fieldset.Label,
@@ -123,7 +125,7 @@ public class ArchetypeToBlockListMigrator : SyncPropertyMigratorBase
 
         foreach (var item in items)
         {
-            var blockElementAlias = context.ContentTypes.ArchetypeMigrationConfigurer.GetBlockElementAlias(item.Alias, context);
+            var blockElementAlias = context.ContentTypes.ArchetypeMigrationConfigurer.GetBlockElementAlias(item,contentProperty, context);
             var rawValues = new Dictionary<string, object?>();
             foreach (var property in item.Properties)
             {
@@ -138,6 +140,7 @@ public class ArchetypeToBlockListMigrator : SyncPropertyMigratorBase
 
                 if (migrator == null)
                 {
+                    rawValues[property.Alias] = property.Value;
                     continue;
                 }
 

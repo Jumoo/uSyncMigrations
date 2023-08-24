@@ -90,6 +90,8 @@ public static class SyncMigrationsBuilderExtensions
         builder.Services.AddOptions<NuPickerMigrationOptions>().Configure<IConfiguration>((settings, configuration)
             => configuration.GetSection(NuPickerMigrationOptions.Section).Bind(settings));
 
+        builder.Services.AddOptions<ArchetypeMigrationOptions>().Configure<IConfiguration>((settings, configuration)
+            => configuration.GetSection(ArchetypeMigrationOptions.Section).Bind(settings));
         builder.AddNotificationHandler<ServerVariablesParsingNotification, SyncMigrationsServerVariablesParsingNotificationHandler>();
 
         if (builder.ManifestFilters().Has<SyncMigrationsManifestFilter>() == false)
