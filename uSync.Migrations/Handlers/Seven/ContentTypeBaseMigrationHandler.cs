@@ -1,17 +1,15 @@
 ﻿using System.Xml.Linq;
-
 using Microsoft.Extensions.Logging;
-
+using Microsoft.Extensions.Options;
 using NPoco;
-
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Cms.Core.Strings;
 using Umbraco.Extensions;
-
 using uSync.Core;
 using uSync.Migrations.Composing;
+using uSync.Migrations.Configuration;
 using uSync.Migrations.Context;
 using uSync.Migrations.Extensions;
 using uSync.Migrations.Handlers.Shared;
@@ -22,26 +20,39 @@ namespace uSync.Migrations.Handlers.Seven;
 internal abstract class ContentTypeBaseMigrationHandler<TEntity> : SharedContentTypeBaseHandler<TEntity>
     where TEntity : ContentTypeBase
 {
-
+    private readonly IOptions<uSyncMigrationOptions> _options;
     private readonly IShortStringHelper _shortStringHelper;
 
     public ContentTypeBaseMigrationHandler(
+        IOptions<uSyncMigrationOptions> options,
         IEventAggregator eventAggregator,
         ISyncMigrationFileService migrationFileService,
         ILogger<ContentTypeBaseMigrationHandler<TEntity>> logger,
         IDataTypeService dataTypeService,
         IShortStringHelper shortStringHelper,
         Lazy<SyncMigrationHandlerCollection> migrationHandlers)
-        : base(eventAggregator, migrationFileService, logger, dataTypeService, migrationHandlers)
+        : base(options, eventAggregator, migrationFileService, logger, dataTypeService, migrationHandlers)
     {
+        _options = options;
         _shortStringHelper = shortStringHelper;
     }
 
     protected override (string alias, Guid key) GetAliasAndKey(XElement source)
         => (
-            alias: source.Element("Info")?.Element("Alias")?.ValueOrDefault(string.Empty) ?? string.Empty,
+            alias: PrepareAlias(source.Element("Info")?.Element("Alias")?.ValueOrDefault(string.Empty) ?? string.Empty),
             key: source.Element("Info")?.Element("Key")?.ValueOrDefault(Guid.Empty) ?? Guid.Empty
         );
+
+    private string PrepareAlias(string alias)
+    {
+        if (_options.Value?.OverrideAliases?.ContainsKey(typeof(TEntity).Name) == true &&
+            _options.Value?.OverrideAliases[typeof(TEntity).Name]?.ContainsKey(alias) == true)
+        {
+            return _options.Value?.OverrideAliases[typeof(TEntity).Name][alias];
+        }
+
+        return alias;
+    }
 
     protected override void UpdateTabs(XElement source, XElement target, SyncMigrationContext context)
     {
@@ -54,6 +65,7 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : SharedContent
                 var newTab = UpdateTab(source, tab.Clone(), context, false);
                 if (newTab != null) newTabs.Add(newTab);
             }
+
             target.Add(newTabs);
         }
     }
@@ -193,6 +205,7 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : SharedContent
                 transformedStructure.Add(contentType);
                 i++;
             }
+
             target.Add(transformedStructure.Clone());
         }
     }

@@ -1,13 +1,14 @@
 ﻿using System.Xml.Linq;
 
 using Microsoft.Extensions.Logging;
-
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
 
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Services;
 
 using uSync.Core;
+using uSync.Migrations.Configuration;
 using uSync.Migrations.Context;
 using uSync.Migrations.Handlers.Shared;
 using uSync.Migrations.Migrators;
@@ -22,11 +23,12 @@ namespace uSync.Migrations.Handlers.Eight;
 internal class DataTypeMigrationHandler : SharedDataTypeHandler, ISyncMigrationHandler
 {
     public DataTypeMigrationHandler(
+        IOptions<uSyncMigrationOptions> options,
         IEventAggregator eventAggregator,
         ISyncMigrationFileService migrationFileService,
         IDataTypeService dataTypeService,
         ILogger<DataTypeMigrationHandler> logger) 
-        : base(eventAggregator, migrationFileService, dataTypeService, logger)
+        : base(options,eventAggregator, migrationFileService, dataTypeService, logger)
     { }
 
     protected override string GetEditorAlias(XElement source)

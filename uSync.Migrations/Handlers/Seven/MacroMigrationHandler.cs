@@ -1,11 +1,12 @@
 ﻿using System.Xml.Linq;
 
 using Microsoft.Extensions.Logging;
-
+using Microsoft.Extensions.Options;
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 
 using uSync.Core;
+using uSync.Migrations.Configuration;
 using uSync.Migrations.Context;
 using uSync.Migrations.Handlers.Shared;
 using uSync.Migrations.Services;
@@ -19,10 +20,11 @@ namespace uSync.Migrations.Handlers.Seven;
 internal class MacroMigrationHandler : SharedHandlerBase<Macro>, ISyncMigrationHandler
 {
     public MacroMigrationHandler(
+        IOptions<uSyncMigrationOptions> options,
         IEventAggregator eventAggregator,
         ISyncMigrationFileService migrationFileService,
         ILogger<MacroMigrationHandler> logger)
-        : base(eventAggregator, migrationFileService, logger)
+        : base(options,eventAggregator, migrationFileService, logger)
     { }
 
     protected override (string alias, Guid key) GetAliasAndKey(XElement source)

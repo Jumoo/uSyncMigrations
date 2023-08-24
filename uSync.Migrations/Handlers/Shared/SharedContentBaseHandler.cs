@@ -2,7 +2,7 @@
 
 using Microsoft.CodeAnalysis.FlowAnalysis;
 using Microsoft.Extensions.Logging;
-
+using Microsoft.Extensions.Options;
 using Polly;
 
 using Umbraco.Cms.Core.Events;
@@ -12,6 +12,7 @@ using Umbraco.Extensions;
 
 using uSync.Core;
 using uSync.Migrations.Composing;
+using uSync.Migrations.Configuration;
 using uSync.Migrations.Context;
 using uSync.Migrations.Extensions;
 using uSync.Migrations.Migrators;
@@ -29,11 +30,12 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
     protected readonly Dictionary<string, string> _mediaTypeAliasForFileExtension = new(StringComparer.OrdinalIgnoreCase);
 
     public SharedContentBaseHandler(
+        IOptions<uSyncMigrationOptions> options,
         IEventAggregator eventAggregator,
         ISyncMigrationFileService migrationFileService,
         IShortStringHelper shortStringHelper,
         ILogger<SharedContentBaseHandler<TEntity>> logger)
-        : base(eventAggregator, migrationFileService, logger)
+        : base(options,eventAggregator, migrationFileService, logger)
     {
         _shortStringHelper = shortStringHelper;
     }

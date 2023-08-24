@@ -1,13 +1,14 @@
 ﻿using System.Xml.Linq;
 
 using Microsoft.Extensions.Logging;
-
+using Microsoft.Extensions.Options;
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Notifications;
 using Umbraco.Extensions;
 
 using uSync.Core;
+using uSync.Migrations.Configuration;
 using uSync.Migrations.Context;
 using uSync.Migrations.Handlers.Shared;
 using uSync.Migrations.Models;
@@ -23,10 +24,11 @@ namespace uSync.Migrations.Handlers.Seven;
 internal class DictionaryMigrationHandler : SharedHandlerBase<DictionaryItem>, ISyncMigrationHandler
 {
     public DictionaryMigrationHandler(
+        IOptions<uSyncMigrationOptions> options,
         IEventAggregator eventAggregator,
         ISyncMigrationFileService migrationFileService,
         ILogger<DictionaryMigrationHandler> logger)
-        : base(eventAggregator, migrationFileService, logger)
+        : base(options,eventAggregator, migrationFileService, logger)
     { }
 
     /// <summary>

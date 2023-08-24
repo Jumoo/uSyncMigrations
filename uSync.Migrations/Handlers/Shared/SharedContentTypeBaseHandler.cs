@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Xml.Linq;
+using Microsoft.Extensions.Options;
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Notifications;
@@ -7,6 +8,7 @@ using Umbraco.Cms.Core.Services;
 using Umbraco.Extensions;
 using uSync.Core;
 using uSync.Migrations.Composing;
+using uSync.Migrations.Configuration;
 using uSync.Migrations.Context;
 using uSync.Migrations.Extensions;
 using uSync.Migrations.Models;
@@ -17,17 +19,20 @@ namespace uSync.Migrations.Handlers.Shared;
 internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBase<TEntity>
     where TEntity : ContentTypeBase
 {
+    private readonly IOptions<uSyncMigrationOptions> _options;
     private readonly IDataTypeService _dataTypeService;
     private readonly Lazy<SyncMigrationHandlerCollection> _migrationHandlers;
 
     protected SharedContentTypeBaseHandler(
+        IOptions<uSyncMigrationOptions> options,
 		IEventAggregator eventAggregator,
 		ISyncMigrationFileService migrationFileService,
 		ILogger<SharedContentTypeBaseHandler<TEntity>> logger,
 		IDataTypeService dataTypeService,
         Lazy<SyncMigrationHandlerCollection> migrationHandlers)
-		: base(eventAggregator, migrationFileService, logger)
+		: base(options,eventAggregator, migrationFileService, logger)
 	{
+        _options = options;
         _dataTypeService = dataTypeService;
         _migrationHandlers = migrationHandlers;
     }

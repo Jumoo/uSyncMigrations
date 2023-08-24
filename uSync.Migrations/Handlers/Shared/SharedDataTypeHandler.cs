@@ -3,7 +3,7 @@
 using Lucene.Net.Documents;
 
 using Microsoft.Extensions.Logging;
-
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
 using Umbraco.Cms.Core.Events;
@@ -11,6 +11,7 @@ using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Services;
 
 using uSync.Core;
+using uSync.Migrations.Configuration;
 using uSync.Migrations.Context;
 using uSync.Migrations.Migrators;
 using uSync.Migrations.Migrators.Models;
@@ -25,11 +26,12 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
 
 
     public SharedDataTypeHandler(
+        IOptions<uSyncMigrationOptions> options,
         IEventAggregator eventAggregator,
         ISyncMigrationFileService migrationFileService,
         IDataTypeService dataTypeService,
         ILogger<SharedDataTypeHandler> logger)
-        : base(eventAggregator, migrationFileService, logger)
+        : base(options,eventAggregator, migrationFileService, logger)
     {
         _dataTypeService = dataTypeService;
         _jsonSerializerSettings = new JsonSerializerSettings()

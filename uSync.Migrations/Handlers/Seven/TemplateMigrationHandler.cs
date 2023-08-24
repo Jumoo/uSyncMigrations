@@ -1,11 +1,12 @@
 ﻿using System.Xml.Linq;
 
 using Microsoft.Extensions.Logging;
-
+using Microsoft.Extensions.Options;
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Services;
 
 using uSync.Core;
+using uSync.Migrations.Configuration;
 using uSync.Migrations.Context;
 using uSync.Migrations.Handlers.Shared;
 using uSync.Migrations.Services;
@@ -19,11 +20,12 @@ namespace uSync.Migrations.Handlers.Seven;
 internal class TemplateMigrationHandler : SharedTemplateHandler,  ISyncMigrationHandler
 {
     public TemplateMigrationHandler(
+        IOptions<uSyncMigrationOptions> options,
         IEventAggregator eventAggregator,
         ISyncMigrationFileService migrationFileService,
         IFileService fileService,
         ILogger<TemplateMigrationHandler> logger)
-        : base(eventAggregator, migrationFileService, fileService, logger)
+        : base(options,eventAggregator, migrationFileService, fileService, logger)
     { }
 
     protected override XElement? MigrateFile(XElement source, int level, SyncMigrationContext context)

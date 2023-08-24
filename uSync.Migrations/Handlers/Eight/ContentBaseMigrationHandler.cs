@@ -1,13 +1,14 @@
 ﻿using System.Xml.Linq;
 
 using Microsoft.Extensions.Logging;
-
+using Microsoft.Extensions.Options;
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Strings;
 using Umbraco.Extensions;
 
 using uSync.Core;
+using uSync.Migrations.Configuration;
 using uSync.Migrations.Context;
 using uSync.Migrations.Extensions;
 using uSync.Migrations.Handlers.Shared;
@@ -18,11 +19,12 @@ internal class ContentBaseMigrationHandler<TEntity> : SharedContentBaseHandler<T
     where TEntity : ContentBase
 {
     public ContentBaseMigrationHandler(
+        IOptions<uSyncMigrationOptions> options,
         IEventAggregator eventAggregator,
         ISyncMigrationFileService migrationFileService,
         IShortStringHelper shortStringHelper,
         ILogger<ContentBaseMigrationHandler<TEntity>> logger) 
-        : base(eventAggregator, migrationFileService, shortStringHelper, logger)
+        : base(options,eventAggregator, migrationFileService, shortStringHelper, logger)
     { }
 
     protected override string GetContentType(XElement source)

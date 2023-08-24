@@ -1,7 +1,7 @@
 ﻿using System.Xml.Linq;
 
 using Microsoft.Extensions.Logging;
-
+using Microsoft.Extensions.Options;
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Cms.Core.Services;
@@ -9,6 +9,7 @@ using Umbraco.Extensions;
 
 using uSync.Core;
 using uSync.Migrations.Composing;
+using uSync.Migrations.Configuration;
 using uSync.Migrations.Configuration.Models;
 using uSync.Migrations.Context;
 using uSync.Migrations.Extensions;
@@ -30,12 +31,13 @@ internal class DataTypeMigrationHandler : SharedDataTypeHandler, ISyncMigrationH
     private readonly SyncPropertyMigratorCollection _migrators;
 
     public DataTypeMigrationHandler(
+        IOptions<uSyncMigrationOptions> options,
         IEventAggregator eventAggregator,
         ISyncMigrationFileService fileService,
         IDataTypeService dataTypeService,
         SyncPropertyMigratorCollection migrators,
         ILogger<DataTypeMigrationHandler> logger)
-        : base(eventAggregator, fileService, dataTypeService, logger)
+        : base(options,eventAggregator, fileService, dataTypeService, logger)
     {
         _migrators = migrators;
     }
