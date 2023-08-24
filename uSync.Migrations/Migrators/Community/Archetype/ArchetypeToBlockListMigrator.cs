@@ -76,7 +76,7 @@ public class ArchetypeToBlockListMigrator : SyncPropertyMigratorBase
                             Alias = p.Alias,
                             Name = p.Label,
                             DataTypeAlias = dataType.DataTypeName,
-                            OriginalEditorAlias = dataType.EditorAlias,
+                            OriginalEditorAlias =  string.IsNullOrWhiteSpace(p.PropertyEditorAlias) ? dataType.OriginalEditorAlias:p.PropertyEditorAlias,
                         };
                     })
                     .WhereNotNull()
