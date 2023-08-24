@@ -140,6 +140,7 @@ public class ArchetypeToBlockListMigrator : SyncPropertyMigratorBase
 
                 if (migrator == null)
                 {
+                    rawValues[property.Alias] = property.Value;
                     continue;
                 }
 
