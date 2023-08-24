@@ -1,9 +1,6 @@
 ﻿using System.Xml.Linq;
 
-using Microsoft.CodeAnalysis.FlowAnalysis;
 using Microsoft.Extensions.Logging;
-
-using Polly;
 
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
@@ -11,7 +8,6 @@ using Umbraco.Cms.Core.Strings;
 using Umbraco.Extensions;
 
 using uSync.Core;
-using uSync.Migrations.Composing;
 using uSync.Migrations.Context;
 using uSync.Migrations.Extensions;
 using uSync.Migrations.Migrators;
@@ -216,9 +212,21 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
 
     protected virtual string MigrateContentValue(SyncMigrationContentProperty migrationProperty, SyncMigrationContext context)
     {
-        if (migrationProperty?.Value == null) return string.Empty;
+        if (migrationProperty?.Value == null)
+        {
+            _logger.LogDebug("{info} value is null, nothing to migrate",
+                migrationProperty?.GetDetailString() ?? "(Blank)");
 
-        if (string.IsNullOrWhiteSpace(migrationProperty.EditorAlias)) return migrationProperty.Value;
+            return string.Empty;
+        }
+
+        if (string.IsNullOrWhiteSpace(migrationProperty.EditorAlias))
+        {
+            _logger.LogDebug("{info} has a blank editorAlias, can't migrate",
+                migrationProperty.GetDetailString());
+
+            return migrationProperty.Value;
+        }
 
         var migrator = context.Migrators.TryGetMigrator(
             $"{migrationProperty.ContentTypeAlias}_{migrationProperty.PropertyAlias}", migrationProperty.EditorAlias);
@@ -226,11 +234,18 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
         // var migrator = context.Migrators.TryGetMigrator(migrationProperty.EditorAlias);
         if (migrator != null)
         {
+            _logger.LogDebug("{info} migrating with {migrator}",
+                migrationProperty.GetDetailString());
+
             return migrator?.GetContentValue(migrationProperty, context) ?? migrationProperty.Value;
         }
 
+        _logger.LogDebug("{info}, no migrator, value will not change",
+            migrationProperty.GetDetailString());
+
         return migrationProperty.Value;
     }
+
 
     /// <summary>
     ///  something we probibly only need to do for v7 - but ensure we have 

@@ -3,11 +3,13 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 using Umbraco.Cms.Core;
+using Umbraco.Cms.Core.Logging;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Models.Blocks;
 using Umbraco.Extensions;
 
 using uSync.Migrations.Context;
+using uSync.Migrations.Logging;
 using uSync.Migrations.Migrators.BlockGrid.BlockMigrators;
 using uSync.Migrations.Migrators.BlockGrid.Extensions;
 using uSync.Migrations.Migrators.BlockGrid.Models;
@@ -23,15 +25,18 @@ internal class GridToBlockContentHelper
     private readonly SyncBlockMigratorCollection _blockMigrators;
     private readonly GridConventions _conventions;
     private readonly ILogger<GridToBlockContentHelper> _logger;
+    private readonly IProfilingLogger _profilingLogger;
 
     public GridToBlockContentHelper(
         GridConventions gridConventions,
         SyncBlockMigratorCollection blockMigrators,
-        ILogger<GridToBlockContentHelper> logger)
+        ILogger<GridToBlockContentHelper> logger,
+        IProfilingLogger profilingLogger)
     {
         _blockMigrators = blockMigrators;
         _conventions = gridConventions;
         _logger = logger;
+        _profilingLogger = profilingLogger;
     }
 
     /// <summary>
@@ -39,8 +44,14 @@ internal class GridToBlockContentHelper
     /// </summary>
     public BlockValue? ConvertToBlockValue(GridValue source, SyncMigrationContext context)
     {
+        _logger.LogDebug(">> {method}", nameof(ConvertToBlockValue));
+
         // empty grid check
-        if (source.Sections.Any() != true) return null;
+        if (source.Sections.Any() != true)
+        {
+            _logger.LogDebug("  Grid has not sections, returning null");
+            return null;
+        }
 
         var sectionContentTypeAlias = _conventions.SectionContentTypeAlias(source.Name);
 
@@ -155,6 +166,8 @@ internal class GridToBlockContentHelper
         {
             { UmbConstants.PropertyEditors.Aliases.BlockGrid, JToken.FromObject(blockLayouts) }
         };
+
+        _logger.LogDebug(">> {method}", nameof(ConvertToBlockValue));
 
         return block;
     }

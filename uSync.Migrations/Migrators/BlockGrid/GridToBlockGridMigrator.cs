@@ -48,14 +48,22 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
 
 	public override object? GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
 	{
-		if (dataTypeProperty.ConfigAsString == null)
+        _logger.LogDebug(">> {method}", nameof(GetConfigValues));
+
+        if (dataTypeProperty.ConfigAsString == null)
+		{
+			_logger.LogDebug("   Config is null, returning empty block grid config");
 			return new BlockGridConfiguration();
+		}
 
 		var gridConfiguration = JsonConvert
 			.DeserializeObject<GridConfiguration>(dataTypeProperty.ConfigAsString);
 
 		if (gridConfiguration == null)
+		{
+			_logger.LogDebug("   Grid Config is null, returning empty block grid config");
 			return new BlockGridConfiguration();
+		}
 
 
 		var legacyGridEditorsConfig = GetGridConfig(context);
@@ -79,7 +87,9 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
 		// Make sure all the block elements have been added to the migration context.
 		context.ContentTypes.AddElementTypes(result.Blocks.Select(x => x.ContentElementTypeKey), true);
 
-		return result;
+        _logger.LogDebug("<< {method}", nameof(GetConfigValues));
+
+        return result;
 	}
 
 	private ILegacyGridEditorsConfig GetGridConfig(SyncMigrationContext context)
@@ -89,20 +99,25 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
 
     public override string? GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
 	{
+		_logger.LogDebug(">> {method}", nameof(GetContentValue));
+
 		if (string.IsNullOrWhiteSpace(contentProperty.Value))
+		{
+			_logger.LogDebug("  Content property is blank, nothing to migrate");
 			return string.Empty;
+		}
 
 		// has already been converted. 
 		if (contentProperty.Value.Contains("\"Umbraco.BlockGrid\""))
 		{
-			_logger.LogDebug("Property [{name}] is already BlockGrid", contentProperty.EditorAlias);
+			_logger.LogDebug("  Property [{name}] is already BlockGrid", contentProperty.EditorAlias);
 			return contentProperty.Value;
 		}
 
 		var source = JsonConvert.DeserializeObject<GridValue>(contentProperty.Value);
 		if (source == null)
 		{
-			_logger.LogDebug("Property {alias} is empty", contentProperty.EditorAlias);
+			_logger.LogDebug("  Property {alias} is empty", contentProperty.EditorAlias);
 			return string.Empty;
 		}
 
@@ -112,9 +127,11 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
 		var blockValue = helper.ConvertToBlockValue(source, context);
 		if (blockValue == null)
 		{
-			_logger.LogDebug("Converted value for {alias} is empty", contentProperty.EditorAlias);
+			_logger.LogDebug("  Converted value for {alias} is empty", contentProperty.EditorAlias);
 			return string.Empty;
 		}
+
+		_logger.LogDebug("<< {method}", nameof(GetContentValue));
 
 		return JsonConvert.SerializeObject(blockValue, Formatting.Indented);
 	}
