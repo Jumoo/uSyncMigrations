@@ -85,7 +85,7 @@ public class VortoMapper : SyncPropertyMigratorBase,
                 if (dataType is not null)
                 {
                     var migrator = context.Migrators.TryGetMigrator(
-                        $"{contentProperty.ContentTypeAlias}_{contentProperty.PropertyAlias}", dataType.EditorAlias);
+                        $"{contentProperty.ContentTypeAlias}_{contentProperty.PropertyAlias}", dataType.OriginalEditorAlias);
 
                     if (migrator != null)
                     {
