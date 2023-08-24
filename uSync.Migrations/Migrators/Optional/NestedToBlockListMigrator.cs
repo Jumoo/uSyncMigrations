@@ -111,6 +111,13 @@ public class NestedToBlockListMigrator : SyncPropertyMigratorBase
     public override string? GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
     {
         if (string.IsNullOrWhiteSpace(contentProperty.Value)) return string.Empty;
+
+        if (contentProperty.Value.InvariantStartsWith("{\r\n  \"layout\": {\r\n    \"Umbraco.BlockList\":"))
+        {
+            _logger.LogDebug("Property [{name}] is already BlockList", contentProperty.EditorAlias);
+            return contentProperty.Value;
+        }
+
         var rowValues = JsonConvert.DeserializeObject<IList<NestedContentRowValue>>(contentProperty.Value, new JsonSerializerSettings() { DateParseHandling = DateParseHandling.None });
         if (rowValues == null) return string.Empty;
 
