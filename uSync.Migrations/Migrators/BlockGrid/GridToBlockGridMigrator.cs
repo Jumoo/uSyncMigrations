@@ -106,6 +106,25 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
 			return string.Empty;
 		}
 
+		// For some reason, DTGEs can sometimes end up without a view specified. This should fix it.
+		foreach (var section in source.Sections)
+		{
+			foreach (var row in section.Rows)
+			{
+				foreach (var area in row.Areas)
+				{
+					foreach (var control in area.Controls)
+					{
+						if (control.Editor.View == null && control.Value?["dtgeContentTypeAlias"] != null)
+						{
+							control.Editor.View = "/App_Plugins/DocTypeGridEditor/Views/doctypegrideditor.html";
+							_logger.LogDebug("Control {alias} looks like a DTGE, but has no view, {view} has been added as view", control.Editor.Alias, control.Editor.View);
+						}
+					}
+				}
+			}
+		}
+
 		var helper = new GridToBlockContentHelper(_conventions, _blockMigrators,
 			_loggerFactory.CreateLogger<GridToBlockContentHelper>());
 		
