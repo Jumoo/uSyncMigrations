@@ -107,38 +107,55 @@ public class ContentTypeMigrationContext
 			new EditorAliasInfo(originalAlias, newAlias, dataTypeDefinition));
 	}
 
-	/// <summary>
-	///  get the migrated editro alias for a property based on the content type it is in.
-	/// </summary>
-	/// <remarks>
-	///  this has to be done by content type, because when we are in content, we don't know
-	///  about the underling data type. 
-	///  
-	///  so when content types are prepped for migration they add this key pair (AddContentProperty)
-	///  and then when we are in content we can say, what is the underling property for this 
-	///  value based on the content type we know we are in. 
-	/// </remarks>
-	public EditorAliasInfo? GetEditorAliasByTypeAndProperty(string contentType, string propertyAlias)
-	{
-		if (_propertyTypes?.TryGetValue($"{contentType}_{propertyAlias}", out var alias) == true)
-		{
-			return alias;
-		}
-		else if (_contentTypeCompositions?.TryGetValue(contentType, out var compositions) == true)
-		{
-			foreach (var composition in compositions)
-			{
-				if (_propertyTypes?.TryGetValue($"{composition}_{propertyAlias}", out var alias1) == true)
-				{
-					return alias1;
-				}
-			}
-		}
+    /// <summary>
+    ///  get the migrated editro alias for a property based on the content type it is in.
+    /// </summary>
+    /// <remarks>
+    ///  this has to be done by content type, because when we are in content, we don't know
+    ///  about the underling data type. 
+    ///  
+    ///  so when content types are prepped for migration they add this key pair (AddContentProperty)
+    ///  and then when we are in content we can say, what is the underling property for this 
+    ///  value based on the content type we know we are in. 
+    /// </remarks>
+    public EditorAliasInfo? GetEditorAliasByTypeAndProperty(string contentType, string propertyAlias)
+    {
+        if (_propertyTypes?.TryGetValue($"{contentType}_{propertyAlias}", out var alias) == true)
+        {
+            return alias;
+        }
+        else if (TryGetEditorAliasByComposition(contentType, propertyAlias, out var alias1) == true)
+        {
+            return alias1;
+        }
 
-		return null;
-	}
+        return null;
+    }
 
-	public bool IsElementType(Guid key) => _elementContentTypes.Contains(key);
+    private bool TryGetEditorAliasByComposition(string compositionKey, string propertyAlias, out EditorAliasInfo? editorAliasInfo)
+    {
+        if (_contentTypeCompositions?.TryGetValue(compositionKey, out var compositions) == true)
+        {
+            foreach (var composition in compositions)
+            {
+                if (_propertyTypes?.TryGetValue($"{composition}_{propertyAlias}", out var alias) == true)
+                {
+                    editorAliasInfo = alias;
+                    return true;
+                }
+
+                if (TryGetEditorAliasByComposition(composition, propertyAlias, out editorAliasInfo) == true)
+                {
+                    return true;
+                }
+            }
+        }
+
+        editorAliasInfo = null;
+        return false;
+    }
+
+    public bool IsElementType(Guid key) => _elementContentTypes.Contains(key);
 
 	public void AddElementType(Guid key)
 	{
