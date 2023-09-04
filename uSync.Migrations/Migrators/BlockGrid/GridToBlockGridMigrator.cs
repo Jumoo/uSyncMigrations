@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+
 using Umbraco.Cms.Core.Logging;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.PropertyEditors;
@@ -22,6 +24,7 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
 	private readonly ILegacyGridConfig _gridConfig;
 	private readonly SyncBlockMigratorCollection _blockMigrators;
 	private readonly ILoggerFactory _loggerFactory;
+	private readonly IProfilingLogger _profilingLogger;
 	private readonly ILogger<GridToBlockGridMigrator> _logger;
 	private readonly IProfilingLogger _profilingLogger;
 
