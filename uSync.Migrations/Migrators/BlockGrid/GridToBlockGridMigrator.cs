@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.PropertyEditors;
@@ -115,7 +116,7 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
 				{
 					foreach (var control in area.Controls)
 					{
-						if (control.Editor.View == null && control.Value?["dtgeContentTypeAlias"] != null)
+						if (control.Editor.View == null && control.Value is JObject value && value["dtgeContentTypeAlias"] != null)
 						{
 							control.Editor.View = "/App_Plugins/DocTypeGridEditor/Views/doctypegrideditor.html";
 							_logger.LogDebug("Control {alias} looks like a DTGE, but has no view, {view} has been added as view", control.Editor.Alias, control.Editor.View);
