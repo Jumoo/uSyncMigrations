@@ -28,7 +28,7 @@ internal abstract class ContentBaseMigrationHandler<TEntity> : SharedContentBase
     protected override int GetId(XElement source)
         => source.Attribute("id").ValueOrDefault(0);
 
-    protected override (string alias, Guid key) GetAliasAndKey(XElement source, SyncMigrationContext context)
+    protected override (string alias, Guid key) GetAliasAndKey(XElement source, SyncMigrationContext? context)
        => (
             alias: source.Attribute("nodeName").ValueOrDefault(string.Empty),
             key: source.Attribute("guid").ValueOrDefault(Guid.Empty)

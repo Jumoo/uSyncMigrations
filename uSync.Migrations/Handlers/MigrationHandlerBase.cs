@@ -216,8 +216,22 @@ internal abstract class MigrationHandlerBase<TObject>
     /// <summary>
     ///  method to get the source and alias of a value.
     /// </summary>
-    /// <param name="source"></param>
-    /// <param name="context"></param>
+    /// <param name="source">XMLElement for item</param>
+    /// <param name="context">Migration context</param>
     /// <returns></returns>
-    protected abstract (string alias, Guid key) GetAliasAndKey(XElement source, SyncMigrationContext context);
+    protected abstract (string alias, Guid key) GetAliasAndKey(XElement source, SyncMigrationContext? context);
+
+    /// <summary>
+    ///  Get the Alias and Key values for an item.
+    /// </summary>
+    /// <remarks>
+    ///  this method is obsolete, you should pass the context.
+    ///  this then allows for renames, and maniupulation based on config.
+    /// </remarks>
+    /// <param name="source">XML Source for item</param>
+    /// <returns></returns>
+    [Obsolete("Call GetAliasAndKey with MigrationContext")]
+    protected virtual (string alias, Guid key) GetAliasAndKey(XElement source)
+    => GetAliasAndKey(source, null);
+
 }

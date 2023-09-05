@@ -31,7 +31,7 @@ internal class LanguageMigrationHandler : SharedHandlerBase<Language>, ISyncMigr
         _localizationService = localizationService;
     }
 
-    protected override (string alias, Guid key) GetAliasAndKey(XElement source, SyncMigrationContext context)
+    protected override (string alias, Guid key) GetAliasAndKey(XElement source, SyncMigrationContext? context)
     {
         var alias = source.Attribute("CultureAlias").ValueOrDefault(string.Empty);
         var key = alias.ToGuid();

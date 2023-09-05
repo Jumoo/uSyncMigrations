@@ -1,4 +1,5 @@
-﻿using System.Xml.Linq;
+﻿using System.Diagnostics.Tracing;
+using System.Xml.Linq;
 
 using Microsoft.Extensions.Logging;
 
@@ -37,11 +38,14 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : SharedContent
         _shortStringHelper = shortStringHelper;
     }
 
-    protected override (string alias, Guid key) GetAliasAndKey(XElement source, SyncMigrationContext context)
-        => (
-            alias: context.ContentTypes.GetReplacementAlias(source.Element("Info")?.Element("Alias")?.ValueOrDefault(string.Empty) ?? string.Empty),
+    protected override (string alias, Guid key) GetAliasAndKey(XElement source, SyncMigrationContext? context)
+    {
+        var sourceAlias = source.Element("Info")?.Element("Alias").ValueOrDefault(string.Empty) ?? string.Empty;
+        return (
+            alias: context?.ContentTypes.GetReplacementAlias(sourceAlias) ?? sourceAlias,
             key: source.Element("Info")?.Element("Key")?.ValueOrDefault(Guid.Empty) ?? Guid.Empty
         );
+    }
 
     protected override void UpdateTabs(XElement source, XElement target, SyncMigrationContext context)
     {

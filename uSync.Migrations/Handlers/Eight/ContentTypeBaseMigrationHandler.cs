@@ -25,10 +25,10 @@ internal class ContentTypeBaseMigrationHandler<TEntity> : SharedContentTypeBaseH
         : base(eventAggregator, migrationFileService, logger, dataTypeService, migrationHandlers)
     { }
 
-    protected override (string alias, Guid key) GetAliasAndKey(XElement source, SyncMigrationContext context)
+    protected override (string alias, Guid key) GetAliasAndKey(XElement source, SyncMigrationContext? context)
     {
-        var (a, k) = base.GetAliasAndKey(source, context);
-        return (alias: context.ContentTypes.GetReplacementAlias(a), key: k);
+        var (alias, key) = base.GetAliasAndKey(source, context);
+        return (alias: context?.ContentTypes.GetReplacementAlias(alias) ?? alias, key: key);
     }
 
     protected override void UpdatePropertyXml(XElement source, XElement newProperty, SyncMigrationContext context)

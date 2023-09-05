@@ -39,7 +39,7 @@ internal class DataTypeMigrationHandler : SharedDataTypeHandler, ISyncMigrationH
         _migrators = migrators;
     }
 
-    protected override (string alias, Guid key) GetAliasAndKey(XElement source, SyncMigrationContext context)
+    protected override (string alias, Guid key) GetAliasAndKey(XElement source, SyncMigrationContext? context)
         => (
             alias: source.Attribute("Name").ValueOrDefault(string.Empty),
             key: source.Attribute("Key").ValueOrDefault(Guid.Empty)
