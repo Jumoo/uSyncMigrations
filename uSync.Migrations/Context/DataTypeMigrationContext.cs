@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -92,6 +92,9 @@ public class DataTypeMigrationContext
 			? variation : "Nothing";
 
     public Guid? GetFirstDefinition(string alias)
-		=> _dataTypeDefinitions?.FirstOrDefault(x => x.Value.EditorAlias == alias).Key;
+    {
+        var dataTypeDefinition = _dataTypeDefinitions?.FirstOrDefault(x => x.Value.EditorAlias == alias);
+        return dataTypeDefinition.Value.Value != null ? dataTypeDefinition.Value.Key : null;
+    }
 
 }

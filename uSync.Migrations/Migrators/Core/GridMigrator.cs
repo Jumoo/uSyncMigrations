@@ -1,45 +1,145 @@
-﻿using Umbraco.Cms.Core.PropertyEditors;
+﻿using Microsoft.Extensions.Logging;
+
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+
+using Umbraco.Cms.Core.Models;
+using Umbraco.Cms.Core.PropertyEditors;
+using Umbraco.Extensions;
+
+using uSync.Migrations.Context;
+using uSync.Migrations.Migrators.Models;
 
 namespace uSync.Migrations.Migrators;
 
 /// <summary>
-///  The grid migrator will need to be fleshed out
+///  Grid Migrator - (migrating grid to grid)
 /// </summary>
 /// <remarks>
-///  in all likelyhood you will want to turn grids into blockgrids or lists.
+///  in all likelihood you will want to turn grids into block grids or lists.
 ///  
-///  for that there will need to be a set of existing doctypes on a site that mimic the 
-///  grid configurations you might have,
+///  For that there we have the blockGrid migrator, but this migrator is just 
+///  for the straight migration path.
 ///  
-///  what we might do. is add those in prep if they don't exist ? 
-///  e.g a doctype for heading, rich text, quote (block grid adds these as demo types)
+///  the main feature here is migrating DTGE elements between grids, 
 ///  
-///  there will likely then also need to be some config, so you can map them, 
-///  
-///  and then in the mapping if you have custom things (like DTGE) it will need a migrator too.
 /// </remarks>
 [SyncMigrator(UmbConstants.PropertyEditors.Aliases.Grid, typeof(GridConfiguration), IsDefaultAlias = true)]
 [SyncDefaultMigrator]
 
 public class GridMigrator : SyncPropertyMigratorBase
 {
-    // TODO: [KJ] This only really matters if there are custom things and they need config.
+    private static string _dtgeContentTypeAliasValue = "dtgeContentTypeAlias";
 
-    //public override string GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
-    //{
-    //    if (contentProperty.Value == null) return string.Empty;
+    private readonly ILogger<GridMigrator> _logger;
 
-    //    var grid = JsonConvert.DeserializeObject<GridValue>(contentProperty.Value);
-    //    if (grid == null) return contentProperty.Value;
 
-    //    var controls = grid.Sections.SelectMany(s => s.Rows.SelectMany(r => r.Areas.SelectMany(a => a.Controls);
+    public GridMigrator(ILogger<GridMigrator> logger)
+    {
+        _logger = logger;
+    }
 
-    //    foreach (var control in controls)
-    //    {
-    //        var gridAlias = control.Editor.Alias;
-    //    }
+    public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
+        => UmbConstants.PropertyEditors.Aliases.Grid;
 
-    //    return string.Empty;
-    //}
+    public override string GetDatabaseType(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
+        => nameof(ValueStorageType.Ntext);
+
+    public override object? GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
+    {
+        var ignoreUserStartNodes = dataTypeProperty.PreValues?.SingleOrDefault(x => x.Alias == "ignoreUserStartNodes");
+        if (ignoreUserStartNodes != null)
+        {
+            bool newValue = bool.TryParse(ignoreUserStartNodes.Value, out var parsedValue)
+                ? parsedValue
+                : false;
+
+            ignoreUserStartNodes.Value = newValue.ToString();
+        }
+
+        return base.GetConfigValues(dataTypeProperty, context);
+    }
+
+    public override string? GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
+    {
+        if (contentProperty.Value == null) return string.Empty;
+        var grid = JsonConvert.DeserializeObject<GridValue>(contentProperty.Value);
+        if (grid == null) return contentProperty.Value;
+
+
+        foreach (var control in grid.Sections
+            .SelectMany(s => s.Rows)
+            .SelectMany(r => r.Areas)
+            .SelectMany(a => a.Controls))
+        {
+            if (control?.Value == null || !control.Value.HasValues) continue;
+
+            if (isDoctypeGridEditorControl(control))
+            {
+                var updatedValues = GetPropertyValues(control, context);
+                var updatedValuesSerialized = JsonConvert.SerializeObject(updatedValues);
+
+                control.Value["value"] =
+                    JsonConvert.DeserializeObject<JToken>(updatedValuesSerialized);
+            }
+        }
+
+        return JsonConvert.SerializeObject(grid);
+    }
+
+    private string GetDTGEContentTypeAlias(GridValue.GridControl control)
+    => control.Value?.Value<string>(_dtgeContentTypeAliasValue) ?? string.Empty;
+
+    private bool isDoctypeGridEditorControl(GridValue.GridControl control)
+        => !string.IsNullOrEmpty(control.Value?.Value<string>(_dtgeContentTypeAliasValue));
+
+    private Dictionary<string, object?> GetPropertyValues(
+        GridValue.GridControl control, SyncMigrationContext context)
+    {
+        var propertyValues = new Dictionary<string, object?>();
+
+        var contentTypeAlias = GetDTGEContentTypeAlias(control);
+        if (string.IsNullOrWhiteSpace(contentTypeAlias)) return propertyValues;
+
+        var elementValue = control.Value?.Value<JObject>("value")?
+               .ToObject<IDictionary<string, object>>();
+        if (elementValue == null) return propertyValues;    
+
+        foreach(var (propertyAlias, value) in elementValue)
+        {
+            var editorAliasInfo = context.ContentTypes.GetEditorAliasByTypeAndProperty(
+                contentTypeAlias, propertyAlias);
+
+            if (editorAliasInfo == null) continue;
+
+            var propertyValue = value;
+
+            var migrator = context.Migrators.TryGetMigrator(editorAliasInfo.OriginalEditorAlias);
+            if (migrator != null)
+            {
+                var valueToConvert = (value?.ToString() ?? "").Trim();
+
+                var property = new SyncMigrationContentProperty(
+                    editorAliasInfo.OriginalEditorAlias,
+                    propertyAlias,
+                    editorAliasInfo.OriginalEditorAlias,
+                    valueToConvert);
+
+                var convertedValue = migrator.GetContentValue(property, context);
+                if (convertedValue?.Trim().DetectIsJson() == true)
+                {
+                    propertyValue = JsonConvert.DeserializeObject(convertedValue ?? "");
+                }
+                else
+                {
+                    propertyValue = convertedValue;
+                }
+            }
+
+            propertyValues[propertyAlias] = propertyValue;
+        }
+
+        return propertyValues; 
+    }
 
 }

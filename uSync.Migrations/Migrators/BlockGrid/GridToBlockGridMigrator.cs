@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Umbraco.Cms.Core.Logging;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.PropertyEditors;
@@ -25,6 +26,7 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
 	private readonly ILoggerFactory _loggerFactory;
 	private readonly IProfilingLogger _profilingLogger;
 	private readonly ILogger<GridToBlockGridMigrator> _logger;
+	private readonly IProfilingLogger _profilingLogger;
 
 	private readonly GridConventions _conventions;
 
@@ -122,6 +124,25 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
 		{
 			_logger.LogDebug("  Property {alias} is empty", contentProperty.EditorAlias);
 			return string.Empty;
+		}
+
+		// For some reason, DTGEs can sometimes end up without a view specified. This should fix it.
+		foreach (var section in source.Sections)
+		{
+			foreach (var row in section.Rows)
+			{
+				foreach (var area in row.Areas)
+				{
+					foreach (var control in area.Controls)
+					{
+						if (control.Editor.View == null && control.Value is JObject value && value["dtgeContentTypeAlias"] != null)
+						{
+							control.Editor.View = "/App_Plugins/DocTypeGridEditor/Views/doctypegrideditor.html";
+							_logger.LogDebug("Control {alias} looks like a DTGE, but has no view, {view} has been added as view", control.Editor.Alias, control.Editor.View);
+						}
+					}
+				}
+			}
 		}
 
 		var helper = new GridToBlockContentHelper(
