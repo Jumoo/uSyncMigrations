@@ -2,19 +2,12 @@
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using NPoco.fastJSON;
+
 using Umbraco.Cms.Core.Models;
-using Umbraco.Cms.Core.PropertyEditors;
-using Umbraco.Cms.Core.Strings;
 using Umbraco.Extensions;
+
 using uSync.Migrations.Context;
-using uSync.Migrations.Extensions;
-using uSync.Migrations.Legacy.Grid;
 using uSync.Migrations.Migrators;
-using uSync.Migrations.Migrators.BlockGrid.BlockMigrators;
-using uSync.Migrations.Migrators.BlockGrid.Config;
-using uSync.Migrations.Migrators.BlockGrid.Content;
-using uSync.Migrations.Migrators.BlockGrid.Extensions;
 using uSync.Migrations.Migrators.Models;
 
 namespace MyMigrations.DTGEMigrator;
@@ -75,7 +68,7 @@ public class DTGEMigrator : SyncPropertyMigratorBase
 			    {
 				    foreach (var control in area.Controls)
 				    {
-					    if (!control.Value.HasValues) continue;
+					    if (!control.Value?.HasValues == true) continue;
 					    
 					    var isDTGEvalue = !String.IsNullOrEmpty(control.Value?.Value<string>("dtgeContentTypeAlias"));
 					    if (isDTGEvalue)
@@ -85,7 +78,7 @@ public class DTGEMigrator : SyncPropertyMigratorBase
 						    
 						    var controlValue = control.Value;
 						    
-						    controlValue["value"] = (JToken) JsonConvert.DeserializeObject(updatedValuesSerialized);
+						    controlValue["value"] = (JToken)JsonConvert.DeserializeObject(updatedValuesSerialized);
 					    }
 				    }
 			    }
@@ -136,7 +129,7 @@ public class DTGEMigrator : SyncPropertyMigratorBase
 					valueToConvert);
 
 				var convertedValue = migrator.GetContentValue(property, context);
-				if (convertedValue.Trim().DetectIsJson())
+				if (convertedValue?.Trim().DetectIsJson() == true)
 					propertyValue = JsonConvert.DeserializeObject(convertedValue ?? "");
 				else
 					propertyValue = convertedValue;
