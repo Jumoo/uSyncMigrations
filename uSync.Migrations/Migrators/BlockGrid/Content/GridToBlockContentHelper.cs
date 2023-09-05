@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -9,7 +10,6 @@ using Umbraco.Cms.Core.Models.Blocks;
 using Umbraco.Extensions;
 
 using uSync.Migrations.Context;
-using uSync.Migrations.Logging;
 using uSync.Migrations.Migrators.BlockGrid.BlockMigrators;
 using uSync.Migrations.Migrators.BlockGrid.Extensions;
 using uSync.Migrations.Migrators.BlockGrid.Models;

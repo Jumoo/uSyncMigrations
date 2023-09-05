@@ -1,11 +1,11 @@
 ﻿using Newtonsoft.Json;
-using NPoco.fastJSON;
+
 using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Extensions;
-using uSync.Migrations.Composing;
+
 using uSync.Migrations.Context;
-using uSync.Migrations.Extensions;
 using uSync.Migrations.Migrators;
+using uSync.Migrations.Migrators.Core;
 using uSync.Migrations.Migrators.Models;
 
 namespace MyMigrations.Migrators;
