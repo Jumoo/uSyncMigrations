@@ -2,7 +2,6 @@
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-
 using Umbraco.Cms.Core.Logging;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.PropertyEditors;
@@ -41,8 +40,8 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
         _blockMigrators = blockMigrators;
         _conventions = new GridConventions(shortStringHelper);
         _loggerFactory = loggerFactory;
-        _logger = loggerFactory.CreateLogger<GridToBlockGridMigrator>();
         _profilingLogger = profilingLogger;
+        _logger = loggerFactory.CreateLogger<GridToBlockGridMigrator>();	
     }
 
     public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
@@ -145,8 +144,11 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
 			}
 		}
 
-		var helper = new GridToBlockContentHelper(_conventions, _blockMigrators,
-			_loggerFactory.CreateLogger<GridToBlockContentHelper>(), _profilingLogger);
+		var helper = new GridToBlockContentHelper(
+			_conventions, 
+			_blockMigrators,
+			_loggerFactory.CreateLogger<GridToBlockContentHelper>(), 
+			_profilingLogger);
 		
 		var blockValue = helper.ConvertToBlockValue(source, context);
 		if (blockValue == null)
