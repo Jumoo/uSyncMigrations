@@ -33,8 +33,8 @@ public class CheckboxListMigrator : SyncPropertyMigratorBase
     public override string? GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
     {
         if (contentProperty.Value == null) return null;
-        if (contentProperty.Value.DetectIsJson())
-            JsonConvert.SerializeObject(contentProperty.Value.ToDelimitedList(), Formatting.Indented);
+        if (!contentProperty.Value.DetectIsJson())
+            return JsonConvert.SerializeObject(contentProperty.Value.ToDelimitedList(), Formatting.Indented);
 
         // json stored property. will like be inside another thing 
         // (DTGE, maybe nested??)
