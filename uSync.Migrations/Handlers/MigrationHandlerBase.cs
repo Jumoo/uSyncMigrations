@@ -161,7 +161,7 @@ internal abstract class MigrationHandlerBase<TObject>
                 // if the file is a delete/rename/etc skip over it. 
                 if (source.IsEmptyItem()) continue;
 
-                var (alias, key) = GetAliasAndKey(source);
+                var (alias, key) = GetAliasAndKey(source, context);
                 if (context.IsBlocked(ItemType, alias)) continue;
 
                 var migratingNotification = new SyncMigratingNotification<TObject>(source, context);
@@ -217,6 +217,7 @@ internal abstract class MigrationHandlerBase<TObject>
     ///  method to get the source and alias of a value.
     /// </summary>
     /// <param name="source"></param>
+    /// <param name="context"></param>
     /// <returns></returns>
-    protected abstract (string alias, Guid key) GetAliasAndKey(XElement source);
+    protected abstract (string alias, Guid key) GetAliasAndKey(XElement source, SyncMigrationContext context);
 }

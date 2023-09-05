@@ -34,6 +34,10 @@ public class ContentTypeMigrationContext
     ///  list of content types that need to be set as element types. 
     /// </summary>
     private HashSet<Guid> _elementContentTypes = new HashSet<Guid>();
+    
+    private Dictionary<string, string> _replacementAliases =
+	    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
     public IArchetypeMigrationConfigurer ArchetypeMigrationConfigurer { get; set; } 
 
     /// <summary>
@@ -236,5 +240,13 @@ public class ContentTypeMigrationContext
 		=> _dataTypeAliases.TryGetValue($"{contentTypeAlias}_{propertyAlias}", out var alias) == true
 			? alias : string.Empty;
 
+	/// <summary>
+	/// Add a replacement alias for a content type alias
+	/// </summary>
+	public void AddReplacementAlias(string original, string replacement)
+		=> _replacementAliases.TryAdd(original, replacement);
 
+	public string GetReplacementAlias(string alias)
+		=> _replacementAliases.TryGetValue(alias, out var replacement) 
+			? replacement : alias;
 }

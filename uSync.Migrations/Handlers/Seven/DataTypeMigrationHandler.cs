@@ -9,7 +9,6 @@ using Umbraco.Extensions;
 
 using uSync.Core;
 using uSync.Migrations.Composing;
-using uSync.Migrations.Configuration.Models;
 using uSync.Migrations.Context;
 using uSync.Migrations.Extensions;
 using uSync.Migrations.Handlers.Shared;
@@ -40,11 +39,21 @@ internal class DataTypeMigrationHandler : SharedDataTypeHandler, ISyncMigrationH
         _migrators = migrators;
     }
 
-    protected override (string alias, Guid key) GetAliasAndKey(XElement source)
+    protected override (string alias, Guid key) GetAliasAndKey(XElement source, SyncMigrationContext context)
         => (
             alias: source.Attribute("Name").ValueOrDefault(string.Empty),
             key: source.Attribute("Key").ValueOrDefault(Guid.Empty)
         );
+
+    private (string alias, Guid key) GetAliasAndKey(XElement source, SyncValidationContext context)
+    {
+        var alias = source.Attribute("Name").ValueOrDefault(string.Empty);
+        alias = context.Options.ReplacementAliases?.TryGetValue(alias, out var a) == true ? a : alias;
+        return (
+            alias,
+            key: source.Attribute("Key").ValueOrDefault(Guid.Empty)
+        );
+    }
 
     protected override ReplacementDataTypeInfo? GetReplacementInfo(string dataTypeAlias, string editorAlias, string databaseType, XElement source, SyncMigrationContext context)
     {
@@ -116,7 +125,7 @@ internal class DataTypeMigrationHandler : SharedDataTypeHandler, ISyncMigrationH
             try
             {
                 var source = XElement.Load(file);
-                var (alias, key) = GetAliasAndKey(source);
+                var (alias, key) = GetAliasAndKey(source, validationContext);
                 var editorAlias = GetEditorAlias(source);
 
                 var name = source.Attribute("Name").ValueOrDefault(string.Empty);

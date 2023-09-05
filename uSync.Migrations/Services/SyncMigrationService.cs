@@ -236,14 +236,18 @@ internal class SyncMigrationService : ISyncMigrationService
 
         AddMergers(context, options.MergingProperties);
 
+        
+        // add configurer for Archetype migrations
+        context.ContentTypes.ArchetypeMigrationConfigurer = _archetypeConfigures.FirstOrDefault(c => c.GetType() == options.ArchetypeMigrationConfigurer) ?? _archetypeConfigures.FirstOrDefault(c => c.GetType()== typeof(DefaultArchetypeMigrationConfigurer));
+
+        options.ReplacementAliases?
+            .ForEach(kvp => context.ContentTypes.AddReplacementAlias(kvp.Key, kvp.Value));
+
         // let the handlers run through their prep (populate all the lookups)
         GetHandlers(options.SourceVersion)?
             .OrderBy(x => x.Priority)
             .ToList()
             .ForEach(x => x.PrepareMigrations(context));
-
-        // add configurer for Archetype migrations
-        context.ContentTypes.ArchetypeMigrationConfigurer = _archetypeConfigures.FirstOrDefault(c => c.GetType() == options.ArchetypeMigrationConfigurer) ?? _archetypeConfigures.FirstOrDefault(c => c.GetType()== typeof(DefaultArchetypeMigrationConfigurer));
 
         return context;
     }

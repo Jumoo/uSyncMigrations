@@ -29,6 +29,7 @@ public class NestedContentMigrator : SyncPropertyMigratorBase
 
         var contentTypeKeys = config.ContentTypes.Select(x => x.Alias)
             .WhereNotNull() // satisfy nullability requirement
+            .Select(context.ContentTypes.GetReplacementAlias)
             .Where(a => !string.IsNullOrWhiteSpace(a))
             .Select(context.ContentTypes.GetKeyByAlias);
 
@@ -54,7 +55,8 @@ public class NestedContentMigrator : SyncPropertyMigratorBase
 
             foreach (var property in row.RawPropertyValues)
             {
-                var editorAlias = context.ContentTypes.GetEditorAliasByTypeAndProperty(row.ContentTypeAlias, property.Key);
+                var contentTypeAlias = context.ContentTypes.GetReplacementAlias(row.ContentTypeAlias);
+                var editorAlias = context.ContentTypes.GetEditorAliasByTypeAndProperty(contentTypeAlias, property.Key);
                 if (editorAlias == null) continue;
 
                 try
@@ -65,7 +67,7 @@ public class NestedContentMigrator : SyncPropertyMigratorBase
                     {
                         row.RawPropertyValues[property.Key] = migrator.GetContentValue(
                             new SyncMigrationContentProperty(
-                                row.ContentTypeAlias, property.Key, row.ContentTypeAlias, property.Value?.ToString()),
+                                contentTypeAlias, property.Key, contentTypeAlias, property.Value?.ToString()),
                                 context);
                     }
                 }

@@ -46,7 +46,7 @@ internal abstract class SharedHandlerBase<TObject> :MigrationHandlerBase<TObject
     /// <summary>
     ///  alias and key - v8 we have methods that get these values consitantly. 
     /// </summary>
-    protected override (string alias, Guid key) GetAliasAndKey(XElement source)
+    protected override (string alias, Guid key) GetAliasAndKey(XElement source, SyncMigrationContext context)
         => (alias: source.GetAlias(), key: source.GetKey());
 
     /// <summary>

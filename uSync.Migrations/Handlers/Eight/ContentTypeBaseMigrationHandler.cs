@@ -1,10 +1,11 @@
 ﻿using System.Xml.Linq;
 
 using Microsoft.Extensions.Logging;
-
+using NUglify.Helpers;
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Services;
+using Umbraco.Extensions;
 using uSync.Migrations.Composing;
 using uSync.Migrations.Context;
 using uSync.Migrations.Extensions;
@@ -24,6 +25,12 @@ internal class ContentTypeBaseMigrationHandler<TEntity> : SharedContentTypeBaseH
         : base(eventAggregator, migrationFileService, logger, dataTypeService, migrationHandlers)
     { }
 
+    protected override (string alias, Guid key) GetAliasAndKey(XElement source, SyncMigrationContext context)
+    {
+        var (a, k) = base.GetAliasAndKey(source, context);
+        return (alias: context.ContentTypes.GetReplacementAlias(a), key: k);
+    }
+
     protected override void UpdatePropertyXml(XElement source, XElement newProperty, SyncMigrationContext context)
     {
         // for v8 the properties should match what we are expecting ?
@@ -35,15 +42,30 @@ internal class ContentTypeBaseMigrationHandler<TEntity> : SharedContentTypeBaseH
     protected override void UpdateInfoSection(XElement? info, XElement target, Guid key, SyncMigrationContext context)
     {
         if (info == null) return;
-        target.Add(info.Clone());
+        var targetInfo = info.Clone();
+        if (targetInfo != null)
+        {
+            targetInfo.Element("Compositions")?.Elements("Composition").ForEach(c => c.Value = context.ContentTypes.GetReplacementAlias(c.Value));
+            
+            target.Add(targetInfo);
+        }
     }
 
 
-    protected override void UpdateStructure(XElement source, XElement target)
+    protected override void UpdateStructure(XElement source, XElement target, SyncMigrationContext context)
     {
         var sourceStructure = source.Element("Structure");
+
         if (sourceStructure != null)
-            target.Add(sourceStructure.Clone());
+        {
+            var targetStructure = sourceStructure.Clone();
+            targetStructure!
+                .Elements()
+                .Select(e => e.Element("ContentType"))
+                .WhereNotNull()
+                .ForEach(e => e.Value = context.ContentTypes.GetReplacementAlias(e.Value));
+            target.Add(targetStructure);
+        }
     }
 
     protected override void UpdateTabs(XElement source, XElement target, SyncMigrationContext context)

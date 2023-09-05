@@ -25,7 +25,7 @@ internal class MacroMigrationHandler : SharedHandlerBase<Macro>, ISyncMigrationH
         : base(eventAggregator, migrationFileService, logger)
     { }
 
-    protected override (string alias, Guid key) GetAliasAndKey(XElement source)
+    protected override (string alias, Guid key) GetAliasAndKey(XElement source, SyncMigrationContext context)
         => (
             alias: source.Element("alias").ValueOrDefault(string.Empty),
             key: source.Element("Key").ValueOrDefault(Guid.Empty)
@@ -33,7 +33,7 @@ internal class MacroMigrationHandler : SharedHandlerBase<Macro>, ISyncMigrationH
 
     protected override XElement? MigrateFile(XElement source, int level, SyncMigrationContext context)
     {
-        var (alias, key) = GetAliasAndKey(source);
+        var (alias, key) = GetAliasAndKey(source, context);
 
         var target = new XElement("Macro",
             new XAttribute(uSyncConstants.Xml.Key, key),

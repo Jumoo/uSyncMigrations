@@ -198,6 +198,7 @@ internal class SyncMigrationStatusService : ISyncMigrationStatusService
             PreferredMigrators = defaultOptions.PreferredMigrators,
             PropertyMigrators = defaultOptions.PropertyMigrators,
             MergingProperties = defaultOptions.MergingProperties,
+            ReplacementAliases = defaultOptions.ReplacementAliases,
         };
     }
 }

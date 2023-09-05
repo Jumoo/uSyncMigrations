@@ -25,8 +25,8 @@ internal class ContentBaseMigrationHandler<TEntity> : SharedContentBaseHandler<T
         : base(eventAggregator, migrationFileService, shortStringHelper, logger)
     { }
 
-    protected override string GetContentType(XElement source)
-        => source.Element("Info")?.Element("ContentType").ValueOrDefault(string.Empty) ?? string.Empty;
+    protected override string GetContentType(XElement source, SyncMigrationContext context)
+        => context.ContentTypes.GetReplacementAlias(source.Element("Info")?.Element("ContentType").ValueOrDefault(string.Empty) ?? string.Empty);
 
     protected override int GetId(XElement source) => -1;
 

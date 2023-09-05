@@ -3,7 +3,7 @@
 using Microsoft.Extensions.Logging;
 
 using NPoco;
-
+using NUglify.Helpers;
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Services;
@@ -37,9 +37,9 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : SharedContent
         _shortStringHelper = shortStringHelper;
     }
 
-    protected override (string alias, Guid key) GetAliasAndKey(XElement source)
+    protected override (string alias, Guid key) GetAliasAndKey(XElement source, SyncMigrationContext context)
         => (
-            alias: source.Element("Info")?.Element("Alias")?.ValueOrDefault(string.Empty) ?? string.Empty,
+            alias: context.ContentTypes.GetReplacementAlias(source.Element("Info")?.Element("Alias")?.ValueOrDefault(string.Empty) ?? string.Empty),
             key: source.Element("Info")?.Element("Key")?.ValueOrDefault(Guid.Empty) ?? Guid.Empty
         );
 
@@ -87,7 +87,7 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : SharedContent
         // add key if its missing 
         if (tab.Element("Key") == null)
         {
-            var (sourceAlias, _) = GetAliasAndKey(source);
+            var (sourceAlias, _) = GetAliasAndKey(source, context);
             tab.Add(new XElement("Key", $"{sourceAlias}{alias}".ToGuid()));
         }
 
@@ -169,13 +169,15 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : SharedContent
             targetInfo.Add(new XElement("IsElement", context.ContentTypes.IsElementType(key)));
 
             target.Add(targetInfo);
+            
+            targetInfo.Element("Compositions")?.Elements("Composition").ForEach(c => c.Value = context.ContentTypes.GetReplacementAlias(c.Value));
         }
     }
 
     /// <summary>
     ///  update the structure (allowed nodes)
     /// </summary>
-    protected override void UpdateStructure(XElement source, XElement target)
+    protected override void UpdateStructure(XElement source, XElement target, SyncMigrationContext context)
     {
         var sourceStructure = source.Element("Structure");
 
@@ -188,7 +190,7 @@ internal abstract class ContentTypeBaseMigrationHandler<TEntity> : SharedContent
                 var contentType = new XElement("ContentType");
                 contentType.SetAttributeValue("Key", element?.Attribute("Key")?.Value);
                 contentType.SetAttributeValue("SortOrder", i);
-                contentType.Value = element!.Value;
+                contentType.Value = context.ContentTypes.GetReplacementAlias(element!.Value);
 
                 transformedStructure.Add(contentType);
                 i++;

@@ -67,7 +67,7 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
 
     protected override void PrepareFile(XElement source, SyncMigrationContext context)
     {
-        var (alias, dtd) = GetAliasAndKey(source);
+        var (alias, dtd) = GetAliasAndKey(source, context);
         var editorAlias = GetEditorAlias(source);
 
         if (dtd == Guid.Empty || string.IsNullOrEmpty(editorAlias)) return;
@@ -98,7 +98,7 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
     public void PrePrepareFiles(XElement source, SyncMigrationContext context)
     {
         var editorAlias = GetEditorAlias(source);
-        var (alias, dtd) = GetAliasAndKey(source);
+        var (alias, dtd) = GetAliasAndKey(source, context);
 
         if (dtd == Guid.Empty || string.IsNullOrEmpty(editorAlias)) return;
 
@@ -140,8 +140,8 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
 
     protected override XElement? MigrateFile(XElement source, int level, SyncMigrationContext context)
     {
-        var (alias, key) = GetAliasAndKey(source);
-        var editorAlias = GetEditorAlias(source);   
+        var (alias, key) = GetAliasAndKey(source, context);
+        var editorAlias = GetEditorAlias(source);
 
         if (context.DataTypes.GetReplacement(key) != key)
         {
