@@ -35,7 +35,7 @@ internal abstract class SharedTemplateHandler : SharedHandlerBase<Template>
 
     protected override void PrepareFile(XElement source, SyncMigrationContext context)
     {
-        var (alias, key) = GetAliasAndKey(source);
+        var (alias, key) = GetAliasAndKey(source, context);
         context.Templates.AddAliasKeyLookup(alias, key);
     }
 }

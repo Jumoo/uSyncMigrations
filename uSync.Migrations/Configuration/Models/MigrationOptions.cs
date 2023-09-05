@@ -62,6 +62,11 @@ public class MigrationOptions
     ///  things we might want to merge.
     /// </summary>
     public Dictionary<string, MergingPropertiesConfig> MergingProperties { get; set; } = new(StringComparer.InvariantCultureIgnoreCase);
+    
+    /// <summary>
+    /// Mapping of old to new content type aliases
+    /// </summary>
+    public IDictionary<string, string>? ReplacementAliases { get; set; }
 }
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]

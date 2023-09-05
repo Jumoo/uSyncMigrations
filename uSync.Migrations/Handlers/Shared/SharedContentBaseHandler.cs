@@ -38,7 +38,7 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
 
     protected override void PrepareFile(XElement source, SyncMigrationContext context)
     {
-        var (alias, key) = GetAliasAndKey(source);
+        var (alias, key) = GetAliasAndKey(source, context);
 
         if (key != Guid.Empty)
         {
@@ -59,7 +59,7 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
 
     protected abstract Guid GetParent(XElement source);
 
-    protected abstract string GetContentType(XElement source);
+    protected abstract string GetContentType(XElement source, SyncMigrationContext context);
 
     protected abstract string GetPath(string alias, Guid parent, SyncMigrationContext context);
 
@@ -69,10 +69,10 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
 
     protected override XElement? MigrateFile(XElement source, int level, SyncMigrationContext context)
     {
-        var (alias, key) = GetAliasAndKey(source);
+        var (alias, key) = GetAliasAndKey(source, context);
 
         var parent = GetParent(source);
-        var contentType = GetContentType(source);
+        var contentType = GetContentType(source, context);
 
         var path = GetPath(alias, parent, context);
         context.Content.AddContentPath(key, path);

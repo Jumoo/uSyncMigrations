@@ -34,10 +34,14 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
 
 	protected override void PrepareFile(XElement source, SyncMigrationContext context)
     {
-        var (contentTypeAlias, key) = GetAliasAndKey(source);
+        var (contentTypeAlias, key) = GetAliasAndKey(source, context);
         context.ContentTypes.AddAliasAndKey(contentTypeAlias, key);
 
-        var compositions = source.Element("Info")?.Element("Compositions")?.Elements("Composition")?.Select(x => x.Value) ?? Enumerable.Empty<string>();
+        var compositions = source
+            .Element("Info")?
+            .Element("Compositions")?
+            .Elements("Composition")?
+            .Select(x => context.ContentTypes.GetReplacementAlias(x.Value)) ?? Enumerable.Empty<string>();
         context.ContentTypes.AddCompositions(contentTypeAlias, compositions);
 
         var properties = source.Element("GenericProperties")?.Elements("GenericProperty") ?? Enumerable.Empty<XElement>();
@@ -89,7 +93,7 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
         var info = source.Element("Info");
         if (info == null) return null;
 
-        var (alias, key) = GetAliasAndKey(source);
+        var (alias, key) = GetAliasAndKey(source, context);
 
         var target = new XElement(ItemType,
             new XAttribute(uSyncConstants.Xml.Key, key),
@@ -102,7 +106,7 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
         if (ItemType == nameof(ContentType))
         {
             // structure
-            UpdateStructure(source, target);
+            UpdateStructure(source, target, context);
         }
 
         // properties. 
@@ -112,7 +116,7 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
         if (ItemType != nameof(ContentType))
         {
             // odd usync thing, in media/member structure is after properties. 
-            UpdateStructure(source, target);
+            UpdateStructure(source, target, context);
         }
 
 
@@ -129,7 +133,7 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
     }
 
     protected abstract void UpdateInfoSection(XElement? info, XElement target, Guid key, SyncMigrationContext context);
-    protected abstract void UpdateStructure(XElement source, XElement target);
+    protected abstract void UpdateStructure(XElement source, XElement target, SyncMigrationContext context);
     protected abstract void UpdateTabs(XElement source, XElement target, SyncMigrationContext context);
     protected abstract void CheckVariations(XElement target);
 
