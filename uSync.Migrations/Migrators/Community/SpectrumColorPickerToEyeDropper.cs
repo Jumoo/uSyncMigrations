@@ -43,8 +43,8 @@ public class SpectrumColorPickerToEyeDropper : SyncPropertyMigratorBase
         {
             { "enableTransparency", nameof(config.ShowAlpha) }
         };
-        var palet = dataTypeProperty.PreValues?.FirstOrDefault(p => p.Alias == "palette")?.Value;
-        if (!string.IsNullOrWhiteSpace(palet))
+        var palette = dataTypeProperty.PreValues?.FirstOrDefault(p => p.Alias == "palette")?.Value;
+        if (!string.IsNullOrWhiteSpace(palette))
         {
             config.ShowPalette = true;
         }
