@@ -61,7 +61,12 @@ internal class SyncMigrationService : ISyncMigrationService
             .Where(x =>HandlerMatches(x, _options.Value, version))
             .OrderBy(x => x.Priority)
             .Select(x => x.ItemType);
-    private static bool HandlerMatches( ISyncMigrationHandler handler, uSyncMigrationOptions options, int version)=> options.DisabledHandlers?.Any(x => handler.GetType().Name.InvariantEquals(x)) == false && handler.SourceVersion == version;
+    private static bool HandlerMatches(ISyncMigrationHandler handler, uSyncMigrationOptions options, int version)
+    {
+        if (handler.SourceVersion != version) return false;
+        var result = options.DisabledHandlers.Any(x => handler.GetType().Name.InvariantEquals(x)) == false;
+        return result;
+    }
 
     public IEnumerable<ISyncMigrationHandler> GetHandlers(int version)
         => _migrationHandlers.Where(x => HandlerMatches(x, _options.Value, version));
@@ -134,7 +139,7 @@ internal class SyncMigrationService : ISyncMigrationService
 
         var itemTypes = options.Handlers?.Where(x => x.Include == true).Select(x => x.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-        var handlers = GetHandlers(options.SourceVersion, itemTypes);
+        var handlers = GetHandlers(options.SourceVersion, itemTypes).ToList();
 
         using (var migrationContext = PrepareContext(migrationId, sourceRoot, options))
         {
@@ -177,7 +182,7 @@ internal class SyncMigrationService : ISyncMigrationService
             .OrderBy(x => x.Priority);
     }
 
-    private IEnumerable<MigrationMessage> MigrateFromDisk(Guid migrationId, string sourceRoot, SyncMigrationContext migrationContext, IOrderedEnumerable<ISyncMigrationHandler> handlers)
+    private IEnumerable<MigrationMessage> MigrateFromDisk(Guid migrationId, string sourceRoot, SyncMigrationContext migrationContext, IList<ISyncMigrationHandler> handlers)
     {
         // maybe replace with a Dictionary<string, MigrationMessage> (with `ItemType` as the key)?
         var results = new List<MigrationMessage>();
