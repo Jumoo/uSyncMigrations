@@ -1,19 +1,12 @@
-﻿using Lucene.Net.Index;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Umbraco.Cms.Core;
+﻿using Newtonsoft.Json;
+
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Cms.Core.Strings;
 using Umbraco.Extensions;
+
 using uSync.Migrations.Context;
 using uSync.Migrations.Legacy.Grid;
-using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Migrators.BlockGrid.BlockMigrators
 {
@@ -49,7 +42,8 @@ namespace uSync.Migrations.Migrators.BlockGrid.BlockMigrators
 
             foreach (var item in macroObject.MacroParams.RawPropertyValues)
             {
-                properties.Add(item.Key, item.Value);
+                if(item.Value != null)
+                    properties.Add(item.Key, item.Value);
             }
 
             return properties;

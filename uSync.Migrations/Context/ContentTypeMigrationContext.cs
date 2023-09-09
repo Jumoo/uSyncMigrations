@@ -38,7 +38,7 @@ public class ContentTypeMigrationContext
     private Dictionary<string, string> _replacementAliases =
 	    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-    public IArchetypeMigrationConfigurer ArchetypeMigrationConfigurer { get; set; } 
+    public IArchetypeMigrationConfigurer? ArchetypeMigrationConfigurer { get; set; } 
 
     /// <summary>
     ///  Add a ccontent type key to the context.

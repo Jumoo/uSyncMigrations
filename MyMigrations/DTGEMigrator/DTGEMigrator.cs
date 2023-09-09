@@ -40,13 +40,10 @@ public class DTGEMigrator : SyncPropertyMigratorBase
 	
 	public override object? GetConfigValues (SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
 	{
-		var ignoreUserStartNodes = dataTypeProperty.PreValues.SingleOrDefault(x => x.Alias == "ignoreUserStartNodes");
+		var ignoreUserStartNodes = dataTypeProperty.PreValues?.SingleOrDefault(x => x.Alias == "ignoreUserStartNodes");
 		if (ignoreUserStartNodes != null)
 		{
-			bool newValue = bool.TryParse(ignoreUserStartNodes.Value, out var parsedValue) 
-				? parsedValue 
-				: false;
-
+			bool newValue = bool.TryParse(ignoreUserStartNodes.Value, out var parsedValue) && parsedValue;
 			ignoreUserStartNodes.Value = newValue.ToString();
 		}
 
@@ -77,8 +74,9 @@ public class DTGEMigrator : SyncPropertyMigratorBase
 						    var updatedValuesSerialized = JsonConvert.SerializeObject(updatedValues);
 						    
 						    var controlValue = control.Value;
-						    
-						    controlValue["value"] = (JToken)JsonConvert.DeserializeObject(updatedValuesSerialized);
+					    
+							if (controlValue != null) 
+								controlValue["value"] = JsonConvert.DeserializeObject<JToken>(updatedValuesSerialized);
 					    }
 				    }
 			    }
@@ -136,7 +134,8 @@ public class DTGEMigrator : SyncPropertyMigratorBase
 
 			}
 
-			propertyValues[propertyAlias] = propertyValue;
+			if (propertyValue !=  null)
+				propertyValues[propertyAlias] = propertyValue;
 		}
 
 		return propertyValues;

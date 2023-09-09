@@ -122,7 +122,7 @@ internal class GridToBlockGridConfigBlockHelper
 
         foreach (var editor in gridEditorsConfig.Editors
             .Where(x => referencedEditors.Contains("*") ||
-            referencedEditors.InvariantContains(x.Alias)))
+            referencedEditors.InvariantContains(x.Alias!)))
         {
             var blocks = editor.ConvertToBlockGridBlocks(context, 
                 _syncBlockMigrators,
@@ -132,7 +132,7 @@ internal class GridToBlockGridConfigBlockHelper
 
             gridBlockContext.ContentBlocks.AddRange(blocks);
 
-            allowedContentTypes[editor.Alias] = blocks.Select(x => x.ContentElementTypeKey).ToArray();
+            allowedContentTypes[editor.Alias!] = blocks.Select(x => x.ContentElementTypeKey).ToArray();
         }
 
         return allowedContentTypes;

@@ -1,10 +1,12 @@
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace Archetype.Models
 {
     /// <summary>
     /// Model that represents the configured Archetype options.
     /// </summary>
+    [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
     public class ArchetypePreValue
     {
         [JsonProperty("showAdvancedOptions")]
@@ -54,25 +56,25 @@ namespace Archetype.Models
         public int MaxFieldsets { get; set; }
 
         [JsonProperty("fieldsets")]
-        public IEnumerable<ArchetypePreValueFieldset> Fieldsets { get; set; }
+        public IEnumerable<ArchetypePreValueFieldSet> Fieldsets { get; set; } = new List<ArchetypePreValueFieldSet>();
 
         [JsonProperty("fieldsetGroups")]
-        public IEnumerable<ArchetypePreValueFieldsetGroup> FieldsetGroups { get; set; }
+        public IEnumerable<ArchetypePreValueFieldSetGroup> FieldsetGroups { get; set; } = new List<ArchetypePreValueFieldSetGroup>();
 
         [JsonProperty("hidePropertyLabels")]
         public bool HidePropertyLabels { get; set; }
 
         [JsonProperty("customCssClass")]
-        public string CustomCssClass { get; set; }
+        public string? CustomCssClass { get; set; }
 
         [JsonProperty("customCssPath")]
-        public string CustomCssPath { get; set; }
+        public string? CustomCssPath { get; set; }
 
         [JsonProperty("customJsPath")]
-        public string CustomJsPath { get; set; }
+        public string? CustomJsPath { get; set; }
 
         [JsonProperty("customViewPath")]
-        public string CustomViewPath { get; set; }
+        public string? CustomViewPath { get; set; }
 
         [JsonProperty("enableDeepDatatypeRequests")]
         public bool EnableDeepDatatypeRequests { get; set; }

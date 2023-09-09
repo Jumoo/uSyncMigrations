@@ -1,15 +1,17 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace Archetype.Models
 {
     /// <summary>
-    /// Model that represents configured Archetype fieldsets.
+    /// Model that represents configured Archetype fieldSets.
     /// </summary>
-    public class ArchetypePreValueFieldset
+    [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
+    public class ArchetypePreValueFieldSet
     {
         [JsonProperty("alias")]
-        public string Alias { get; set; }
+        public string? Alias { get; set; }
 
         [JsonProperty("remove")]
         public bool Remove { get; set; }
@@ -18,21 +20,21 @@ namespace Archetype.Models
         public bool Collapse { get; set; }
 
         [JsonProperty("labelTemplate")]
-        public string LabelTemplate { get; set; }
+        public string? LabelTemplate { get; set; }
 
         [JsonProperty("icon")]
-        public string Icon { get; set; }
+        public string? Icon { get; set; }
 
         [JsonProperty("label")]
-        public string Label { get; set; }
+        public string? Label { get; set; }
 
         [JsonProperty("previewImage")]
-        public string PreviewImage { get; set; }
+        public string? PreviewImage { get; set; }
 
         [JsonProperty("properties")]
-        public IEnumerable<ArchetypePreValueProperty> Properties { get; set; }
+        public IEnumerable<ArchetypePreValueProperty>? Properties { get; set; }
 
         [JsonProperty("group")]
-        public ArchetypePreValueFieldsetGroup Group { get; set; }
+        public ArchetypePreValueFieldSetGroup? Group { get; set; }
     }
 }

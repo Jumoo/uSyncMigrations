@@ -89,9 +89,9 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
             }
         }
 
-        if (context.DataTypes.GetByDefinition(dtd) != null)
+        if (context.DataTypes.GetByDefinition(dtd) != null && !string.IsNullOrEmpty(editorAlias))
         {
-            context.DataTypes.GetByDefinition(dtd).OriginalEditorAlias = editorAlias;
+            context.DataTypes.GetByDefinition(dtd)!.OriginalEditorAlias = editorAlias;
         }
     }
 
@@ -117,8 +117,7 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
         if (context.DataTypes.GetByDefinition(dtd) != null)
         {
             // ensured that we always populated old alias, so we can use it in archetype
-
-            context.DataTypes.GetByDefinition(dtd).OriginalEditorAlias = editorAlias;
+            context.DataTypes.GetByDefinition(dtd)!.OriginalEditorAlias = editorAlias;
          }
         context.DataTypes.AddAlias(dtd, alias);
     }

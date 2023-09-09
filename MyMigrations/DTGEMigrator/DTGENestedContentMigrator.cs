@@ -18,7 +18,7 @@ public class DTGENestedContentMigrator : NestedContentMigrator
     public DTGENestedContentMigrator()
     { }
 
-    
+
     // TODO: [KJ] Nested content GetContentValue (so we can recurse)
     public override string? GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
     {
@@ -41,23 +41,25 @@ public class DTGENestedContentMigrator : NestedContentMigrator
 
                 try
                 {
-                    var migrator = context.Migrators.TryGetMigrator("DTGE." + editorAlias.OriginalEditorAlias);
-                    if (migrator == null)
-                        migrator = context.Migrators.TryGetMigrator(editorAlias.OriginalEditorAlias);
-                    
-                    if (migrator != null)
-                    {
-                        var contentValue = migrator.GetContentValue(
-                            new SyncMigrationContentProperty(
-                                row.ContentTypeAlias, property.Key, row.ContentTypeAlias, property.Value?.ToString()),
-                            context);
-                        if (contentValue.DetectIsJson())
-                            row.RawPropertyValues[property.Key] = JsonConvert.DeserializeObject(contentValue);
-                        else
-                            row.RawPropertyValues[property.Key] = contentValue;
-                    }
+                    var migrator = context.Migrators.TryGetMigrator("DTGE." + editorAlias.OriginalEditorAlias)
+                        ?? context.Migrators.TryGetMigrator(editorAlias.OriginalEditorAlias);
+
+                    if (migrator == null) continue;
+
+                    var contentValue = migrator.GetContentValue(
+                        new SyncMigrationContentProperty(
+                                contentTypeAlias: row.ContentTypeAlias, 
+                                propertyAlias: property.Key,
+                                editorAlias: row.ContentTypeAlias, 
+                                value: property.Value?.ToString()),
+                        context);
+
+                    if (contentValue?.DetectIsJson() == true)
+                        row.RawPropertyValues[property.Key] = JsonConvert.DeserializeObject(contentValue);
+                    else
+                        row.RawPropertyValues[property.Key] = contentValue;
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     throw new Exception($"Nested Error: [{editorAlias.OriginalEditorAlias} -{property.Key}] : {ex.Message}", ex);
                 }
@@ -66,8 +68,8 @@ public class DTGENestedContentMigrator : NestedContentMigrator
 
         return JsonConvert.SerializeObject(rowValues, Formatting.Indented);
     }
-    
-    
+
+
 }
 
 internal class NestedContentRowValue

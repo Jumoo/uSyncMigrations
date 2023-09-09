@@ -14,8 +14,9 @@ namespace uSync.Migrations.Migrators.Community
     {
         public override object? GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
         {
-            var nuPickersConfig = JsonConvert.DeserializeObject<NuPickersEnumConfig>(dataTypeProperty.PreValues?.GetPreValueOrDefault("dataSource", string.Empty));
+            if (string.IsNullOrEmpty(dataTypeProperty.PreValues?.GetPreValueOrDefault("dataSource", string.Empty))) return null;
 
+            var nuPickersConfig = JsonConvert.DeserializeObject<NuPickersEnumConfig>(dataTypeProperty.PreValues.GetPreValueOrDefault("dataSource", string.Empty));
             if (nuPickersConfig == null) return null;
 
             //Using an anonymous object for now, but this should be replaced with Contentment objects (when they're created).
@@ -25,7 +26,7 @@ namespace uSync.Migrations.Migrators.Community
                 { key = "Umbraco.Community.Contentment.DataEditors.EnumDataListSource, Umbraco.Community.Contentment",
                     value = new
                     {
-                        enumType = new[] { MapAssembly(nuPickersConfig?.AssemblyName.TrimEnd(".dll")) , MapNamespace(nuPickersConfig?.EnumName) }
+                        enumType = new[] { MapAssembly(nuPickersConfig?.AssemblyName?.TrimEnd(".dll")) , MapNamespace(nuPickersConfig?.EnumName) }
                     }
                 }
             }.ToList();

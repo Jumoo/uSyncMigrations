@@ -28,7 +28,7 @@ public class NuPickersDotNetTypeaheadListPickerToContentmentDataList : NuPickers
             new
             {
                 key =
-                    $"{MapNamespace(nuPickersConfig?.ClassName)}, {MapAssembly(nuPickersConfig?.AssemblyName.TrimEnd(".dll"))}",
+                    $"{MapNamespace(nuPickersConfig?.ClassName)}, {MapAssembly(nuPickersConfig?.AssemblyName?.TrimEnd(".dll"))}",
                 value = ""
             }
         }.ToList();

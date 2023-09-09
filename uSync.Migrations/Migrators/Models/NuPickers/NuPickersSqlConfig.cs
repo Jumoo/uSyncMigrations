@@ -2,7 +2,7 @@
 {
     public class NuPickersSqlConfig
     {
-        public string Query { get; set; }
-        public string ConnectionString { get; set; }
+        public string? Query { get; set; }
+        public string? ConnectionString { get; set; }
     }
 }

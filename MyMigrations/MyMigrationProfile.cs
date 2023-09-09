@@ -95,29 +95,25 @@ public class MyMigrationProfile : ISyncMigrationPlan
         {
             {
                 //Rename the Meta Data tab to SEO with the alias of seo
-                new TabOptions{
-                    OriginalName = "Meta Data",
-                    NewName = "SEO",
-                    Alias = "seo" }
+                new TabOptions (
+                    originalName: "Meta Data",
+                    newName: "SEO",
+                    alias: "seo")
             },
             {
                 //Move the contents of the tab Carousel into the Content tab.  If content doesn't exist it will
                 //be created with the alias "Content"
-                new TabOptions
-                {
-                    OriginalName = "Carousel",
-                    NewName = "Content",
-                    Alias = string.Empty
-                }
+                new TabOptions(                
+                    originalName: "Carousel",
+                    newName: "Content",
+                    alias: string.Empty)
             },
             {
                 //No new name or alias means delete the tab, so delete the "Cookie Law" tab in this example
-                new TabOptions
-                {
-                    OriginalName = "Cookie Law",
-                    NewName = string.Empty,
-                    Alias = string.Empty
-                }
+                new TabOptions(
+                    originalName: "Cookie Law",
+                    newName: string.Empty,
+                    alias:string.Empty)
             }
         },
     };

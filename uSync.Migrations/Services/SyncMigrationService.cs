@@ -237,7 +237,7 @@ internal class SyncMigrationService : ISyncMigrationService
         AddMergers(context, options.MergingProperties);
 
         
-        // add configurer for Archetype migrations
+        // add configure for Archetype migrations
         context.ContentTypes.ArchetypeMigrationConfigurer = _archetypeConfigures.FirstOrDefault(c => c.GetType() == options.ArchetypeMigrationConfigurer) ?? _archetypeConfigures.FirstOrDefault(c => c.GetType()== typeof(DefaultArchetypeMigrationConfigurer));
 
         options.ReplacementAliases?

@@ -19,25 +19,23 @@ public class DefaultArchetypeMigrationConfigurer : IArchetypeMigrationConfigurer
         _helper = helper;
     }
 
+    private string getMigratedAlias(string archetypeAlias, string typeAlias)
+        => archetypeAlias +
+                    (!_options.Value.NotMergableDocumentTypes?.Contains(archetypeAlias) == true
+                        ? string.Empty
+                        : typeAlias.ToCleanString(_helper, CleanStringType.UnderscoreAlias));
+
     public string GetBlockElementAlias(ArchetypeFieldsetModel archetypeAlias,
         SyncMigrationContentProperty dataTypeProperty, SyncMigrationContext context)
     {
-        var alias = archetypeAlias.Alias +
-                    (!_options.Value.NotMergableDocumentTypes?.Contains(archetypeAlias.Alias) == true
-                        ? string.Empty
-                        : dataTypeProperty.ContentTypeAlias.ToCleanString(_helper, CleanStringType.UnderscoreAlias));
-            
-            
+        var alias = getMigratedAlias(archetypeAlias.Alias!, dataTypeProperty.ContentTypeAlias);
         return PrepareAlias(alias);
     }
 
-    public string GetBlockElementAlias(ArchetypePreValueFieldset archetypeAlias, SyncMigrationDataTypeProperty dataTypeProperty,
+    public string GetBlockElementAlias(ArchetypePreValueFieldSet archetypeAlias, SyncMigrationDataTypeProperty dataTypeProperty,
         SyncMigrationContext context)
     {
-        var alias = archetypeAlias.Alias +
-                    (!_options.Value.NotMergableDocumentTypes?.Contains(archetypeAlias.Alias) == true
-                        ? string.Empty
-                        : dataTypeProperty.DataTypeAlias.ToCleanString(_helper, CleanStringType.UnderscoreAlias));
+        var alias = getMigratedAlias(archetypeAlias.Alias!, dataTypeProperty.DataTypeAlias);
         return PrepareAlias(alias);
     }
 
