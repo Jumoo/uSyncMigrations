@@ -83,7 +83,7 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
 		var layoutBlockHelper = new GridToBlockGridConfigLayoutBlockHelper(_conventions, _loggerFactory.CreateLogger<GridToBlockGridConfigLayoutBlockHelper>());
         var layoutSettingsBlockHelper = new GridToBlockGridConfigLayoutSettingsHelper(_conventions, _loggerFactory.CreateLogger<GridToBlockGridConfigLayoutBlockHelper>());
 
-        // adds content types for the core elements (headline, rte, etc)
+		// adds content types for the core elements (headline, rte, etc)
 		contentBlockHelper.AddConfigDataTypes(gridToBlockContext, context);
 		
 		// Add settings
