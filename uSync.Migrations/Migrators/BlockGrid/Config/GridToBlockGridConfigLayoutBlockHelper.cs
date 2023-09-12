@@ -10,7 +10,6 @@ using uSync.Migrations.Context;
 using uSync.Migrations.Migrators.BlockGrid.Extensions;
 using uSync.Migrations.Migrators.BlockGrid.Models;
 using uSync.Migrations.Models;
-using static Umbraco.Cms.Core.PropertyEditors.ListViewConfiguration;
 
 namespace uSync.Migrations.Migrators.BlockGrid.Config;
 

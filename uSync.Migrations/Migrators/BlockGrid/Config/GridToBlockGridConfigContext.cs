@@ -16,7 +16,6 @@ namespace uSync.Migrations.Migrators.BlockGrid.Config;
 /// </remarks>
 internal class GridToBlockGridConfigContext
 {
-    public string GridDocTypeAlias { get; }
     public GridConfiguration GridConfiguration { get; }
     public ILegacyGridEditorsConfig GridEditorsConfig { get; }
     public int? GridColumns { get; }
