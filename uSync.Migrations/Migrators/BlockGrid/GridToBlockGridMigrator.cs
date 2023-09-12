@@ -1,12 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
-
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Umbraco.Cms.Core.Logging;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Cms.Core.Strings;
-
 using uSync.Migrations.Context;
 using uSync.Migrations.Legacy.Grid;
 using uSync.Migrations.Migrators.BlockGrid.BlockMigrators;
@@ -75,15 +73,21 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
 
 		var contentBlockHelper = new GridToBlockGridConfigBlockHelper(_blockMigrators, _loggerFactory.CreateLogger<GridToBlockGridConfigBlockHelper>());
 		var layoutBlockHelper = new GridToBlockGridConfigLayoutBlockHelper(_conventions, _loggerFactory.CreateLogger<GridToBlockGridConfigLayoutBlockHelper>());
+        var layoutSettingsBlockHelper = new GridToBlockGridConfigLayoutSettingsHelper(_conventions, _loggerFactory.CreateLogger<GridToBlockGridConfigLayoutBlockHelper>());
 
-		// adds content types for the core elements (headline, rte, etc)
-		contentBlockHelper.AddConfigDataTypes(gridToBlockContext, context);
+        // adds content types for the core elements (headline, rte, etc)
+        contentBlockHelper.AddConfigDataTypes(gridToBlockContext, context);
+		
+		// Add settings
+        layoutSettingsBlockHelper.AddGridSettings(gridToBlockContext, context, dataTypeProperty.DataTypeAlias);
 
 		// prep the layouts 
-		layoutBlockHelper.AddLayoutBlocks(gridToBlockContext, context);
+		layoutBlockHelper.AddLayoutBlocks(gridToBlockContext, context, dataTypeProperty.DataTypeAlias);
 
 		// Add the content blocks
 		contentBlockHelper.AddContentBlocks(gridToBlockContext, context);
+
+		// Add the grid config and styles
 
 		// Get resultant configuration
 		var result = gridToBlockContext.ConvertToBlockGridConfiguration();

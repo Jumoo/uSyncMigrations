@@ -10,6 +10,7 @@ using uSync.Migrations.Context;
 using uSync.Migrations.Migrators.BlockGrid.Extensions;
 using uSync.Migrations.Migrators.BlockGrid.Models;
 using uSync.Migrations.Models;
+using static Umbraco.Cms.Core.PropertyEditors.ListViewConfiguration;
 
 namespace uSync.Migrations.Migrators.BlockGrid.Config;
 
@@ -27,13 +28,13 @@ internal class GridToBlockGridConfigLayoutBlockHelper
         _logger = logger;
     }
 
-    public void AddLayoutBlocks(GridToBlockGridConfigContext gridBlockContext, SyncMigrationContext context)
+    public void AddLayoutBlocks(GridToBlockGridConfigContext gridBlockContext, SyncMigrationContext context, string dataTypeAlias)
     {
         // gather all the layout blocks we can from the templates 
         // and layouts sections of the config. 
         GetTemplateLayouts(gridBlockContext.GridConfiguration.GetItemBlock("templates"), gridBlockContext, context);
 
-        GetLayoutLayouts(gridBlockContext.GridConfiguration.GetItemBlock("layouts"), gridBlockContext, context);
+        GetLayoutLayouts(gridBlockContext.GridConfiguration.GetItemBlock("layouts"), gridBlockContext, context, dataTypeAlias);
 
         AddContentTypesForLayoutBlocks(gridBlockContext, context);
     }
@@ -137,7 +138,7 @@ internal class GridToBlockGridConfigLayoutBlockHelper
         }
     }
 
-    private void GetLayoutLayouts(JToken? layouts, GridToBlockGridConfigContext gridBlockContext, SyncMigrationContext context)
+    private void GetLayoutLayouts(JToken? layouts, GridToBlockGridConfigContext gridBlockContext, SyncMigrationContext context, string dataTypeAlias)
     {
         if (layouts == null) return;
 
@@ -189,12 +190,14 @@ internal class GridToBlockGridConfigLayoutBlockHelper
             if (rowAreas.Count == 0) continue;
 
             var contentTypeAlias = _conventions.LayoutContentTypeAlias(layout.Name);
+            var settingsContentTypeAlias = _conventions.LayoutSettingsContentTypeAlias(dataTypeAlias);
 
             var layoutBlock = new BlockGridConfiguration.BlockGridBlockConfiguration
             {
                 Label = layout?.Name,
                 Areas = rowAreas.ToArray(),
                 ContentElementTypeKey = context.GetContentTypeKeyOrDefault(contentTypeAlias, contentTypeAlias.ToGuid()),
+                SettingsElementTypeKey = context.GetContentTypeKeyOrDefault(settingsContentTypeAlias, settingsContentTypeAlias.ToGuid()),
                 GroupKey = gridBlockContext.LayoutsGroup.Key.ToString(),
 				BackgroundColor = Grid.LayoutBlocks.Background,
 				IconColor = Grid.LayoutBlocks.Icon,
@@ -262,8 +265,4 @@ internal class GridToBlockGridConfigLayoutBlockHelper
             context.ContentTypes.AddElementType(block.ContentElementTypeKey);
         }
     }
-
-
-
-
 }
