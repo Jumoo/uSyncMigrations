@@ -20,25 +20,37 @@ namespace uSync.Migrations.Migrators.BlockGrid.Config
 
         public void AddGridSettings(GridToBlockGridConfigContext gridBlockContext, SyncMigrationContext context, string gridAlias)
         {
-            AddGridConfig(gridBlockContext.GridConfiguration.GetItemBlock("config"), gridBlockContext, context, gridAlias);
+            var gridConfig = GetGridSettingsFromConfig(gridBlockContext.GridConfiguration?.GetItemBlock("config"));
+
+            var gridStyles = GetGridSettingsFromConfig(gridBlockContext.GridConfiguration?.GetItemBlock("styles"));
+
+            // Take only the settings that have applyTo = row. Other value here could be cell.
+            var gridSettings = gridConfig.Concat(gridStyles).Where(s => s.ApplyTo == "row");
+
+            AddGridLayoutSettings(gridSettings, gridBlockContext, context, gridAlias);
         }
 
-        private void AddGridConfig(JToken? config, GridToBlockGridConfigContext gridBlockContext, SyncMigrationContext context, string gridAlias)
+        private IEnumerable<GridSettingsConfigurationItem> GetGridSettingsFromConfig(JToken? config)
         {
-            if (config == null) return;
-
-            var gridLayoutConfigurations = config
-                .ToObject<IEnumerable<GridConfigConfigurationItem>>() ?? Enumerable.Empty<GridConfigConfigurationItem>();
-
-            var contentTypeProperties = gridLayoutConfigurations.Select(configItem =>
+            if (config == null)
             {
-                var contentType = configItem.Key;
+                return Enumerable.Empty<GridSettingsConfigurationItem>();
+            }
+
+            return config.ToObject<IEnumerable<GridSettingsConfigurationItem>>() ?? Enumerable.Empty<GridSettingsConfigurationItem>();
+        }
+
+        private void AddGridLayoutSettings(IEnumerable<GridSettingsConfigurationItem> gridLayoutConfigurations, GridToBlockGridConfigContext gridBlockContext, SyncMigrationContext context, string gridAlias)
+        {
+            var contentTypeProperties = gridLayoutConfigurations.Where(configItem => configItem.Key is not null).Select(configItem =>
+            {
+                var contentTypeAlias = configItem.Key!;
 
                 return new NewContentTypeProperty()
                 {
-                    Name = configItem.Label,
-                    Alias = configItem.Key,
-                    DataTypeAlias = configItem.View,
+                    Name = configItem.Label ?? contentTypeAlias,
+                    Alias = contentTypeAlias,
+                    DataTypeAlias = configItem?.View,
                 };
             });
 
@@ -55,25 +67,6 @@ namespace uSync.Migrations.Migrators.BlockGrid.Config
                 Folder = "BlockGrid/Settings",
                 Properties = contentTypeProperties.ToList()
             });
-
-            
-
-/*            context.
-*/            /*            context.ContentTypes.AddNewContentType(new NewContentTypeInfo
-                        {
-                            Key = contentTypeAlias.ToGuid(),
-                            Alias = contentTypeAlias,
-                            Name = configItem.Label ?? contentTypeAlias,
-                            Description = "Grid Settings",
-                            Folder = "BlockGrid/Settings",
-                            Icon = "icon-cog color-purple",
-                            IsElement = true
-                        });*/
-        }
-
-        private void AddGridStyles(JToken? config, GridToBlockGridConfigContext gridBlockContext, SyncMigrationContext context)
-        {
-            throw new NotImplementedException();
         }
     }
 }

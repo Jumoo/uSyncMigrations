@@ -95,8 +95,6 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
 		// Add the content blocks
 		contentBlockHelper.AddContentBlocks(gridToBlockContext, context);
 
-		// Add the grid config and styles
-
 		// Get resultant configuration
 		var result = gridToBlockContext.ConvertToBlockGridConfiguration();
 

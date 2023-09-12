@@ -66,12 +66,12 @@ internal class GridAreaConfiguration
     public string[]? Allowed { get; set; }
 }
 
-internal class GridConfigConfiguration
+internal class GridSettingsConfiguration
 {
-    GridConfigConfigurationItem[]? ConfigItems { get; set; }
+    GridSettingsConfigurationItem[]? ConfigItems { get; set; }
 }
 
-internal class GridConfigConfigurationItem
+internal class GridSettingsConfigurationItem
 {
     [JsonProperty("label")]
     public string? Label { get; set; }
@@ -84,6 +84,12 @@ internal class GridConfigConfigurationItem
 
     [JsonProperty("view")]
     public string? View { get; set; }
+
+    [JsonProperty("modifier")]
+    public string? Modifier { get; set; }
+
+    [JsonProperty("applyTo")]
+    public string? ApplyTo { get; set; }
 }
 
 /// <summary>
