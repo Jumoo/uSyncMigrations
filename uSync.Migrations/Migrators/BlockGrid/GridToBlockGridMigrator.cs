@@ -24,8 +24,8 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
 	private readonly ILegacyGridConfig _gridConfig;
 	private readonly SyncBlockMigratorCollection _blockMigrators;
 	private readonly ILoggerFactory _loggerFactory;
-    private readonly ILogger<GridToBlockGridMigrator> _logger;
-    private readonly IProfilingLogger _profilingLogger;
+	private readonly ILogger<GridToBlockGridMigrator> _logger;
+	private readonly IProfilingLogger _profilingLogger;
 	private readonly GridConventions _conventions;
 
     public GridToBlockGridMigrator(
