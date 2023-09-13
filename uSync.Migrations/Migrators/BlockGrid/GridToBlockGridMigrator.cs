@@ -26,8 +26,6 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
 	private readonly ILoggerFactory _loggerFactory;
 	private readonly IProfilingLogger _profilingLogger;
 	private readonly ILogger<GridToBlockGridMigrator> _logger;
-	private readonly IProfilingLogger _profilingLogger;
-
 	private readonly GridConventions _conventions;
 
     public GridToBlockGridMigrator(
@@ -41,13 +39,8 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
         _blockMigrators = blockMigrators;
         _conventions = new GridConventions(shortStringHelper);
         _loggerFactory = loggerFactory;
-<<<<<<< HEAD
         _profilingLogger = profilingLogger;
         _logger = loggerFactory.CreateLogger<GridToBlockGridMigrator>();	
-=======
-        _logger = loggerFactory.CreateLogger<GridToBlockGridMigrator>();
-        _profilingLogger = profilingLogger;
->>>>>>> 8b68bbf (Namespace fixes.)
     }
 
     public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
@@ -154,16 +147,11 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
 			}
 		}
 
-<<<<<<< HEAD
 		var helper = new GridToBlockContentHelper(
 			_conventions, 
 			_blockMigrators,
 			_loggerFactory.CreateLogger<GridToBlockContentHelper>(), 
 			_profilingLogger);
-=======
-		var helper = new GridToBlockContentHelper(_conventions, _blockMigrators,
-			_loggerFactory.CreateLogger<GridToBlockContentHelper>(), _profilingLogger);
->>>>>>> 9a47735 (Namespace fixes.)
 		
 		var blockValue = helper.ConvertToBlockValue(source, context);
 		if (blockValue == null)
