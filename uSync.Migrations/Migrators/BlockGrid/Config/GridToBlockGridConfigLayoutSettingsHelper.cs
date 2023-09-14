@@ -11,11 +11,18 @@ namespace uSync.Migrations.Migrators.BlockGrid.Config
     internal class GridToBlockGridConfigLayoutSettingsHelper
     {
         private readonly GridConventions _conventions;
+        private readonly GridSettingsViewMigratorCollection _gridSettingsViewMigrators;
+        private readonly ILogger<GridToBlockGridConfigLayoutSettingsHelper> _logger;
 
-        public GridToBlockGridConfigLayoutSettingsHelper(GridConventions conventions,
-            ILogger<GridToBlockGridConfigLayoutBlockHelper> logger)
+
+        public GridToBlockGridConfigLayoutSettingsHelper(
+            GridConventions conventions,
+            GridSettingsViewMigratorCollection gridSettingsViewMigrators,
+            ILogger<GridToBlockGridConfigLayoutSettingsHelper> logger)
         {
             _conventions = conventions;
+            _gridSettingsViewMigrators = gridSettingsViewMigrators;
+            _logger = logger;
         }
 
         public void AddGridSettings(GridToBlockGridConfigContext gridBlockContext, SyncMigrationContext context, string gridAlias)
@@ -46,11 +53,25 @@ namespace uSync.Migrations.Migrators.BlockGrid.Config
             {
                 var contentTypeAlias = configItem.Key!;
 
+                var gridSettingPropertyMigrator = _gridSettingsViewMigrators.GetMigrator(configItem.View);
+                
+                var dataTypeAlias = gridSettingPropertyMigrator is not null
+                                    ? gridSettingPropertyMigrator.NewDataTypeAlias
+                                    : configItem.View;
+/*
+                var dataTypeName
+
+                context.DataTypes.AddDefinition(dataTypeAlias.ToGuid(), new DataTypeInfo(
+                    editorAlias: dataTypeAlias,
+                    originalEditorAlias: dataTypeAlias,
+                    dataTypeName))*/
+
+
                 return new NewContentTypeProperty()
                 {
                     Name = configItem.Label ?? contentTypeAlias,
                     Alias = contentTypeAlias,
-                    DataTypeAlias = configItem?.View,
+                    DataTypeAlias = dataTypeAlias,
                 };
             });
 

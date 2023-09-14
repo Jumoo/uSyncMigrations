@@ -14,6 +14,7 @@ using uSync.Migrations.Handlers;
 using uSync.Migrations.Legacy.Grid;
 using uSync.Migrations.Migrators;
 using uSync.Migrations.Migrators.BlockGrid.BlockMigrators;
+using uSync.Migrations.Migrators.BlockGrid.Config;
 using uSync.Migrations.Migrators.BlockGrid.Extensions;
 using uSync.Migrations.Migrators.Community;
 using uSync.Migrations.Migrators.Community.Archetype;
@@ -58,6 +59,10 @@ public static class SyncMigrationsBuilderExtensions
         builder
             .WithCollectionBuilder<SyncBlockMigratorCollectionBuilder>()
                 .Add(() => builder.TypeLoader.GetTypes<ISyncBlockMigrator>());
+
+        builder
+            .WithCollectionBuilder<GridSettingsViewMigratorCollectionBuilder>()
+                .Add(() => builder.TypeLoader.GetTypes<IGridSettingsViewMigrator>());
 
         builder
             .WithCollectionBuilder<SyncPropertyMergingCollectionBuilder>()

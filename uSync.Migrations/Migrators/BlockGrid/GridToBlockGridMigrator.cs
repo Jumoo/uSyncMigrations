@@ -23,6 +23,7 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
 {
 	private readonly ILegacyGridConfig _gridConfig;
 	private readonly SyncBlockMigratorCollection _blockMigrators;
+	private readonly GridSettingsViewMigratorCollection _gridSettingsMigrators;
 	private readonly ILoggerFactory _loggerFactory;
 	private readonly ILogger<GridToBlockGridMigrator> _logger;
 	private readonly IProfilingLogger _profilingLogger;
@@ -31,12 +32,14 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
     public GridToBlockGridMigrator(
         ILegacyGridConfig gridConfig,
         SyncBlockMigratorCollection blockMigrators,
+		GridSettingsViewMigratorCollection gridSettingsMigrators,
         IShortStringHelper shortStringHelper,
         ILoggerFactory loggerFactory,
         IProfilingLogger profilingLogger)
     {
         _gridConfig = gridConfig;
         _blockMigrators = blockMigrators;
+		_gridSettingsMigrators = gridSettingsMigrators;
         _conventions = new GridConventions(shortStringHelper);
         _loggerFactory = loggerFactory;
         _profilingLogger = profilingLogger;
@@ -74,7 +77,7 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
 
 		var contentBlockHelper = new GridToBlockGridConfigBlockHelper(_blockMigrators, _loggerFactory.CreateLogger<GridToBlockGridConfigBlockHelper>());
 		var layoutBlockHelper = new GridToBlockGridConfigLayoutBlockHelper(_conventions, _loggerFactory.CreateLogger<GridToBlockGridConfigLayoutBlockHelper>());
-        var layoutSettingsBlockHelper = new GridToBlockGridConfigLayoutSettingsHelper(_conventions, _loggerFactory.CreateLogger<GridToBlockGridConfigLayoutBlockHelper>());
+        var layoutSettingsBlockHelper = new GridToBlockGridConfigLayoutSettingsHelper(_conventions, _gridSettingsMigrators, _loggerFactory.CreateLogger<GridToBlockGridConfigLayoutSettingsHelper>());
 
 		// adds content types for the core elements (headline, rte, etc)
 		contentBlockHelper.AddConfigDataTypes(gridToBlockContext, context);
