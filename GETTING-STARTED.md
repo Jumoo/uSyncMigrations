@@ -15,7 +15,7 @@ uSync Packers are simple packages for Umbraco 7 and Umbraco 8, that use gather u
 | Umbraco 7 | Umbraco 8
 | - | -
 | [uSync.Migrations.Packer v7](https://clients.jumoo.co.uk/migrations/uSync.Migrations.Packer_7.0.1.zip) | [uSync.Migrations.Packer v8](https://clients.jumoo.co.uk/migrations/uSync.Migrations.Packer_8.0.0.zip)
-| Minimum v7.15.10 | Minimum ?
+| Minimum v7.15.10 | Minimum 8.18.8
 
 > All Packers packages are available at https://clients.jumoo.co.uk/migrations/
 
