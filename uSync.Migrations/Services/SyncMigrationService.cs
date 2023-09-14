@@ -61,7 +61,8 @@ internal class SyncMigrationService : ISyncMigrationService
             .Where(x =>HandlerMatches(x, _options.Value, version))
             .OrderBy(x => x.Priority)
             .Select(x => x.ItemType);
-    private static bool HandlerMatches( ISyncMigrationHandler handler, uSyncMigrationOptions options, int version)=> options.DisabledHandlers?.Any(x => handler.GetType().Name.InvariantEquals(x)) == false && handler.SourceVersion == version;
+    private static bool HandlerMatches( ISyncMigrationHandler handler, uSyncMigrationOptions options, int version) =>
+        (options.DisabledHandlers == null || options.DisabledHandlers.Any(x => handler.GetType().Name.InvariantEquals(x)) == false) && handler.SourceVersion == version;
 
     public IEnumerable<ISyncMigrationHandler> GetHandlers(int version)
         => _migrationHandlers.Where(x => HandlerMatches(x, _options.Value, version));
