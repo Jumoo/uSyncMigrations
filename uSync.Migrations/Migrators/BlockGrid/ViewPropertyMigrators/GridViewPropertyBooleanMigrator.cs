@@ -14,20 +14,9 @@ namespace uSync.Migrations.Migrators.BlockGrid.ViewPropertyMigrators
 
         public string NewDataTypeAlias => "True/false";
 
-
-        /*        public NewContentTypeProperty GetContentTypeProperty()
-                {
-                    return new NewContentTypeProperty
-                    {
-                        Name = "",
-                        Alias = "GridSettingProperty_Boolean",
-                        DataTypeAlias = "True/false"
-                    };
-                }
-
-                public object GetPropertyValue(string value)
-                {
-
-                }*/
+        public object ConvertContentString(string value)
+        {
+            return value;
+        }
     }
 }

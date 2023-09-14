@@ -54,7 +54,6 @@ internal class GridToBlockContentHelper
         }
 
         var sectionContentTypeAlias = _conventions.SectionContentTypeAlias(source.Name);
-
         var sectionKey = context.ContentTypes.GetKeyByAlias(sectionContentTypeAlias);
 
         var sections = source.Sections
@@ -78,6 +77,7 @@ internal class GridToBlockContentHelper
                 ContentTypeAlias = sectionContentTypeAlias
             };
             block.ContentData.Add(rootSection);
+
             rootLayoutItem = new BlockGridLayoutItem
             {
                 ContentUdi = rootSection.Udi,
@@ -142,10 +142,16 @@ internal class GridToBlockContentHelper
                 // row 
                 if (!rowLayoutAreas.Any()) continue;
 
-                var rowContent = GetGridRowBlockContent(row, context);
+                var rowContentAndSettings = GetGridRowBlockContentAndSettings(row, context);
 
-                block.ContentData.Add(rowContent);
-                blockLayouts.Add(GetGridRowBlockLayout(rowContent, rowLayoutAreas, rowColumns));
+                block.ContentData.Add(rowContentAndSettings.Content);
+
+                if (rowContentAndSettings.Settings is not null)
+                {
+                    block.SettingsData.Add(rowContentAndSettings.Settings);
+                }
+
+                blockLayouts.Add(GetGridRowBlockLayout(rowContentAndSettings, rowLayoutAreas, rowColumns));
             }
 
             // section 
@@ -207,24 +213,31 @@ internal class GridToBlockContentHelper
         }
     }
 
-    private BlockItemData GetGridRowBlockContent(GridValue.GridRow row, SyncMigrationContext context)
+    private BlockContentPair GetGridRowBlockContentAndSettings(GridValue.GridRow row, SyncMigrationContext context)
     {
         var rowLayoutContentTypeAlias = _conventions.LayoutContentTypeAlias(row.Name);
+
         var rowContentTypeKey = context.GetContentTypeKeyOrDefault(rowLayoutContentTypeAlias, rowLayoutContentTypeAlias.ToGuid()); 
 
-        return new BlockItemData
+        var contentData = new BlockItemData
         {
             Udi = Udi.Create(UmbConstants.UdiEntityType.Element, row.Id),
             ContentTypeKey = rowContentTypeKey,
             ContentTypeAlias = rowLayoutContentTypeAlias
         };
+
+        var settingsData = GetSettingsBlockItemDataFromRow(row, context);
+
+        return new BlockContentPair(content: contentData, settings: settingsData);
     }
 
-    private BlockGridLayoutItem GetGridRowBlockLayout(BlockItemData rowContent, List<BlockGridLayoutAreaItem> rowLayoutAreas, int? rowColumns)
+
+    private BlockGridLayoutItem GetGridRowBlockLayout(BlockContentPair rowContentAndSettings, List<BlockGridLayoutAreaItem> rowLayoutAreas, int? rowColumns)
     {
         return new BlockGridLayoutItem
         {
-            ContentUdi = rowContent.Udi,
+            ContentUdi = rowContentAndSettings.Content.Udi,
+            SettingsUdi = rowContentAndSettings.Settings?.Udi,
             Areas = rowLayoutAreas.ToArray(),
             ColumnSpan = rowColumns,
             RowSpan = 1,
@@ -301,6 +314,44 @@ internal class GridToBlockContentHelper
         }
 
         return data;
+    }
+
+    private BlockItemData? GetSettingsBlockItemDataFromRow(GridValue.GridRow row, SyncMigrationContext context)
+    {
+        var settingsValues = new Dictionary<string, object?>();
+
+        var rowLayoutSettingsContentTypeAlias = _conventions.LayoutSettingsContentTypeAlias(row.Name);
+        var rowSettingsContentTypeKey = context.GetContentTypeKeyOrDefault(rowLayoutSettingsContentTypeAlias, rowLayoutSettingsContentTypeAlias.ToGuid());
+
+
+        if (row.Config is not null)
+        {
+            foreach (JProperty config in row.Config)
+            {
+                settingsValues.Add(config.Name, config.Value);
+            }
+        }
+
+        if (row.Styles is not null)
+        {
+            foreach (JProperty style in row.Styles)
+            {
+                // Dont overwrite values. What to do here?
+                // TODO: Figure out what to do here?
+                if (!settingsValues.ContainsKey(style.Name))
+                {
+                    settingsValues.Add(style.Name, style.Value);
+                }
+            }
+        }
+
+        return new BlockItemData
+        {
+            Udi = Udi.Create(UmbConstants.UdiEntityType.Element, Guid.NewGuid()),
+            ContentTypeKey = rowSettingsContentTypeKey,
+            ContentTypeAlias = rowLayoutSettingsContentTypeAlias,
+            RawPropertyValues = settingsValues
+        };
     }
 }
 

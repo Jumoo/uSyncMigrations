@@ -13,6 +13,7 @@ namespace uSync.Migrations.Migrators.BlockGrid.Config
     {
         string ViewKey { get; }
         string NewDataTypeAlias { get; }
+        public object ConvertContentString(string value);
     }
 
     public class GridSettingsViewMigratorCollectionBuilder

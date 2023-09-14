@@ -32,7 +32,7 @@ namespace uSync.Migrations.Migrators.BlockGrid.Config
             var gridStyles = GetGridSettingsFromConfig(gridBlockContext.GridConfiguration?.GetItemBlock("styles"));
 
             // Take only the settings that have applyTo = row. Other value here could be cell.
-            var gridSettings = gridConfig.Concat(gridStyles).Where(s => s.ApplyTo == "row");
+            var gridSettings = gridConfig.Concat(gridStyles).Where(s => s.ApplyTo != "cell");
 
             AddGridLayoutSettings(gridSettings, gridBlockContext, context, gridAlias);
         }
@@ -58,14 +58,6 @@ namespace uSync.Migrations.Migrators.BlockGrid.Config
                 var dataTypeAlias = gridSettingPropertyMigrator is not null
                                     ? gridSettingPropertyMigrator.NewDataTypeAlias
                                     : configItem.View;
-/*
-                var dataTypeName
-
-                context.DataTypes.AddDefinition(dataTypeAlias.ToGuid(), new DataTypeInfo(
-                    editorAlias: dataTypeAlias,
-                    originalEditorAlias: dataTypeAlias,
-                    dataTypeName))*/
-
 
                 return new NewContentTypeProperty()
                 {
