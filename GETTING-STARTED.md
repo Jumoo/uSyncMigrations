@@ -20,11 +20,13 @@ uSync Packers are simple packages for Umbraco 7 and Umbraco 8, that use gather u
 > All Packers packages are available at https://clients.jumoo.co.uk/migrations/
 
 
-A package will create a new uSync export, and grab some extra files such as the css/script and a specially generated `grid.config.js` file and put them all into a .zip package.
+A package will create a new uSync export, and grab some extra files such as the Views, css/script and a specially generated `grid.config.js` file and put them all into a .zip package.
 
 you can then use the .zip package on uSync Migrations to start the process properly.
 
 ## Step Two: Migrate!
+
+> If you want your Document Types to have their associated Templates created, you will need to copy/paste the View files into your new project, either from the source v7/8 project or the .zip package.
 
 You can start with a new blank install of Umbraco:
 
