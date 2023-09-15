@@ -24,7 +24,7 @@ namespace uSync.Migrations.Migrators.BlockGrid.Config
             _gridSettingsViewMigrators = gridSettingsViewMigrators;
             _logger = logger;
         }
-
+        
         public void AddGridSettings(GridToBlockGridConfigContext gridBlockContext, SyncMigrationContext context, string gridAlias)
         {
             var gridConfig = GetGridSettingsFromConfig(gridBlockContext.GridConfiguration?.GetItemBlock("config"));
@@ -32,6 +32,7 @@ namespace uSync.Migrations.Migrators.BlockGrid.Config
             var gridStyles = GetGridSettingsFromConfig(gridBlockContext.GridConfiguration?.GetItemBlock("styles"));
 
             // Take only the settings that have applyTo = row. Other value here could be cell.
+            // TODO: Implement cell settings converter.
             var gridSettings = gridConfig.Concat(gridStyles).Where(s => s.ApplyTo != "cell");
 
             AddGridLayoutSettings(gridSettings, gridBlockContext, context, gridAlias);
@@ -51,13 +52,25 @@ namespace uSync.Migrations.Migrators.BlockGrid.Config
         {
             var contentTypeProperties = gridLayoutConfigurations.Where(configItem => configItem.Key is not null).Select(configItem =>
             {
-                var contentTypeAlias = configItem.Key!;
+                var contentTypeAlias = configItem.Key;
+
+                if (contentTypeAlias.IsNullOrWhiteSpace() == true)
+                {
+                    _logger.LogError("No key defined for grid layout configuration in {alias}", gridAlias);
+                    return null;
+                }
 
                 var gridSettingPropertyMigrator = _gridSettingsViewMigrators.GetMigrator(configItem.View);
-                
-                var dataTypeAlias = gridSettingPropertyMigrator is not null
+
+                var dataTypeAlias = gridSettingPropertyMigrator is not null && !gridSettingPropertyMigrator.NewDataTypeAlias.IsNullOrWhiteSpace()
                                     ? gridSettingPropertyMigrator.NewDataTypeAlias
                                     : configItem.View;
+
+                if (dataTypeAlias.IsNullOrWhiteSpace() == true)
+                {
+                    _logger.LogError("No view defined for grid layout configuration in {alias}", gridAlias);
+                    return null;
+                }
 
                 return new NewContentTypeProperty()
                 {
@@ -65,7 +78,7 @@ namespace uSync.Migrations.Migrators.BlockGrid.Config
                     Alias = contentTypeAlias,
                     DataTypeAlias = dataTypeAlias,
                 };
-            });
+            }).WhereNotNull();
 
             var alias = _conventions.LayoutSettingsContentTypeAlias(gridAlias);
 
