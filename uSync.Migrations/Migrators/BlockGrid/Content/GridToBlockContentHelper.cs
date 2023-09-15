@@ -2,7 +2,7 @@
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-
+using System.Text.Json;
 using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Logging;
 using Umbraco.Cms.Core.Models;
@@ -42,7 +42,7 @@ internal class GridToBlockContentHelper
     /// <summary>
     ///  convert a grid value (so with sections, rows, areas and controls) into a block value for a grid.
     /// </summary>
-    public BlockValue? ConvertToBlockValue(GridValue source, SyncMigrationContext context)
+    public BlockValue? ConvertToBlockValue(GridValue source, SyncMigrationContext context, string dataTypeAlias)
     {
         _logger.LogDebug(">> {method}", nameof(ConvertToBlockValue));
 
@@ -142,7 +142,7 @@ internal class GridToBlockContentHelper
                 // row 
                 if (!rowLayoutAreas.Any()) continue;
 
-                var rowContentAndSettings = GetGridRowBlockContentAndSettings(row, context);
+                var rowContentAndSettings = GetGridRowBlockContentAndSettings(row, context, dataTypeAlias);
 
                 block.ContentData.Add(rowContentAndSettings.Content);
 
@@ -213,10 +213,9 @@ internal class GridToBlockContentHelper
         }
     }
 
-    private BlockContentPair GetGridRowBlockContentAndSettings(GridValue.GridRow row, SyncMigrationContext context)
+    private BlockContentPair GetGridRowBlockContentAndSettings(GridValue.GridRow row, SyncMigrationContext context, string dataTypeAlias)
     {
         var rowLayoutContentTypeAlias = _conventions.LayoutContentTypeAlias(row.Name);
-
         var rowContentTypeKey = context.GetContentTypeKeyOrDefault(rowLayoutContentTypeAlias, rowLayoutContentTypeAlias.ToGuid()); 
 
         var contentData = new BlockItemData
@@ -226,7 +225,7 @@ internal class GridToBlockContentHelper
             ContentTypeAlias = rowLayoutContentTypeAlias
         };
 
-        var settingsData = GetSettingsBlockItemDataFromRow(row, context);
+        var settingsData = GetSettingsBlockItemDataFromRow(row, context, dataTypeAlias);
 
         return new BlockContentPair(content: contentData, settings: settingsData);
     }
@@ -316,19 +315,19 @@ internal class GridToBlockContentHelper
         return data;
     }
 
-    private BlockItemData? GetSettingsBlockItemDataFromRow(GridValue.GridRow row, SyncMigrationContext context)
+    private BlockItemData? GetSettingsBlockItemDataFromRow(GridValue.GridRow row, SyncMigrationContext context, string dataTypeAlias)
     {
         var settingsValues = new Dictionary<string, object?>();
 
-        var rowLayoutSettingsContentTypeAlias = _conventions.LayoutSettingsContentTypeAlias(row.Name);
+        var rowLayoutSettingsContentTypeAlias = _conventions.LayoutSettingsContentTypeAlias(dataTypeAlias);
         var rowSettingsContentTypeKey = context.GetContentTypeKeyOrDefault(rowLayoutSettingsContentTypeAlias, rowLayoutSettingsContentTypeAlias.ToGuid());
-
 
         if (row.Config is not null)
         {
             foreach (JProperty config in row.Config)
             {
-                settingsValues.Add(config.Name, config.Value);
+                var test = _conventions.FormatGridSettingKey(config.Name);
+                settingsValues.Add(_conventions.FormatGridSettingKey(config.Name), config.Value);
             }
         }
 
@@ -336,11 +335,12 @@ internal class GridToBlockContentHelper
         {
             foreach (JProperty style in row.Styles)
             {
-                // Dont overwrite values. What to do here?
-                // TODO: Figure out what to do here?
-                if (!settingsValues.ContainsKey(style.Name))
+                // Dont overwrite values. If styles have same settings keys as config, what should happen?
+                // TODO: Figure out what to do here / what gets priority?##
+                var formattedKey = _conventions.FormatGridSettingKey(style.Name);
+                if (!settingsValues.ContainsKey(formattedKey))
                 {
-                    settingsValues.Add(style.Name, style.Value);
+                    settingsValues.Add(formattedKey, style.Value);
                 }
             }
         }

@@ -1,4 +1,6 @@
-﻿using Umbraco.Cms.Core.Strings;
+﻿using System.Text.Json;
+using Umbraco.Cms.Core.Strings;
+using Umbraco.Extensions;
 
 namespace uSync.Migrations.Migrators.BlockGrid.Extensions;
 
@@ -34,4 +36,15 @@ internal class GridConventions
 
     public string LayoutSettingsContentTypeAlias(string layout)
         => layout.GetBlockGridLayoutSettingsContentTypeAlias(ShortStringHelper);
+
+    public string FormatGridSettingKey(string setting)
+    {
+        var splitString = setting.Split("-");
+        if (splitString.Length == 1)
+        {
+            return splitString[0];
+        }
+
+        return string.Join("", splitString.First().ToLower(), string.Join("", splitString.Skip(1).Select(s => s.ToFirstUpper()))).ToString();
+    }
 }
