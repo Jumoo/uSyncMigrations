@@ -37,17 +37,17 @@ public class SyncBlockMigratorCollection
 
 	public Dictionary<string, ISyncBlockMigrator> GetDefaults()
 	{
-    var defaults = new Dictionary<string, ISyncBlockMigrator>(StringComparer.OrdinalIgnoreCase);
-    foreach (var item in this.Where(x => x.GetType().GetCustomAttribute<SyncDefaultMigratorAttribute>(false) != null))
-    {
-        foreach (var alias in item.Aliases)
-        {
-            defaults[alias] = item;
-        }
-    }
+		var defaults = new Dictionary<string, ISyncBlockMigrator>(StringComparer.OrdinalIgnoreCase);
+		foreach (var item in this.Where(x => x.GetType().GetCustomAttribute<SyncDefaultMigratorAttribute>(false) != null))
+		{
+    	foreach (var alias in item.Aliases)
+			{
+				defaults[alias] = item;
+			}
+		}
 
-    return defaults;
-  }
+		return defaults;
+	}
 
 	public ISyncBlockMigrator? GetMigrator(string? gridAlias)
 	{
