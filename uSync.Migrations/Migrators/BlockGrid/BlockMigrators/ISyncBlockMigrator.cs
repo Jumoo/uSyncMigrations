@@ -36,17 +36,17 @@ public class SyncBlockMigratorCollection
 	{}
 
 	public Dictionary<string, ISyncBlockMigrator> GetDefaults()
-  {
-      var defaults = new Dictionary<string, ISyncBlockMigrator>(StringComparer.OrdinalIgnoreCase);
-      foreach (var item in this.Where(x => x.GetType().GetCustomAttribute<SyncDefaultMigratorAttribute>(false) != null))
-      {
-          foreach (var alias in item.Aliases)
-          {
-              defaults[alias] = item;
-          }
-      }
+	{
+    var defaults = new Dictionary<string, ISyncBlockMigrator>(StringComparer.OrdinalIgnoreCase);
+    foreach (var item in this.Where(x => x.GetType().GetCustomAttribute<SyncDefaultMigratorAttribute>(false) != null))
+    {
+        foreach (var alias in item.Aliases)
+        {
+            defaults[alias] = item;
+        }
+    }
 
-      return defaults;
+    return defaults;
   }
 
 	public ISyncBlockMigrator? GetMigrator(string? gridAlias)
@@ -54,10 +54,10 @@ public class SyncBlockMigratorCollection
 		if (gridAlias == null) return null;
 
 		var defaults = GetDefaults();
-    if (defaults.TryGetValue(gridAlias, out var migrator))
-    {
-        return migrator;
-    }
+		if (defaults.TryGetValue(gridAlias, out var migrator))
+		{
+		    return migrator;
+		}
 
 		return this.FirstOrDefault(x => x.Aliases.InvariantContains(gridAlias));
 	}
