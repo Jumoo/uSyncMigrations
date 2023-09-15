@@ -45,6 +45,9 @@ internal class GridConventions
             return splitString[0];
         }
 
-        return string.Join("", splitString.First().ToLower(), string.Join("", splitString.Skip(1).Select(s => s.ToFirstUpper()))).ToString();
+        return string.Join("", 
+            splitString.First().ToLower(), 
+            string.Join("", splitString.Skip(1).Select(s => s.ToFirstUpper())))
+            .ToString();
     }
 }
