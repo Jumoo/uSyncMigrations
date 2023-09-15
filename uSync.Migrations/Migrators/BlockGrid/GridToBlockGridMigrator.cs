@@ -125,17 +125,15 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
 			.Select(propertyType => propertyType.DataTypeId)
 			.FirstOrDefault();
 
-		/*		var test2 = _dataTypeService.GetDataType();
-		*/
-		//var test3 = _contentTypeService.Get		
-
-		/*		var all_grids = _dataTypeService.GetByEditorAlias(contentProperty.EditorAlias).Where(dataType => test?.Contains(dataType.Key) == true);
-		*/
 		var dataTypeAlias = "";
 		if (gridDataTypeId is not null)
 		{
 			dataTypeAlias = _dataTypeService.GetDataType((int)gridDataTypeId)?.Name;
         }
+		else
+		{
+			_logger.LogWarning("  Data type for grid could not be found when converting {alias}. Migration will run, but layout setting will not be migrated.", contentProperty.EditorAlias);
+		}
 
         if (string.IsNullOrWhiteSpace(contentProperty.Value))
 		{

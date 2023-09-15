@@ -317,6 +317,11 @@ internal class GridToBlockContentHelper
 
     private BlockItemData? GetSettingsBlockItemDataFromRow(GridValue.GridRow row, SyncMigrationContext context, string dataTypeAlias)
     {
+        if (dataTypeAlias.IsNullOrWhiteSpace())
+        {
+            return null;
+        }
+
         var settingsValues = new Dictionary<string, object?>();
 
         var rowLayoutSettingsContentTypeAlias = _conventions.LayoutSettingsContentTypeAlias(dataTypeAlias);
@@ -326,7 +331,6 @@ internal class GridToBlockContentHelper
         {
             foreach (JProperty config in row.Config)
             {
-                var test = _conventions.FormatGridSettingKey(config.Name);
                 settingsValues.Add(_conventions.FormatGridSettingKey(config.Name), config.Value);
             }
         }
