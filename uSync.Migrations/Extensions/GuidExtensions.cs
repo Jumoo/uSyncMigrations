@@ -2,6 +2,19 @@
 
 namespace uSync.Migrations.Extensions;
 
+/// <summary>
+///  Extensions for Guids
+/// </summary>
+/// <remarks>
+///  in general GUIDs are just unique numbers.
+///  
+///  but there are times where we want the unique numbers to 
+///  always be the same between migrations (e.g new GUIDs for new properties)
+///  
+///  this way if you re-migrate the content stays the same between migrations
+///  makes migrations quicker. and more repeatable.
+/// </remarks>
+
 public static class GuidExtensions
 {
     private static readonly int[] _guidByteOrder = new[] { 15, 14, 13, 12, 11, 10, 9, 8, 6, 7, 4, 5, 0, 1, 2, 3 };
