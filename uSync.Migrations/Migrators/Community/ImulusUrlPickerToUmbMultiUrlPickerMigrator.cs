@@ -69,7 +69,7 @@ public class ImulusUrlPickerToUmbMultiUrlPickerMigrator : SyncPropertyMigratorBa
     }
 
 
-    private IEnumerable<UrlPickerValue> GetPickerValues(string? contentValue)
+    private IEnumerable<UrlPickerValue?> GetPickerValues(string? contentValue)
     {
         if (contentValue == null) return Enumerable.Empty<UrlPickerValue>();
 
@@ -77,7 +77,6 @@ public class ImulusUrlPickerToUmbMultiUrlPickerMigrator : SyncPropertyMigratorBa
         {
             return JsonConvert.DeserializeObject<IEnumerable<UrlPickerValue>>(contentValue) ?? Enumerable.Empty<UrlPickerValue>();
         }
-
         return JsonConvert.DeserializeObject<UrlPicker>(contentValue)?.Value.AsEnumerableOfOne() ?? Enumerable.Empty<UrlPickerValue>();
     }
 

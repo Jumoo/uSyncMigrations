@@ -110,7 +110,7 @@ public class VortoMapper : SyncPropertyMigratorBase,
                 return Attempt<CulturedPropertyValue>.Succeed(culturedValues);
             }
 
-            return Attempt<CulturedPropertyValue>.Fail(new ArgumentNullException("Null value in Vorto"));
+            return Attempt<CulturedPropertyValue>.Fail(new ArgumentNullException("Null value in Vorto", nameof(culturedValues)));
         }
         catch (Exception ex)
         {

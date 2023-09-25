@@ -40,6 +40,8 @@ public class CheckboxListMigrator : SyncPropertyMigratorBase
         // (DTGE, maybe nested??)
 
         var values = JsonConvert.DeserializeObject<List<string>>(contentProperty.Value);
+        if (values == null) return null;
+
         var outputValues = new List<string>();
         foreach(var value in values)
         {

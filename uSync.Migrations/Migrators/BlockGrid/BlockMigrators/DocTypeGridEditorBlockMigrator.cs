@@ -109,7 +109,7 @@ internal class DocTypeGridEditorBlockMigrator : ISyncBlockMigrator
 				propertyValue = migrator.GetContentValue(property, context);
 			}
 
-			propertyValues[propertyAlias] = propertyValue;
+			propertyValues[propertyAlias] = propertyValue!;
 		}
 
 		return propertyValues;

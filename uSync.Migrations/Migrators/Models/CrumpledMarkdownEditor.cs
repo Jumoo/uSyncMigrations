@@ -2,7 +2,7 @@
 {
     internal class CrumpledMarkdownEditor
     {
-        public string Alias { get; set; }
-        public string Content { get; set; }
+        public string? Alias { get; set; }
+        public string? Content { get; set; }
     }
 }

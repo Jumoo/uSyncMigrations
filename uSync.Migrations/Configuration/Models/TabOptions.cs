@@ -2,6 +2,19 @@
 {
     public class TabOptions
     {
+
+        public TabOptions(string originalName, string newName, string alias, bool deleteTab)
+        {
+            OriginalName = originalName ?? throw new ArgumentNullException(nameof(originalName));
+            NewName = newName ?? throw new ArgumentNullException(nameof(newName));
+            Alias = alias ?? throw new ArgumentNullException(nameof(alias));
+            DeleteTab = deleteTab;
+        }
+
+        public TabOptions(string originalName, string newName, string alias)
+            : this(originalName, newName, alias, false) { }
+
+
         /// <summary>
         /// The name of the tab you want to change.  This is the name NOT the alias.
         /// </summary>

@@ -9,5 +9,5 @@ public interface IArchetypeMigrationConfigurer
     public string GetBlockElementAlias(ArchetypeFieldsetModel archetypeAlias,
         SyncMigrationContentProperty dataTypeProperty, SyncMigrationContext context);
 
-    public string GetBlockElementAlias(ArchetypePreValueFieldset archetypeAlias, SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context);
+    public string GetBlockElementAlias(ArchetypePreValueFieldSet archetypeAlias, SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context);
 }

@@ -40,10 +40,10 @@ public class EpiphanySeoMetadataToSeparateFields : SyncPropertyMigratorBase, ISy
 
         if (content != null)
         {
-            yield return new SplitPropertyContent(Properties[nameof(SeoMetadata.Title)].Alias, content.Title);
-            yield return new SplitPropertyContent(Properties[nameof(SeoMetadata.Description)].Alias, content.Description);
+            yield return new SplitPropertyContent(Properties[nameof(SeoMetadata.Title)].Alias, content.Title ?? string.Empty);
+            yield return new SplitPropertyContent(Properties[nameof(SeoMetadata.Description)].Alias, content.Description ?? string.Empty);
             yield return new SplitPropertyContent(Properties[nameof(SeoMetadata.NoIndex)].Alias, (content.NoIndex ? 1 : 0).ToString());
-            yield return new SplitPropertyContent(Properties[nameof(SeoMetadata.UrlName)].Alias, content.UrlName);
+            yield return new SplitPropertyContent(Properties[nameof(SeoMetadata.UrlName)].Alias, content.UrlName ?? string.Empty);
         }
     }
 
@@ -55,8 +55,8 @@ public class EpiphanySeoMetadataToSeparateFields : SyncPropertyMigratorBase, ISy
 
 public class SeoMetadata
 {
-    public string Title { get; set; }
-    public string Description { get; set; }
+    public string? Title { get; set; }
+    public string? Description { get; set; }
     public bool NoIndex { get; set; }
-    public string UrlName { get; set; }
+    public string? UrlName { get; set; }
 }

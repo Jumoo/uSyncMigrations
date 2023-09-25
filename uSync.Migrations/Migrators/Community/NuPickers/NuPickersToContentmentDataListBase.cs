@@ -57,7 +57,7 @@ public abstract class NuPickersToContentmentDataListBase : SyncPropertyMigratorB
             .Where(x => nameSpace.Contains(x.Key));
 
 
-        return namespaceOverride == null && !namespaceOverride.Any()
+        return namespaceOverride == null && namespaceOverride?.Any() != true
             ? nameSpace
             : nameSpace.Replace(namespaceOverride.FirstOrDefault().Key, namespaceOverride.FirstOrDefault().Value);
     }

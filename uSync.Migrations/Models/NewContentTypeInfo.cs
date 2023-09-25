@@ -4,6 +4,15 @@ namespace uSync.Migrations.Models;
 
 public class NewContentTypeInfo
 {
+    public NewContentTypeInfo(Guid key, string alias, string name, string icon, string? folder)
+    {
+        Key = key;
+        Alias = alias ?? throw new ArgumentNullException(nameof(alias));
+        Name = name ?? throw new ArgumentNullException(nameof(name));
+        Icon = icon ?? throw new ArgumentNullException(nameof(icon));
+        Folder = folder;
+    }
+
     public Guid Key { get; set; } = Guid.Empty;
 
     public string Alias { get; set; }

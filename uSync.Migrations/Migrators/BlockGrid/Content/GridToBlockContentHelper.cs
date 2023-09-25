@@ -89,8 +89,8 @@ internal class GridToBlockContentHelper
 
         foreach (var item in sections.Select((value, sectionIndex) => new {sectionIndex, value}))
         {
-            var (sectionColums, rows) = item.value;
-            var sectionIsFullWidth = sectionColums == gridColumns;
+            var (sectionColumns, rows) = item.value;
+            var sectionIsFullWidth = sectionColumns == gridColumns;
 
             foreach (var row in rows)
             {
@@ -121,7 +121,7 @@ internal class GridToBlockContentHelper
                     {
                         var areaItem = new BlockGridLayoutAreaItem
                         {
-                            Key =  _conventions.LayoutAreaAlias(row.Name, _conventions.AreaAlias(area.index)).ToGuid(),
+                            Key =  _conventions.LayoutAreaAlias(row.Name!, _conventions.AreaAlias(area.index)).ToGuid(),
                             Items = layouts.ToArray()
                         };
 
@@ -209,7 +209,7 @@ internal class GridToBlockContentHelper
 
     private BlockItemData GetGridRowBlockContent(GridValue.GridRow row, SyncMigrationContext context)
     {
-        var rowLayoutContentTypeAlias = _conventions.LayoutContentTypeAlias(row.Name);
+        var rowLayoutContentTypeAlias = _conventions.LayoutContentTypeAlias(row.Name!);
         var rowContentTypeKey = context.GetContentTypeKeyOrDefault(rowLayoutContentTypeAlias, rowLayoutContentTypeAlias.ToGuid()); 
 
         return new BlockItemData

@@ -7,6 +7,7 @@ using Umbraco.Extensions;
 using uSync.Migrations.Context;
 using uSync.Migrations.Extensions;
 using uSync.Migrations.Migrators.Models;
+using Newtonsoft.Json.Serialization;
 
 namespace uSync.Migrations.Migrators.Community
 {
@@ -20,7 +21,7 @@ namespace uSync.Migrations.Migrators.Community
             if (nuPickersConfig == null) return null;
 
             // replace non-standard token '$ancestorOrSelf' parsed by nuPickers, into a Contentment '$current' placeholder token
-            nuPickersConfig.XPath = nuPickersConfig.XPath.Replace("$ancestorOrSelf", "$current");
+            nuPickersConfig.XPath = nuPickersConfig.XPath?.Replace("$ancestorOrSelf", "$current") ?? null;
 
             //Using an anonymous object for now, but ideally this should be replaced with Contentment objects (when they're created).
             var dataSource = new[]
@@ -70,14 +71,14 @@ namespace uSync.Migrations.Migrators.Community
                 // then fall back to TryParse with Int... maybe this logic will be useful in other NuPickers... but they might store multiple values...
 
                 // Is it JSON?
-                string valueToParse = "";
+                string valueToParse = string.Empty;
                 if (contentProperty.Value.DetectIsJson())
                 {
                     var nuPickerValues = JsonConvert.DeserializeObject<IEnumerable<NuPickerValue>>(contentProperty.Value);
                     if (nuPickerValues != null)
                     {
                         var nuPickerValue = nuPickerValues.FirstOrDefault();
-                        if (nuPickerValue != null)
+                        if (nuPickerValue?.key != null)
                         {
                             valueToParse = nuPickerValue.key;
                         }
@@ -87,13 +88,13 @@ namespace uSync.Migrations.Migrators.Community
                 {
                     // then this is XML storage
                     XmlSerializer serializer = new XmlSerializer(typeof(Picker));
-                    Picker picker;
+                    Picker? picker;
 
                     using (TextReader reader = new StringReader(contentProperty.Value))
                     {
-                        picker = (Picker)serializer.Deserialize(reader);
+                        picker = (Picker?)serializer.Deserialize(reader);
                     }
-                    valueToParse = picker.PickedItems.FirstOrDefault()?.Key;
+                    valueToParse = picker?.PickedItems?.FirstOrDefault()?.Key ?? string.Empty;
                 }
                 else
                 {
@@ -121,35 +122,40 @@ namespace uSync.Migrations.Migrators.Community
         {
         }
     }
+
     internal class NuPickerValue
     {
         [XmlElement("key")]
-        public string key { get; set; }
+        public string? key { get; set; }
         [XmlElement("label")]
-        public string label { get; set; }
+        public string? label { get; set; }
     }
 
     [XmlRoot("Picker")]
     internal class Picker
     {
         [XmlElement("Picked")]
-        public List<Picked> PickedItems { get; set; }
+        public List<Picked>? PickedItems { get; set; }
 
     }
+
+    [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
     internal class Picked
     {
         [XmlAttribute("Key")]
-        public string Key { get; set; }
+        public string? Key { get; set; }
 
         [XmlText]
-        public string Label { get; set; }
+        public string? Label { get; set; }
     }
+
+    [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
     internal class NuPickersConfig
     {
-        public string ApiController { get; set; }
-        public string XmlData { get; set; }
-        public string XPath { get; set; }
-        public string KeyXPath { get; set; }
-        public string LabelXPath { get; set; }
+        public string? ApiController { get; set; }
+        public string? XmlData { get; set; }
+        public string? XPath { get; set; }
+        public string? KeyXPath { get; set; }
+        public string? LabelXPath { get; set; }
     }
 }

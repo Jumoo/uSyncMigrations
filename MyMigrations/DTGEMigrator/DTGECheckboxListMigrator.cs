@@ -20,8 +20,10 @@ public class DTGECheckboxListMigrator : CheckboxListMigrator
 
         DTGEPrevaluesMap prevaluesMap = new DTGEPrevaluesMap(context);
 
-        List<string> outputValues = new List<string>();
         IList<string>? inputValues = JsonConvert.DeserializeObject<List<string>>(contentProperty.Value);
+        if (inputValues == null) return null;   
+
+        List<string> outputValues = new List<string>();
         foreach (var inputVal in inputValues)
         {
             if (Int32.TryParse(inputVal, out int valueId) &&

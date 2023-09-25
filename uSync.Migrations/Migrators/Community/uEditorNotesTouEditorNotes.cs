@@ -13,10 +13,6 @@ namespace uSync.Migrations.Migrators.Community
         //content is the same
         // prevalue config is differently done but are 1-1 naming wise
         public override object? GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
-        {
-            var config = new JObject();
-            return dataTypeProperty.PreValues.ConvertPreValuesToJson(false);    
-
-        }
+            => dataTypeProperty.PreValues.ConvertPreValuesToJson(false);    
     }
 }

@@ -17,7 +17,7 @@ namespace MyMigrations.DTGEMigrator;
 /// </remarks>
 public class DTGEPrevaluesMap
 {
-    private IDictionary<int, string> _prevaluesMap = null;
+    private IDictionary<int, string> _prevaluesMap;
 
     public DTGEPrevaluesMap(SyncMigrationContext context)
     {
@@ -35,7 +35,7 @@ public class DTGEPrevaluesMap
             return LoadValues(config);
         }
 
-        return default;
+        return new Dictionary<int, string>();
     }
     
 
@@ -49,10 +49,12 @@ public class DTGEPrevaluesMap
             var elements = JsonConvert.DeserializeObject<List<PreValueItem>>(config);
             if (elements != null)
             {
-                return elements.ToDictionary(x => x.Id, x => x.Value);
+                return elements
+                    .Where(x => x.Value != null)
+                    .ToDictionary(x => x.Id, x => x.Value!);
             }
 
-            return default;
+            return new Dictionary<int, string>();
         }
         catch(Exception ex)
         {
@@ -64,6 +66,6 @@ public class DTGEPrevaluesMap
     private class PreValueItem
     {
         public int Id { get; set; }
-        public string Value { get; set; }
+        public string? Value { get; set; }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 using Umbraco.Cms.Core.Models.Blocks;
 
@@ -21,48 +22,37 @@ internal static class Grid
 
 
 
+[JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 internal class GridTemplateConfiguration
 {
-    [JsonProperty("name")]
-    public string Name { get; set; }
+    public string? Name { get; set; }
 
-    [JsonProperty("sections")]
     public IEnumerable<GridSectionConfiguration>? Sections { get; set; }
 }
 
+[JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 internal class GridSectionConfiguration
 {
-    [JsonProperty("grid")]
     public int Grid { get; set; }
-
-    [JsonProperty("allowAll")]
     public bool? AllowAll { get; set; }
-
-    [JsonProperty("allowed")]
     public string[]? Allowed { get; set; }
 }
 
+[JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 internal class GridLayoutConfiguration
 {
-    [JsonProperty("label")]
     public string? Label { get; set; }
 
-    [JsonProperty("name")]
-    public string Name { get; set; }
+    public string? Name { get; set; }
 
-    [JsonProperty("areas")]
     public IEnumerable<GridAreaConfiguration>? Areas { get; set; }
 }
 
+[JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 internal class GridAreaConfiguration
 {
-    [JsonProperty("grid")]
     public int Grid { get; set; }
-
-    [JsonProperty("allowAll")]
     public bool? AllowAll { get; set; }
-
-    [JsonProperty("allowed")]
     public string[]? Allowed { get; set; }
 }
 

@@ -67,16 +67,16 @@ public class DataTypeMigrationContext
 	/// <summary>
 	///  add the key that replaces a datatype to the context.
 	/// </summary>
-	public void AddReplacement(Guid orginal, Guid replacement)
-		=> _ = _dataTypeReplacements.TryAdd(orginal, replacement);
+	public void AddReplacement(Guid original, Guid replacement)
+		=> _ = _dataTypeReplacements.TryAdd(original, replacement);
 
 	/// <summary>
 	///  get any replacement key values for a given datatype key
 	/// </summary>
-	public Guid GetReplacement(Guid orginal)
-		=> _dataTypeReplacements?.TryGetValue(orginal, out var replacement) == true
+	public Guid GetReplacement(Guid original)
+		=> _dataTypeReplacements?.TryGetValue(original, out var replacement) == true
 			? replacement
-			: orginal;
+			: original;
 
 	/// <summary>
 	///  add a variation (e.g culture, segment or nothing) value for a datatype to the context.
@@ -91,10 +91,10 @@ public class DataTypeMigrationContext
 		=> _dataTypeVariations?.TryGetValue(guid, out var variation) == true
 			? variation : "Nothing";
 
-    public Guid? GetFirstDefinition(string alias)
+	public Guid? GetFirstDefinition(string alias)
     {
         var dataTypeDefinition = _dataTypeDefinitions?.FirstOrDefault(x => x.Value.EditorAlias == alias);
-        return dataTypeDefinition.Value.Value != null ? dataTypeDefinition.Value.Key : null;
+        return dataTypeDefinition?.Key ?? null;
     }
 
 }

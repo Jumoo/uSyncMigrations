@@ -1,13 +1,14 @@
 using Archetype.Models;
-using Microsoft.Extensions.Options;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+
 using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Models.Blocks;
 using Umbraco.Cms.Core.PropertyEditors;
-using Umbraco.Cms.Core.Strings;
 using Umbraco.Extensions;
+
 using uSync.Migrations.Context;
 using uSync.Migrations.Migrators.Models;
 using uSync.Migrations.Models;
@@ -27,18 +28,15 @@ public class ArchetypeToBlockListMigrator : SyncPropertyMigratorBase
     public override object? GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
         var config = new BlockListConfiguration();
-        var configPrevalue = dataTypeProperty.PreValues?.FirstOrDefault(p => p.Alias == "archetypeConfig")?.Value;
-        if (string.IsNullOrEmpty(configPrevalue))
+        var configPreValue = dataTypeProperty.PreValues?.FirstOrDefault(p => p.Alias == "archetypeConfig")?.Value;
+        if (string.IsNullOrEmpty(configPreValue))
         {
             return string.Empty;
         }
 
-        var archetypeConfiguration = JsonConvert.DeserializeObject<ArchetypePreValue>(configPrevalue);
+        var archetypeConfiguration = JsonConvert.DeserializeObject<ArchetypePreValue>(configPreValue);
 
-        if (archetypeConfiguration == null)
-        {
-            return config;
-        }
+        if (archetypeConfiguration is null) return config;
 
         config.ValidationLimit = new BlockListConfiguration.NumberRange()
         {
@@ -51,18 +49,23 @@ public class ArchetypeToBlockListMigrator : SyncPropertyMigratorBase
 
         var blocks = new List<BlockListConfiguration.BlockConfiguration>();
 
-        foreach (var fieldset in archetypeConfiguration.Fieldsets)
+        foreach (var fieldSet in archetypeConfiguration.Fieldsets)
         {
-            var alias = context.ContentTypes.ArchetypeMigrationConfigurer.GetBlockElementAlias(fieldset, dataTypeProperty,context);
-            var newContentType = new NewContentTypeInfo
+            var alias = context.ContentTypes.ArchetypeMigrationConfigurer?.GetBlockElementAlias(fieldSet, dataTypeProperty,context);
+            if (string.IsNullOrEmpty(alias)) continue;
+
+            var newContentType = new NewContentTypeInfo(
+                key: alias.ToGuid(),
+                alias: alias,
+                name: fieldSet.Label ?? alias,
+                icon: string.IsNullOrWhiteSpace(fieldSet.Icon) ? "icon-umb-content" : fieldSet.Icon,
+                folder: "BlockList")
             {
-                Key = alias.ToGuid(),
-                Alias = alias ,
-                Icon = string.IsNullOrWhiteSpace(fieldset.Icon) ? "icon-umb-content" : fieldset.Icon,
-                IsElement = true,
-                Name = fieldset.Label,
-                Folder = "Block List",
-                Properties = fieldset.Properties
+                IsElement = true
+            };
+
+            if (fieldSet.Properties != null) { 
+                newContentType.Properties = fieldSet.Properties
                     .Select(p =>
                     {
                         var dataType = context.DataTypes.GetByDefinition(p.DataTypeGuid);
@@ -71,16 +74,14 @@ public class ArchetypeToBlockListMigrator : SyncPropertyMigratorBase
                             return null;
                         }
 
-                        return new NewContentTypeProperty
-                        {
-                            Alias = p.Alias,
-                            Name = p.Label,
-                            DataTypeAlias = dataType.DataTypeName,
-                            OriginalEditorAlias =  string.IsNullOrWhiteSpace(p.PropertyEditorAlias) ? dataType.OriginalEditorAlias:p.PropertyEditorAlias,
-                        };
+                        return new NewContentTypeProperty(
+                            alias: p.Alias!,
+                            name: p.Label ?? p.Alias!,
+                            dataTypeAlias: dataType.DataTypeName,
+                            orginalEditorAlias: string.IsNullOrWhiteSpace(p.PropertyEditorAlias) ? dataType.OriginalEditorAlias : p.PropertyEditorAlias);
                     })
                     .WhereNotNull()
-                    .ToList(),
+                    .ToList();
             };
 
             context.ContentTypes.AddNewContentType(newContentType);
@@ -90,7 +91,7 @@ public class ArchetypeToBlockListMigrator : SyncPropertyMigratorBase
             blocks.Add(new BlockListConfiguration.BlockConfiguration
             {
                 ContentElementTypeKey = newContentType.Key,
-                Label = fieldset.LabelTemplate,
+                Label = fieldSet.LabelTemplate,
             });
         }
 
@@ -125,27 +126,30 @@ public class ArchetypeToBlockListMigrator : SyncPropertyMigratorBase
 
         foreach (var item in items)
         {
-            var blockElementAlias = context.ContentTypes.ArchetypeMigrationConfigurer.GetBlockElementAlias(item,contentProperty, context);
+            var blockElementAlias = context.ContentTypes.ArchetypeMigrationConfigurer?.GetBlockElementAlias(item,contentProperty, context);
+            if (blockElementAlias is null) continue;
+
             var rawValues = new Dictionary<string, object?>();
             foreach (var property in item.Properties)
             {
-                var editorAlias = context.ContentTypes.GetEditorAliasByTypeAndProperty(blockElementAlias, property.Alias);
+                if (string.IsNullOrEmpty(property.Alias)) continue;
 
-                if (editorAlias == null)
-                {
-                    continue;
-                }
+                var editorAlias = context.ContentTypes.GetEditorAliasByTypeAndProperty(blockElementAlias, property.Alias);
+                if (editorAlias is null) continue;
 
                 var migrator = context.Migrators.TryGetMigrator(editorAlias.OriginalEditorAlias);
 
-                if (migrator == null)
+                if (migrator is null)
                 {
                     rawValues[property.Alias] = property.Value;
                     continue;
                 }
 
-                var childProperty = new SyncMigrationContentProperty(editorAlias.OriginalEditorAlias,
-                    property.Value.ToString() ?? string.Empty);
+                var childProperty = new SyncMigrationContentProperty(
+                    contentTypeAlias: blockElementAlias,
+                    propertyAlias: contentProperty.PropertyAlias,
+                    editorAlias: editorAlias.OriginalEditorAlias,
+                    value: property.Value?.ToString() ?? string.Empty);
 
                 rawValues[property.Alias] = migrator.GetContentValue(childProperty, context);
             }

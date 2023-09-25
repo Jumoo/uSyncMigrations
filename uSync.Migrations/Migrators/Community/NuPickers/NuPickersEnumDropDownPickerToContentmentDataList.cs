@@ -26,7 +26,7 @@ public class NuPickersEnumDropDownPickerToContentmentDataList : NuPickersToConte
             { key = "Umbraco.Community.Contentment.DataEditors.EnumDataListSource, Umbraco.Community.Contentment",
                 value = new
                 {
-                    enumType = new[] { MapAssembly(nuPickersConfig?.AssemblyName.TrimEnd(".dll")) , MapNamespace(nuPickersConfig?.EnumName) }
+                    enumType = new[] { MapAssembly(nuPickersConfig?.AssemblyName?.TrimEnd(".dll")) , MapNamespace(nuPickersConfig?.EnumName) }
                 }
             }
         }.ToList();

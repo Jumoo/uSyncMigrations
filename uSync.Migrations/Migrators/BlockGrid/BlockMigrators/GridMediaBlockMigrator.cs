@@ -30,28 +30,23 @@ public class GridMediaBlockMigrator : GridBlockMigratorSimpleBase, ISyncBlockMig
         if (control.Value == null) return properties;
 
         var udiString = control.Value.Value<string>("udi");
-        GuidUdi udiFromId = null;
+
+        Guid mediaKeyGuid = Guid.Empty;
+
         if (udiString == null)
         {
             var idValue = control.Value.Value<string>("id");
-            if (string.IsNullOrWhiteSpace(idValue)) return properties;
 
+            if (string.IsNullOrWhiteSpace(idValue)) return properties;
             if (!int.TryParse(idValue, out var id)) return properties;
 
             var mediaItem = _mediaService.GetById(id);
             if (mediaItem == null) return properties;
-            udiFromId = mediaItem.GetUdi();
+            mediaKeyGuid = mediaItem.GetUdi().Guid;
         }
-
-        Guid mediaKeyGuid = new Guid();
-
-        if (UdiParser.TryParse(udiString, out Udi? udi) && udi is GuidUdi guidUdi)
+        else if (UdiParser.TryParse(udiString, out Udi? udi) && udi is GuidUdi guidUdi)
         {
             mediaKeyGuid = guidUdi.Guid;
-        }
-        else if(udiFromId != null)
-        {
-            mediaKeyGuid = udiFromId.Guid;
         }
 
         var values = new
