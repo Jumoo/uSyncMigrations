@@ -109,12 +109,22 @@ public class NestedToBlockListMigrator : SyncPropertyMigratorBase
         return config;
     }
 
+    /// <summary>
+    ///  stub of what block list json looks like, 
+    /// </summary>
+    /// <remarks>
+    ///  if a property has already been converted, then it will have this json in it. 
+    /// </remarks>
+    private static string blockListJsonStub = "{\r\n  \"layout\": {\r\n    \"Umbraco.BlockList\":";
 
+    /// <summary>
+    ///  convert the content value from nested content to blocklist. 
+    /// </summary>
     public override string? GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
     {
         if (string.IsNullOrWhiteSpace(contentProperty.Value)) return string.Empty;
 
-        if (contentProperty.Value.InvariantStartsWith("{\r\n  \"layout\": {\r\n    \"Umbraco.BlockList\":"))
+        if (contentProperty.Value.InvariantStartsWith(blockListJsonStub))
         {
             _logger.LogDebug("Property [{name}] is already BlockList", contentProperty.EditorAlias);
             return contentProperty.Value;
