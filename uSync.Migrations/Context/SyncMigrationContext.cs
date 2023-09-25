@@ -10,7 +10,12 @@ public class SyncMigrationContext : IDisposable
 {
     public SyncMigrationContext(Guid migrationId, string sourceFolder, string siteFolder, bool siteIsSite, int version)
     {
-        Metadata = new MigrationContextMetadata(migrationId, sourceFolder, siteFolder, siteIsSite, version);
+        Metadata = new MigrationContextMetadata(
+            migrationId: migrationId,
+            sourceFolder: sourceFolder,
+            siteFolder: siteFolder,
+            siteIsSite: siteIsSite,
+            sourceVersion: version);
     }
 
     /// <summary>

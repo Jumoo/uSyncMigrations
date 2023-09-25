@@ -10,7 +10,13 @@ public class SyncValidationContext
     public SyncValidationContext(MigrationOptions options,
         Guid migrationId, string sourceFolder, string siteFolder, bool siteIsSite, int version)
     {
-        Metadata = new MigrationContextMetadata(migrationId, sourceFolder, siteFolder, siteIsSite, version);
+        Metadata = new MigrationContextMetadata(
+            migrationId: migrationId, 
+            sourceFolder: sourceFolder, 
+            siteFolder: siteFolder, 
+            siteIsSite: siteIsSite, 
+            sourceVersion: version);
+
         Options = options;       
     }
 

@@ -91,6 +91,11 @@ public class DataTypeMigrationContext
 		=> _dataTypeVariations?.TryGetValue(guid, out var variation) == true
 			? variation : "Nothing";
 
+	/// <summary>
+	///  return the first definition that we find matching the editorAlias
+	/// </summary>
+	/// <param name="alias"></param>
+	/// <returns></returns>
 	public Guid? GetFirstDefinition(string alias)
     {
         var dataTypeDefinition = _dataTypeDefinitions?.FirstOrDefault(x => x.Value.EditorAlias == alias);
