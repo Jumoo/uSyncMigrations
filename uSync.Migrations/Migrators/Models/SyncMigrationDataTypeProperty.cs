@@ -25,11 +25,7 @@ public sealed class SyncMigrationDataTypeProperty : SyncMigrationPropertyBase
         {
             json.TryAdd(oPreValue.Alias, oPreValue.Value.ToString().DetectIsJson() ? JsonConvert.DeserializeObject(oPreValue.Value) : oPreValue);
         }
-        XElement xml = new XElement("Method", 
-            JsonConvert.SerializeObject(json)
-            
-        );
-        return  xml.Value;
+        return  JsonConvert.SerializeObject(json);
     }
 
     public SyncMigrationDataTypeProperty(string dataTypeAlias, string editorAlias, string databaseType, string? config)
