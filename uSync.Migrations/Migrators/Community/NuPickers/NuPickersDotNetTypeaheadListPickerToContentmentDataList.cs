@@ -6,8 +6,8 @@ using uSync.Migrations.Context;
 using uSync.Migrations.Extensions;
 using uSync.Migrations.Migrators;
 using uSync.Migrations.Migrators.Community;
+using uSync.Migrations.Migrators.Community.NuPickers.Models;
 using uSync.Migrations.Migrators.Models;
-using uSync.Migrations.Migrators.Models.NuPickers;
 
 [SyncMigrator("nuPickers.DotNetTypeaheadListPicker")]
 public class NuPickersDotNetTypeaheadListPickerToContentmentDataList : NuPickersToContentmentDataListBase

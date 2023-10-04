@@ -4,8 +4,8 @@ using Newtonsoft.Json;
 using uSync.Migrations.Context;
 using uSync.Migrations.Extensions;
 using uSync.Migrations.Migrators.Models;
-using uSync.Migrations.Migrators.Models.NuPickers;
 using Umbraco.Extensions;
+using uSync.Migrations.Migrators.Community.NuPickers.Models;
 
 namespace uSync.Migrations.Migrators.Community
 {
