@@ -48,7 +48,6 @@ public static class SyncMigrationsBuilderExtensions
         }
 
         builder.Services.AddSingleton<GridConventions>();
-
         builder.Services.AddSingleton<ILegacyGridConfig, LegacyGridConfig>();
 
         builder
@@ -77,29 +76,20 @@ public static class SyncMigrationsBuilderExtensions
             .WithCollectionBuilder<SyncMigrationValidatorCollectionBuilder>()
                 .Add(() => builder.TypeLoader.GetTypes<ISyncMigrationValidator>());
 
-        builder
-            .WithCollectionBuilder<ArchetypeMigrationConfigurerCollectionBuilder>()
-                .Add(() => builder.TypeLoader.GetTypes<IArchetypeMigrationConfigurer>());
-
         builder.Services.AddAuthorization(o =>
             CreatePolicies(o, Constants.Security.BackOfficeAuthenticationType));
 
         builder.Services.AddTransient<ISyncMigrationStatusService, SyncMigrationStatusService>();
         builder.Services.AddTransient<ISyncMigrationService, SyncMigrationService>();
         builder.Services.AddTransient<ISyncMigrationConfigurationService, SyncMigrationConfigurationService>();
-        builder.Services.AddOptions<NuPickerMigrationOptions>().Configure<IConfiguration>((settings, configuration)
-            => configuration.GetSection(NuPickerMigrationOptions.Section).Bind(settings));
 
-        builder.Services.AddOptions<ArchetypeMigrationOptions>().Configure<IConfiguration>((settings, configuration)
-            => configuration.GetSection(ArchetypeMigrationOptions.Section).Bind(settings));
         builder.Services.AddOptions<uSyncMigrationOptions>().Configure<IConfiguration>((settings, configuration)
             => configuration.GetSection(uSyncMigrationOptions.Section).Bind(settings));
+        
         builder.AddNotificationHandler<ServerVariablesParsingNotification, SyncMigrationsServerVariablesParsingNotificationHandler>();
 
         if (builder.ManifestFilters().Has<SyncMigrationsManifestFilter>() == false)
-        {
             builder.ManifestFilters().Append<SyncMigrationsManifestFilter>();
-        }
 
         return builder;
     }
