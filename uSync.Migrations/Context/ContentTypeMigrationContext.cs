@@ -1,5 +1,4 @@
 ﻿using uSync.Migrations.Configuration.Models;
-using uSync.Migrations.Migrators.Community.Archetype;
 using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Context;
@@ -35,8 +34,6 @@ public class ContentTypeMigrationContext
     
     private Dictionary<string, string> _replacementAliases =
 	    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-    public IArchetypeMigrationConfigurer? ArchetypeMigrationConfigurer { get; set; } 
 
     /// <summary>
     ///  Add a content type key to the context.

@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 
 using Microsoft.Extensions.Logging;
@@ -15,7 +14,6 @@ using uSync.Migrations.Configuration.Models;
 using uSync.Migrations.Context;
 using uSync.Migrations.Handlers;
 using uSync.Migrations.Helpers;
-using uSync.Migrations.Migrators.Community.Archetype;
 using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Services;
@@ -30,7 +28,6 @@ internal class SyncMigrationService : ISyncMigrationService
     private readonly SyncMigrationValidatorCollection _migrationValidators;
     private readonly uSyncConfigService _uSyncConfig;
     private readonly SyncPropertyMigratorCollection _migrators;
-    private readonly ArchetypeMigrationConfigurerCollection _archetypeConfigures;
     private readonly SyncPropertyMergingCollection _mergingCollection;
 
     public SyncMigrationService(
@@ -41,7 +38,6 @@ internal class SyncMigrationService : ISyncMigrationService
         uSyncConfigService uSyncConfig,
         SyncMigrationValidatorCollection migrationValidators,
         SyncPropertyMigratorCollection migrators,
-        ArchetypeMigrationConfigurerCollection archetypeConfigures,
         SyncPropertyMergingCollection mergingCollection)
     {
         _options = options;
@@ -52,7 +48,6 @@ internal class SyncMigrationService : ISyncMigrationService
         _uSyncConfig = uSyncConfig;
         _migrationValidators = migrationValidators;
         _migrators = migrators;
-        _archetypeConfigures = archetypeConfigures;
         _mergingCollection = mergingCollection;
     }
 
@@ -240,10 +235,6 @@ internal class SyncMigrationService : ISyncMigrationService
         AddMigrators(context, options.PreferredMigrators);
 
         AddMergers(context, options.MergingProperties);
-
-        
-        // add configure for Archetype migrations
-        context.ContentTypes.ArchetypeMigrationConfigurer = _archetypeConfigures.FirstOrDefault(c => c.GetType() == options.ArchetypeMigrationConfigurer) ?? _archetypeConfigures.FirstOrDefault(c => c.GetType()== typeof(DefaultArchetypeMigrationConfigurer));
 
         options.ReplacementAliases?
             .ForEach(kvp => context.ContentTypes.AddReplacementAlias(kvp.Key, kvp.Value));

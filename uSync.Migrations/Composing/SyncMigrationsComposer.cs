@@ -15,8 +15,6 @@ using uSync.Migrations.Legacy.Grid;
 using uSync.Migrations.Migrators;
 using uSync.Migrations.Migrators.BlockGrid.BlockMigrators;
 using uSync.Migrations.Migrators.BlockGrid.Extensions;
-using uSync.Migrations.Migrators.Community;
-using uSync.Migrations.Migrators.Community.Archetype;
 using uSync.Migrations.Notifications;
 using uSync.Migrations.Services;
 using uSync.Migrations.Validation;
