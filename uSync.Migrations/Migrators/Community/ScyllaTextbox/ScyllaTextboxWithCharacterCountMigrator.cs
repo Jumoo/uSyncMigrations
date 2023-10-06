@@ -3,7 +3,7 @@ using uSync.Migrations.Context;
 using uSync.Migrations.Extensions;
 using uSync.Migrations.Migrators.Models;
 
-namespace uSync.Migrations.Migrators.Community;
+namespace uSync.Migrations.Migrators.Community.ScyllaTextbox;
 
 /// <summary>
 /// Migrates the Scylla.TextboxWithCharacterCount property editor to the core Umbraco.Textbox property editor.
@@ -18,7 +18,7 @@ public class ScyllaTextboxWithCharacterCountMigrator : SyncPropertyMigratorBase
     public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
      => UmbConstants.PropertyEditors.Aliases.TextBox;
 
-    
+
     /// <inheritdoc />
     public override object? GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
