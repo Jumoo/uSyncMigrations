@@ -7,6 +7,7 @@ using uSync.Migrations.Context;
 using uSync.Migrations.Legacy.Grid;
 using uSync.Migrations.Migrators.BlockGrid.BlockMigrators;
 using uSync.Migrations.Migrators.BlockGrid.Models;
+using GridConfiguration = Umbraco.Cms.Core.PropertyEditors.GridConfiguration;
 
 namespace uSync.Migrations.Migrators.BlockGrid.Extensions;
 internal static class GridConfigurationExtensions

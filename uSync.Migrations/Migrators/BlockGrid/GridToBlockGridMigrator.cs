@@ -14,6 +14,7 @@ using uSync.Migrations.Migrators.BlockGrid.Config;
 using uSync.Migrations.Migrators.BlockGrid.Content;
 using uSync.Migrations.Migrators.BlockGrid.Extensions;
 using uSync.Migrations.Migrators.Models;
+using GridConfiguration = uSync.Migrations.Migrators.BlockGrid.Models.GridConfiguration;
 
 namespace uSync.Migrations.Migrators.BlockGrid;
 
@@ -61,7 +62,7 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
 		}
 
 		var gridConfiguration = JsonConvert
-			.DeserializeObject<GridConfiguration>(dataTypeProperty.ConfigAsString);
+			.DeserializeObject<GridConfiguration>(dataTypeProperty.ConfigAsString );
 
 		if (gridConfiguration == null)
 		{
@@ -71,7 +72,7 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
 
 
 		var legacyGridEditorsConfig = GetGridConfig(context);
-		var gridToBlockContext = new GridToBlockGridConfigContext(gridConfiguration, legacyGridEditorsConfig);
+		var gridToBlockContext = new GridToBlockGridConfigContext(gridConfiguration.ToUmbracoGridConfiguration(), legacyGridEditorsConfig);
 
 		var contentBlockHelper = new GridToBlockGridConfigBlockHelper(_blockMigrators, _loggerFactory.CreateLogger<GridToBlockGridConfigBlockHelper>());
 		var layoutBlockHelper = new GridToBlockGridConfigLayoutBlockHelper(_conventions, _loggerFactory.CreateLogger<GridToBlockGridConfigLayoutBlockHelper>());

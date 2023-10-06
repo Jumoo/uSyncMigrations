@@ -23,7 +23,7 @@ public sealed class SyncMigrationDataTypeProperty : SyncMigrationPropertyBase
         var json = new Dictionary<string, object>();
         foreach (var oPreValue in preValues)
         {
-            json.TryAdd(oPreValue.Alias, oPreValue.Value.ToString().DetectIsJson() ? JsonConvert.DeserializeObject(oPreValue.Value) : oPreValue.Value);
+            json.TryAdd(oPreValue.Alias, oPreValue.Value.ToString().DetectIsJson() ? JsonConvert.DeserializeObject(oPreValue.Value) :  oPreValue.Value);
         }
         return  JsonConvert.SerializeObject(json);
     }
