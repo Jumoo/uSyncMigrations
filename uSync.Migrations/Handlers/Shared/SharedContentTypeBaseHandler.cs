@@ -1,13 +1,10 @@
-﻿using System.Xml.Linq;
-
-using Microsoft.Extensions.Logging;
-
+﻿using Microsoft.Extensions.Logging;
+using System.Xml.Linq;
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Notifications;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Extensions;
-
 using uSync.Core;
 using uSync.Migrations.Composing;
 using uSync.Migrations.Context;
@@ -37,10 +34,14 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
 
 	protected override void PrepareFile(XElement source, SyncMigrationContext context)
     {
-        var (contentTypeAlias, key) = GetAliasAndKey(source);
+        var (contentTypeAlias, key) = GetAliasAndKey(source, context);
         context.ContentTypes.AddAliasAndKey(contentTypeAlias, key);
 
-        var compositions = source.Element("Info")?.Element("Compositions")?.Elements("Composition")?.Select(x => x.Value) ?? Enumerable.Empty<string>();
+        var compositions = source
+            .Element("Info")?
+            .Element("Compositions")?
+            .Elements("Composition")?
+            .Select(x => context.ContentTypes.GetReplacementAlias(x.Value)) ?? Enumerable.Empty<string>();
         context.ContentTypes.AddCompositions(contentTypeAlias, compositions);
 
         var properties = source.Element("GenericProperties")?.Elements("GenericProperty") ?? Enumerable.Empty<XElement>();
@@ -56,7 +57,7 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
             var propertySplittingMigrator = context.Migrators.TryGetPropertySplittingMigrator(editorAlias);
             if (propertySplittingMigrator != null)
             {
-                context.ContentTypes.AddProperty(contentTypeAlias, alias, editorAlias, "none"); // add the original property so we can reference the original EditorAlias later
+                context.ContentTypes.AddProperty(contentTypeAlias, alias, editorAlias, "none", definition); // add the original property so we can reference the original EditorAlias later
 
                 var splitProperties = propertySplittingMigrator.GetSplitProperties(contentTypeAlias, alias, propertyName, context);
                 foreach (var splitProperty in splitProperties)
@@ -70,7 +71,7 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
             else
             {
                 context.ContentTypes.AddProperty(contentTypeAlias, alias,
-                    editorAlias, context.DataTypes.GetByDefinition(definition)?.EditorAlias);
+                    editorAlias, context.DataTypes.GetByDefinition(definition)?.EditorAlias, definition);
 
                 context.ContentTypes.AddDataTypeAlias(contentTypeAlias, alias,
                     context.DataTypes.GetAlias(definition));
@@ -92,7 +93,7 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
         var info = source.Element("Info");
         if (info == null) return null;
 
-        var (alias, key) = GetAliasAndKey(source);
+        var (alias, key) = GetAliasAndKey(source, context);
 
         var target = new XElement(ItemType,
             new XAttribute(uSyncConstants.Xml.Key, key),
@@ -105,7 +106,7 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
         if (ItemType == nameof(ContentType))
         {
             // structure
-            UpdateStructure(source, target);
+            UpdateStructure(source, target, context);
         }
 
         // properties. 
@@ -115,7 +116,7 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
         if (ItemType != nameof(ContentType))
         {
             // odd usync thing, in media/member structure is after properties. 
-            UpdateStructure(source, target);
+            UpdateStructure(source, target, context);
         }
 
 
@@ -132,7 +133,7 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
     }
 
     protected abstract void UpdateInfoSection(XElement? info, XElement target, Guid key, SyncMigrationContext context);
-    protected abstract void UpdateStructure(XElement source, XElement target);
+    protected abstract void UpdateStructure(XElement source, XElement target, SyncMigrationContext context);
     protected abstract void UpdateTabs(XElement source, XElement target, SyncMigrationContext context);
     protected abstract void CheckVariations(XElement target);
 
@@ -180,17 +181,24 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
         var propertyAlias = property.Element("Alias")?.ValueOrDefault(string.Empty) ?? string.Empty;
         var propertyName = property.Element("Name")?.ValueOrDefault(string.Empty) ?? string.Empty;
         var splitProperties = propertySplittingMigrator.GetSplitProperties(contentTypeAlias, propertyAlias, propertyName, context);
-        
+        var isFirst = true;
         foreach (var splitProperty in splitProperties)
         {
             var updatedProperty = GetUpdatedProperty(source, contentTypeAlias, property, context);
             if (updatedProperty != null)
             {
+                if (!isFirst) // prevent duplicate keys by generating a new key for all except the first property
+                {
+                    updatedProperty.CreateOrSetElement("Key", $"{contentTypeAlias}_{splitProperty.Alias}".ToGuid());
+                }
+
                 updatedProperty.CreateOrSetElement("Alias", splitProperty.Alias);
                 updatedProperty.CreateOrSetElement("Name", splitProperty.Name);
                 updatedProperty.CreateOrSetElement("Type", splitProperty.DataTypeAlias);
                 updatedProperty.CreateOrSetElement("Definition", splitProperty.DataTypeDefinition);
                 yield return updatedProperty;
+
+                isFirst = false;
             }
         }
     }
@@ -268,7 +276,7 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
             // if this has been blocked don't add it. 
 			if (context.IsBlocked(this.ItemType, contentType.Alias)) continue;
 
-            var source = contentType.MakeXMLFromNewDocType(_dataTypeService);
+            var source = contentType.MakeXMLFromNewDocType(_dataTypeService, context);
 
 			var migratingNotification = new SyncMigratingNotification<TEntity>(source, context);
 			if (_eventAggregator.PublishCancelable(migratingNotification) == true)
@@ -307,7 +315,7 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
             if (dataType != null)
             {
                 context.ContentTypes.AddProperty(contentType.Alias, property.Alias,
-                    property.OriginalEditorAlias ?? dataType.EditorAlias, dataType.EditorAlias);
+                    property.OriginalEditorAlias ?? dataType.EditorAlias, dataType.EditorAlias, dataType.Key);
             }
 		}
 	}

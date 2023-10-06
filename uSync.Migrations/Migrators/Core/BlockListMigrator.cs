@@ -26,7 +26,7 @@ public class BlockListMigrator : SyncPropertyMigratorBase
 
         foreach(var contentTypeKey in config.Blocks.Select(x => x.ContentElementTypeKey))
         {
-            if (contentTypeKey == null) continue;
+            if (contentTypeKey == Guid.Empty) continue;
 
             context.ContentTypes.AddElementType(contentTypeKey);
         }
@@ -50,12 +50,12 @@ public class BlockListMigrator : SyncPropertyMigratorBase
 
         if (blockList == null) return string.Empty;
 
-        foreach (var row in blockList.ContentData)
+        foreach (var row in blockList.ContentData!)
         {
             MigratePropertiesWithin(context, row);
         }
 
-        foreach (var row in blockList.SettingsData)
+        foreach (var row in blockList.SettingsData ?? Array.Empty<BlockListRowValue>())
         {
             MigratePropertiesWithin(context, row);
         }

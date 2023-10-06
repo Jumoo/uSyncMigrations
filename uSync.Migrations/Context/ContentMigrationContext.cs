@@ -42,12 +42,17 @@ public class ContentMigrationContext
 	public string GetAliasByKey(Guid key)
 		=> _contentKeys?.TryGetValue(key, out var alias) == true ? alias : string.Empty;
 
-
+	/// <summary>
+	///  a information for when two (or more) properties are being merged into one.
+	/// </summary>
 	public void AddMergedProperty(string contentType, MergingPropertiesConfig config)
 	{
 		_ = _mergedProperties.TryAdd(contentType, config);
 	}
 
+	/// <summary>
+	///  get details of a merged set of properties. 
+	/// </summary>
 	public MergingPropertiesConfig? GetMergedProperties(string contentType)
 		=> _mergedProperties?.TryGetValue(contentType, out MergingPropertiesConfig? properties) == true ? properties : null;
 }

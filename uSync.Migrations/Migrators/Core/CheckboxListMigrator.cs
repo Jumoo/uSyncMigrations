@@ -31,7 +31,29 @@ public class CheckboxListMigrator : SyncPropertyMigratorBase
     }
 
     public override string? GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
-        => string.IsNullOrWhiteSpace(contentProperty.Value) 
-            ? contentProperty.Value
-            : JsonConvert.SerializeObject(contentProperty.Value.ToDelimitedList(), Formatting.Indented);
+    {
+        if (contentProperty.Value == null) return null;
+        if (!contentProperty.Value.DetectIsJson())
+            return JsonConvert.SerializeObject(contentProperty.Value.ToDelimitedList(), Formatting.Indented);
+
+        // json stored property. will like be inside another thing 
+        // (DTGE, maybe nested??)
+
+        var values = JsonConvert.DeserializeObject<List<string>>(contentProperty.Value);
+        if (values == null) return null;
+
+        var outputValues = new List<string>();
+        foreach(var value in values)
+        {
+            if (int.TryParse(value, out int intValue))
+            {
+            }
+            else
+            {
+                outputValues.Add(value);
+            }
+        }
+
+        return JsonConvert.SerializeObject(outputValues);
+    }
 }

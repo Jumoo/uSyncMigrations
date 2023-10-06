@@ -44,7 +44,7 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
     {
         foreach (var datatype in _dataTypeService.GetAll())
         {
-            context.DataTypes.AddDefinition(datatype.Key, new Models.DataTypeInfo(datatype.EditorAlias, datatype.Name ?? datatype.EditorAlias));
+            context.DataTypes.AddDefinition(datatype.Key, new Models.DataTypeInfo(datatype.EditorAlias, datatype.EditorAlias,datatype.Name ?? datatype.EditorAlias));
         }
     }
 
@@ -67,7 +67,7 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
 
     protected override void PrepareFile(XElement source, SyncMigrationContext context)
     {
-        var (alias, dtd) = GetAliasAndKey(source);
+        var (alias, dtd) = GetAliasAndKey(source, context);
         var editorAlias = GetEditorAlias(source);
 
         if (dtd == Guid.Empty || string.IsNullOrEmpty(editorAlias)) return;
@@ -80,13 +80,27 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
         if (replacementInfo != null)
         {
             context.DataTypes.AddReplacement(dtd, replacementInfo.Key);
-            context.DataTypes.AddDefinition(dtd, new Models.DataTypeInfo(replacementInfo.EditorAlias, dataTypeName));
+
+            context.DataTypes.AddDefinition(dtd, new Models.DataTypeInfo(replacementInfo.EditorAlias, editorAlias,dataTypeName));
 
             if (string.IsNullOrWhiteSpace(replacementInfo.Variation) == false)
             {
                 context.DataTypes.AddVariation(dtd, replacementInfo.Variation);
             }
         }
+
+        if (context.DataTypes.GetByDefinition(dtd) != null && !string.IsNullOrEmpty(editorAlias))
+        {
+            context.DataTypes.GetByDefinition(dtd)!.OriginalEditorAlias = editorAlias;
+        }
+    }
+
+    public void PrePrepareFiles(XElement source, SyncMigrationContext context)
+    {
+        var editorAlias = GetEditorAlias(source);
+        var (alias, dtd) = GetAliasAndKey(source, context);
+
+        if (dtd == Guid.Empty || string.IsNullOrEmpty(editorAlias)) return;
 
         var isSplitPropertyEditor = IsSplitPropertyEditor(editorAlias, context);
         if (isSplitPropertyEditor)
@@ -95,8 +109,16 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
             return;
         }
 
+        var dataTypeName = GetDataTypeName(source);
+
+   
         // add alias, (won't update if replacement was added)
-        context.DataTypes.AddDefinition(dtd, new Models.DataTypeInfo(editorAlias, dataTypeName));
+        context.DataTypes.AddDefinition(dtd, new Models.DataTypeInfo(editorAlias, editorAlias, dataTypeName));
+        if (context.DataTypes.GetByDefinition(dtd) != null)
+        {
+            // ensured that we always populated old alias, so we can use it in archetype
+            context.DataTypes.GetByDefinition(dtd)!.OriginalEditorAlias = editorAlias;
+         }
         context.DataTypes.AddAlias(dtd, alias);
     }
 
@@ -117,8 +139,8 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
 
     protected override XElement? MigrateFile(XElement source, int level, SyncMigrationContext context)
     {
-        var (alias, key) = GetAliasAndKey(source);
-        var editorAlias = GetEditorAlias(source);   
+        var (alias, key) = GetAliasAndKey(source, context);
+        var editorAlias = GetEditorAlias(source);
 
         if (context.DataTypes.GetReplacement(key) != key)
         {

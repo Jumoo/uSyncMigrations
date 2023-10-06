@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 
 using Microsoft.Extensions.Logging;
-
+using Microsoft.Extensions.Options;
 using NUglify.Helpers;
 
 using Umbraco.Cms.Core.Models;
@@ -10,6 +10,7 @@ using Umbraco.Extensions;
 
 using uSync.BackOffice.Configuration;
 using uSync.Migrations.Composing;
+using uSync.Migrations.Configuration;
 using uSync.Migrations.Configuration.Models;
 using uSync.Migrations.Context;
 using uSync.Migrations.Handlers;
@@ -22,6 +23,7 @@ namespace uSync.Migrations.Services;
 internal class SyncMigrationService : ISyncMigrationService
 {
     private readonly ISyncMigrationFileService _migrationFileService;
+    private readonly IOptions<uSyncMigrationOptions> _options;
     private readonly ILogger<SyncMigrationService> _logger;
 
     private readonly SyncMigrationHandlerCollection _migrationHandlers;
@@ -32,6 +34,7 @@ internal class SyncMigrationService : ISyncMigrationService
     private readonly SyncPropertyMergingCollection _mergingCollection;
 
     public SyncMigrationService(
+        IOptions<uSyncMigrationOptions> options,
         ILogger<SyncMigrationService> logger,
         ISyncMigrationFileService migrationFileService,
         SyncMigrationHandlerCollection migrationHandlers,
@@ -41,6 +44,7 @@ internal class SyncMigrationService : ISyncMigrationService
         ArchetypeMigrationConfigurerCollection archetypeConfigures,
         SyncPropertyMergingCollection mergingCollection)
     {
+        _options = options;
         _logger = logger;
 
         _migrationFileService = migrationFileService;
@@ -54,21 +58,26 @@ internal class SyncMigrationService : ISyncMigrationService
 
     public IEnumerable<string> HandlerTypes(int version)
         => _migrationHandlers
-            .Where(x => x.SourceVersion == version)
+            .Where(x =>HandlerMatches(x, _options.Value, version))
             .OrderBy(x => x.Priority)
             .Select(x => x.ItemType);
+    private static bool HandlerMatches(ISyncMigrationHandler handler, uSyncMigrationOptions options, int version)
+    {
+        if (handler.SourceVersion != version) return false;
+        var result = options.DisabledHandlers.Any(x => handler.GetType().Name.InvariantEquals(x)) == false;
+        return result;
+    }
 
     public IEnumerable<ISyncMigrationHandler> GetHandlers(int version)
-        => _migrationHandlers.Where(x => x.SourceVersion == version);
-
+        => _migrationHandlers.Where(x => HandlerMatches(x, _options.Value, version));
 
     public int DetectVersion(string folder)
     {
         var uSyncFolder = _migrationFileService.GetMigrationFolder(folder, false);
-        return MigrationIoHelpers.DetectVersion(uSyncFolder);   
+        return MigrationIoHelpers.DetectVersion(uSyncFolder);
     }
 
-     /// <summary>
+    /// <summary>
     ///  validate things before we run through them and do an actual migration.
     /// </summary>
     /// <param name="options"></param>
@@ -94,7 +103,7 @@ internal class SyncMigrationService : ISyncMigrationService
 
         var messages = new List<MigrationMessage>();
 
-        foreach(var validator in _migrationValidators)
+        foreach (var validator in _migrationValidators)
         {
             try
             {
@@ -105,7 +114,7 @@ internal class SyncMigrationService : ISyncMigrationService
                 // TODO: what do we do if the validator fails ???
             }
         }
-  
+
         return new MigrationResults
         {
             Messages = messages,
@@ -113,7 +122,6 @@ internal class SyncMigrationService : ISyncMigrationService
             Success = !messages.Any(x => x.MessageType == MigrationMessageType.Error)
         };
     }
-
 
     public MigrationResults MigrateFiles(MigrationOptions options)
     {
@@ -131,7 +139,7 @@ internal class SyncMigrationService : ISyncMigrationService
 
         var itemTypes = options.Handlers?.Where(x => x.Include == true).Select(x => x.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-        var handlers = GetHandlers(options.SourceVersion, itemTypes);
+        var handlers = GetHandlers(options.SourceVersion, itemTypes).ToList();
 
         using (var migrationContext = PrepareContext(migrationId, sourceRoot, options))
         {
@@ -165,17 +173,16 @@ internal class SyncMigrationService : ISyncMigrationService
     {
         if (itemTypes?.Any() == true)
         {
-            return _migrationHandlers
-                .Where(x => x.SourceVersion == sourceVersion && itemTypes.Contains(x.ItemType) == true)
+            return _migrationHandlers.Where(x =>HandlerMatches(x, _options.Value, sourceVersion))
+                .Where(x => itemTypes.Contains(x.ItemType) == true)
                 .OrderBy(x => x.Priority);
         }
 
-        return _migrationHandlers
-            .Where(x => x.SourceVersion == sourceVersion)
+        return _migrationHandlers.Where(x =>HandlerMatches(x, _options.Value, sourceVersion))
             .OrderBy(x => x.Priority);
     }
 
-    private IEnumerable<MigrationMessage> MigrateFromDisk(Guid migrationId, string sourceRoot, SyncMigrationContext migrationContext, IOrderedEnumerable<ISyncMigrationHandler> handlers)
+    private IEnumerable<MigrationMessage> MigrateFromDisk(Guid migrationId, string sourceRoot, SyncMigrationContext migrationContext, IList<ISyncMigrationHandler> handlers)
     {
         // maybe replace with a Dictionary<string, MigrationMessage> (with `ItemType` as the key)?
         var results = new List<MigrationMessage>();
@@ -228,9 +235,18 @@ internal class SyncMigrationService : ISyncMigrationService
         options.ChangeTabs?
             .ForEach(x => context.ContentTypes.AddChangedTabs(x));
 
+        AddPropertyMigrators(context, options.PropertyMigrators);
+
         AddMigrators(context, options.PreferredMigrators);
 
         AddMergers(context, options.MergingProperties);
+
+        
+        // add configure for Archetype migrations
+        context.ContentTypes.ArchetypeMigrationConfigurer = _archetypeConfigures.FirstOrDefault(c => c.GetType() == options.ArchetypeMigrationConfigurer) ?? _archetypeConfigures.FirstOrDefault(c => c.GetType()== typeof(DefaultArchetypeMigrationConfigurer));
+
+        options.ReplacementAliases?
+            .ForEach(kvp => context.ContentTypes.AddReplacementAlias(kvp.Key, kvp.Value));
 
         // let the handlers run through their prep (populate all the lookups)
         GetHandlers(options.SourceVersion)?
@@ -238,11 +254,23 @@ internal class SyncMigrationService : ISyncMigrationService
             .ToList()
             .ForEach(x => x.PrepareMigrations(context));
 
-        // add configurer for Archetype migrations
-        context.ContentTypes.ArchetypeMigrationConfigurer = _archetypeConfigures.FirstOrDefault(c => c.GetType().Name == options.ArchetypeMigrationConfigurer) 
-            ?? new DefaultArchetypeMigrationConfigurer();
-
         return context;
+    }
+
+
+    private void AddPropertyMigrators(SyncMigrationContext context, IDictionary<string, string>? propertyMigrators)
+    {
+        if (propertyMigrators?.Count > 0)
+        {
+            foreach (var item in propertyMigrators)
+            {
+                var migrator = _migrators.GetMigrator(item.Value);
+                if (migrator is not null)
+                {
+                    context.Migrators.AddPropertyAliasMigration(item.Key, migrator);
+                }
+            }
+        }
     }
 
     private void AddMigrators(SyncMigrationContext context, IDictionary<string,string>? preferredMigrators)

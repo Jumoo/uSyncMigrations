@@ -1,21 +1,20 @@
-﻿using System.Globalization;
-using System.Xml.Linq;
+﻿using System.Xml.Linq;
 
 using Microsoft.Extensions.Logging;
 
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Services;
+using Umbraco.Extensions;
 
 using uSync.Core;
 using uSync.Migrations.Context;
-using uSync.Migrations.Extensions;
 using uSync.Migrations.Handlers.Shared;
 using uSync.Migrations.Services;
 
 namespace uSync.Migrations.Handlers.Seven;
 
-[SyncMigrationHandler(BackOfficeConstants.Groups.Settings, uSyncMigrations.Priorities.Languages, 
+[SyncMigrationHandler(BackOfficeConstants.Groups.Settings, uSyncMigrations.Priorities.Languages,
     SourceVersion = 7,
     SourceFolderName = "Languages", TargetFolderName = "Languages")]
 internal class LanguageMigrationHandler : SharedHandlerBase<Language>, ISyncMigrationHandler
@@ -32,15 +31,15 @@ internal class LanguageMigrationHandler : SharedHandlerBase<Language>, ISyncMigr
         _localizationService = localizationService;
     }
 
-    protected override (string alias, Guid key) GetAliasAndKey(XElement source)
+    protected override (string alias, Guid key) GetAliasAndKey(XElement source, SyncMigrationContext? context)
     {
         var alias = source.Attribute("CultureAlias").ValueOrDefault(string.Empty);
-        var key = CultureInfo.GetCultureInfo(alias)?.LCID.Int2Guid() ?? Guid.Empty;
+        var key = alias.ToGuid();
         return (alias: alias, key: key);
     }
     protected override XElement? MigrateFile(XElement source, int level, SyncMigrationContext context)
     {
-        var (alias, key) = GetAliasAndKey(source);
+        var (alias, key) = GetAliasAndKey(source, context);
 
         var existing = _localizationService.GetLanguageByIsoCode(alias);
 

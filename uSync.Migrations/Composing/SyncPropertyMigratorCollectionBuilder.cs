@@ -54,6 +54,11 @@ public class SyncPropertyMigratorCollection
         return editors.DistinctBy(x => $"{x.EditorAlias}_{x.Migrator.GetType().Name}").ToList();
     }
 
+    public ISyncPropertyMigrator? GetMigrator(string? typeName)
+    {
+        return this.FirstOrDefault(x => typeName?.InvariantEquals(x.GetType().Name) == true);
+    }
+
     private IDictionary<string, ISyncPropertyMigrator> GetDefaults()
     {
         var defaults = new Dictionary<string, ISyncPropertyMigrator>(StringComparer.OrdinalIgnoreCase);

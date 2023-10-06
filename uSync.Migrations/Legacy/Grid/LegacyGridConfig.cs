@@ -16,7 +16,7 @@ namespace uSync.Migrations.Legacy.Grid;
 /// </remarks>
 public class LegacyGridConfig : ILegacyGridConfig
 {
-    private IGridConfig _gridConfig;
+    private readonly IGridConfig _gridConfig;
 
     public LegacyGridConfig(IGridConfig gridConfig)
     {

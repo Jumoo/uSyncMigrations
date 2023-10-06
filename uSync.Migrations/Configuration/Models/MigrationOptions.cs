@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using uSync.Migrations.Migrators.Community.Archetype;
 using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Configuration.Models;
@@ -25,7 +26,7 @@ public class MigrationOptions
     public IDictionary<string, string>? PreferredMigrators { get; set; }
 
     /// <summary>
-    ///  migrators by property name. 
+    ///  migrators by property name.
     /// </summary>
     /// <remarks>
     ///  property migrators will be searched by property alias
@@ -44,7 +45,7 @@ public class MigrationOptions
     public Dictionary<string, List<string>>? BlockedItems { get; set; }
 
     /// <summary>
-    ///  Blocked properties use (alias of something to block.) syntax?. 
+    ///  Blocked properties use (alias of something to block.) syntax?.
     /// </summary>
     public List<string>? IgnoredProperties { get; set; }
 
@@ -55,13 +56,17 @@ public class MigrationOptions
     /// </summary>
     public List<TabOptions>? ChangeTabs { get; set; }
 
-    public string? ArchetypeMigrationConfigurer { get; set; }
+    public Type? ArchetypeMigrationConfigurer { get; set; } = typeof(DefaultArchetypeMigrationConfigurer);
 
     /// <summary>
-    ///  things we might want to merge. 
+    ///  things we might want to merge.
     /// </summary>
     public Dictionary<string, MergingPropertiesConfig> MergingProperties { get; set; } = new(StringComparer.InvariantCultureIgnoreCase);
-
+    
+    /// <summary>
+    /// Mapping of old to new content type aliases
+    /// </summary>
+    public IDictionary<string, string>? ReplacementAliases { get; set; }
 }
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]

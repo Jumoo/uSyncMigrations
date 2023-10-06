@@ -50,6 +50,7 @@ internal class GridToBlockGridConfigLayoutBlockHelper
         foreach (var template in gridTemplateConfiguration)
         {
             if (template.Sections == null) continue;
+            if (string.IsNullOrEmpty(template.Name)) continue;
 
             var areas = new List<BlockGridConfiguration.BlockGridAreaConfiguration>();
 
@@ -75,7 +76,8 @@ internal class GridToBlockGridConfigLayoutBlockHelper
                 var area = new BlockGridConfiguration.BlockGridAreaConfiguration
                 {
                     Alias = $"area_{index}",
-                    ColumnSpan = section.Grid
+                    ColumnSpan = section.Grid,
+		    RowSpan = 1
                 };
 
                 var alias = _conventions.GridAreaConfigAlias(area.Alias);
@@ -105,7 +107,7 @@ internal class GridToBlockGridConfigLayoutBlockHelper
 
                 allowed.AddRange(gridBlockContext.GetRootAllowedLayouts());
 
-                continue;
+                //continue;
             }
 
             var contentTypeAlias = _conventions.TemplateContentTypeAlias(template.Name);
@@ -123,14 +125,14 @@ internal class GridToBlockGridConfigLayoutBlockHelper
 
             gridBlockContext.LayoutBlocks.TryAdd(contentTypeAlias, layoutBlock);
 
-            context.ContentTypes.AddNewContentType(new NewContentTypeInfo
+            context.ContentTypes.AddNewContentType(new NewContentTypeInfo(
+                layoutBlock.ContentElementTypeKey,
+                contentTypeAlias,
+                template?.Name ?? contentTypeAlias,
+                "icon-layout color-purple",
+                "BlockGrid/Layouts")
             {
-                Key = layoutBlock.ContentElementTypeKey,
-                Alias = contentTypeAlias,
-                Name = template?.Name ?? contentTypeAlias,
-                Description = "Grid Layoutblock",
-                Folder = "BlockGrid/Layouts",
-                Icon = "icon-layout color-purple",
+                Description = "Grid Layout block",
                 IsElement = true
             });
         }
@@ -164,6 +166,7 @@ internal class GridToBlockGridConfigLayoutBlockHelper
 
                 if (gridArea.Grid == gridBlockContext.GridColumns)
                 {
+                    gridBlockContext.AppendToRootEditors(allowed);
                     gridBlockContext.AppendToRootLayouts(allowed);
                     continue;
                 }
@@ -175,7 +178,7 @@ internal class GridToBlockGridConfigLayoutBlockHelper
                     RowSpan = 1
                 };
 
-                var alias = _conventions.LayoutAreaAlias(layout.Name, area.Alias);
+                var alias = _conventions.LayoutAreaAlias(layout.Name!, area.Alias);
                 area.Key = alias.ToGuid();
 
                 rowAreas.Add(area);
@@ -186,7 +189,7 @@ internal class GridToBlockGridConfigLayoutBlockHelper
 
             if (rowAreas.Count == 0) continue;
 
-            var contentTypeAlias = _conventions.LayoutContentTypeAlias(layout.Name);
+            var contentTypeAlias = _conventions.LayoutContentTypeAlias(layout.Name!);
 
             var layoutBlock = new BlockGridConfiguration.BlockGridBlockConfiguration
             {
@@ -200,7 +203,12 @@ internal class GridToBlockGridConfigLayoutBlockHelper
 
             gridBlockContext.LayoutBlocks.TryAdd(contentTypeAlias, layoutBlock);
 
-            context.ContentTypes.AddNewContentType(new NewContentTypeInfo
+            context.ContentTypes.AddNewContentType(new NewContentTypeInfo(
+                key: layoutBlock.ContentElementTypeKey,
+                alias: contentTypeAlias,
+                name: layout?.Name ?? contentTypeAlias,
+                icon: "icon-layout color-purple",
+                folder: "BlockGrid/Layouts")
             {
                 Key = layoutBlock.ContentElementTypeKey,
                 Alias = contentTypeAlias,

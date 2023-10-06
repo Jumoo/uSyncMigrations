@@ -35,7 +35,7 @@ internal class DictionaryMigrationHandler : SharedHandlerBase<DictionaryItem>, I
     protected override XElement? MigrateFile(XElement source, int level, SyncMigrationContext context)
          => null;
 
-    protected override (string alias, Guid key) GetAliasAndKey(XElement source)
+    protected override (string alias, Guid key) GetAliasAndKey(XElement source, SyncMigrationContext? context)
         => (
             alias: source.Attribute("Key").ValueOrDefault(string.Empty),
             key: source.Attribute("guid").ValueOrDefault(Guid.Empty)

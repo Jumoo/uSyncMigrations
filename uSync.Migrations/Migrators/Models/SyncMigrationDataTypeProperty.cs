@@ -1,4 +1,8 @@
 ﻿using System.Collections.ObjectModel;
+using System.Xml;
+using System.Xml.Linq;
+using Newtonsoft.Json;
+using Umbraco.Extensions;
 using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Migrators.Models;
@@ -11,6 +15,17 @@ public sealed class SyncMigrationDataTypeProperty : SyncMigrationPropertyBase
         DatabaseType = databaseType;
         DataTypeAlias = dataTypeAlias;
         PreValues = new ReadOnlyCollection<PreValue>(preValues);
+        ConfigAsString = TranslatePreValuesToConfig(preValues);
+    }
+
+    private string? TranslatePreValuesToConfig(IList<PreValue> preValues)
+    {
+        var json = new Dictionary<string, object>();
+        foreach (var oPreValue in preValues)
+        {
+            json.TryAdd(oPreValue.Alias, oPreValue.Value.ToString().DetectIsJson() ? JsonConvert.DeserializeObject(oPreValue.Value) : oPreValue);
+        }
+        return  JsonConvert.SerializeObject(json);
     }
 
     public SyncMigrationDataTypeProperty(string dataTypeAlias, string editorAlias, string databaseType, string? config)

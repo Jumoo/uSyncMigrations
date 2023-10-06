@@ -43,7 +43,7 @@ internal class TemplateMigrationHandler : SharedTemplateHandler,  ISyncMigration
         return target;
     }
 
-    protected override (string alias, Guid key) GetAliasAndKey(XElement source)
+    protected override (string alias, Guid key) GetAliasAndKey(XElement source, SyncMigrationContext? context)
         => (
             alias: source.Element("Alias").ValueOrDefault(string.Empty),
             key: source.Element("Key").ValueOrDefault(Guid.Empty)

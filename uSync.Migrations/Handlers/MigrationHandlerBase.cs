@@ -62,7 +62,6 @@ internal abstract class MigrationHandlerBase<TObject>
     protected string? SourceFolderName { get; init; }
     protected string? DestinationFolderName { get; init; }
 
-
     protected virtual string GetSourceFolder(string sourceRoot)
         => Path.Combine(sourceRoot, SourceFolderName ?? string.Empty);
 
@@ -83,7 +82,7 @@ internal abstract class MigrationHandlerBase<TObject>
     public virtual void PrepareMigrations(SyncMigrationContext context)
     {
         Stopwatch sw = Stopwatch.StartNew();
-        
+
         _logger.LogInformation("[{type}] Preparing Migration {source}", typeof(TObject).Name, context.Metadata.SourceFolder);
         var files = GetSourceFiles(context.Metadata.SourceFolder);
         if (files == null)
@@ -91,12 +90,14 @@ internal abstract class MigrationHandlerBase<TObject>
             return;
         }
 
-        foreach (var file in files)
-        {
-            var source = XElement.Load(file);   
-            PrepareFile(source, context);
-            
-        }
+        // load anything handler specific. 
+        Prepare(context);
+
+        // loop through the files
+        List<XElement> nodes = files.Select(XElement.Load).ToList();
+        nodes.ForEach(x => PrePrepareFile(x, context));
+        nodes.ForEach(x => PrepareFile(x, context));
+
 
         sw.Stop();
         _logger.LogInformation("[{type}] Migration Prep completed ({elapsed}ms)", typeof(TObject).Name, sw.ElapsedMilliseconds);
@@ -114,30 +115,29 @@ internal abstract class MigrationHandlerBase<TObject>
         return messages;
     }
 
-
     /// <summary>
     ///  so handlers can run things before main DoMigrationLoop
     /// </summary>
     /// <param name="context"></param>
     /// <returns></returns>
-	protected virtual IEnumerable<MigrationMessage> PreDoMigration(SyncMigrationContext context)
-		=> Enumerable.Empty<MigrationMessage>();
+    protected virtual IEnumerable<MigrationMessage> PreDoMigration(SyncMigrationContext context)
+        => Enumerable.Empty<MigrationMessage>();
 
     /// <summary>
     ///  So Handlers can run things post main DoMigrationLoop
     /// </summary>
     /// <param name="context"></param>
     /// <returns></returns>
-	protected virtual IEnumerable<MigrationMessage> PostDoMigration(SyncMigrationContext context)
-		=> Enumerable.Empty<MigrationMessage>();
+    protected virtual IEnumerable<MigrationMessage> PostDoMigration(SyncMigrationContext context)
+        => Enumerable.Empty<MigrationMessage>();
 
-	/// <summary>
-	///  migrate a folder 
-	/// </summary>
-	/// <remarks>
-	///  We have to do it like this for v7 because it did level by folder structure.
-	/// </remarks>
-	private IEnumerable<MigrationMessage> MigrateFolder(string folder, int level, SyncMigrationContext context)
+    /// <summary>
+    ///  migrate a folder 
+    /// </summary>
+    /// <remarks>
+    ///  We have to do it like this for v7 because it did level by folder structure.
+    /// </remarks>
+    private IEnumerable<MigrationMessage> MigrateFolder(string folder, int level, SyncMigrationContext context)
     {
         if (Directory.Exists(folder) == false)
         {
@@ -158,7 +158,10 @@ internal abstract class MigrationHandlerBase<TObject>
             {
                 var source = XElement.Load(file);
 
-                var (alias, key) = GetAliasAndKey(source);
+                // if the file is a delete/rename/etc skip over it. 
+                if (source.IsEmptyItem()) continue;
+
+                var (alias, key) = GetAliasAndKey(source, context);
                 if (context.IsBlocked(ItemType, alias)) continue;
 
                 var migratingNotification = new SyncMigratingNotification<TObject>(source, context);
@@ -176,7 +179,7 @@ internal abstract class MigrationHandlerBase<TObject>
                     messages.Add(SaveTargetXml(context.Metadata.MigrationId, target));
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex, "Error while processing {file}", file);
 
@@ -207,13 +210,28 @@ internal abstract class MigrationHandlerBase<TObject>
     }
 
     protected abstract void PrepareFile(XElement source, SyncMigrationContext context);
+    protected virtual void PrePrepareFile(XElement source, SyncMigrationContext context) { }
     protected abstract XElement? MigrateFile(XElement source, int level, SyncMigrationContext context);
 
     /// <summary>
     ///  method to get the source and alias of a value.
     /// </summary>
-    /// <param name="source"></param>
+    /// <param name="source">XMLElement for item</param>
+    /// <param name="context">Migration context</param>
     /// <returns></returns>
-    protected abstract (string alias, Guid key) GetAliasAndKey(XElement source);
-        
+    protected abstract (string alias, Guid key) GetAliasAndKey(XElement source, SyncMigrationContext? context);
+
+    /// <summary>
+    ///  Get the Alias and Key values for an item.
+    /// </summary>
+    /// <remarks>
+    ///  this method is obsolete, you should pass the context.
+    ///  this then allows for renames, and maniupulation based on config.
+    /// </remarks>
+    /// <param name="source">XML Source for item</param>
+    /// <returns></returns>
+    [Obsolete("Call GetAliasAndKey with MigrationContext")]
+    protected virtual (string alias, Guid key) GetAliasAndKey(XElement source)
+    => GetAliasAndKey(source, null);
+
 }

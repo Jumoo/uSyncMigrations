@@ -82,7 +82,7 @@ internal class DocTypeGridEditorBlockMigrator : ISyncBlockMigrator
 	{
 		var propertyValues = new Dictionary<string, object>();
 
-		var contentTypeAlias = GetContentTypeAlias(control);
+		var contentTypeAlias = context.ContentTypes.GetReplacementAlias(GetContentTypeAlias(control));
 		if (string.IsNullOrWhiteSpace(contentTypeAlias)) return propertyValues;
 
 		var elementValue = control.Value?.Value<JObject>("value")?
@@ -109,7 +109,7 @@ internal class DocTypeGridEditorBlockMigrator : ISyncBlockMigrator
 				propertyValue = migrator.GetContentValue(property, context);
 			}
 
-			propertyValues[propertyAlias] = propertyValue;
+			propertyValues[propertyAlias] = propertyValue!;
 		}
 
 		return propertyValues;

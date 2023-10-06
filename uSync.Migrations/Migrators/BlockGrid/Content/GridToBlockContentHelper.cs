@@ -1,8 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
 
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 using Umbraco.Cms.Core;
+using Umbraco.Cms.Core.Logging;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Models.Blocks;
 using Umbraco.Extensions;
@@ -23,15 +25,18 @@ internal class GridToBlockContentHelper
     private readonly SyncBlockMigratorCollection _blockMigrators;
     private readonly GridConventions _conventions;
     private readonly ILogger<GridToBlockContentHelper> _logger;
+    private readonly IProfilingLogger _profilingLogger;
 
     public GridToBlockContentHelper(
         GridConventions gridConventions,
         SyncBlockMigratorCollection blockMigrators,
-        ILogger<GridToBlockContentHelper> logger)
+        ILogger<GridToBlockContentHelper> logger,
+        IProfilingLogger profilingLogger)
     {
         _blockMigrators = blockMigrators;
         _conventions = gridConventions;
         _logger = logger;
+        _profilingLogger = profilingLogger;
     }
 
     /// <summary>
@@ -39,10 +44,18 @@ internal class GridToBlockContentHelper
     /// </summary>
     public BlockValue? ConvertToBlockValue(GridValue source, SyncMigrationContext context)
     {
+        _logger.LogDebug(">> {method}", nameof(ConvertToBlockValue));
+
         // empty grid check
-        if (source.Sections.Any() != true) return null;
+        if (source.Sections.Any() != true)
+        {
+            _logger.LogDebug("  Grid has not sections, returning null");
+            return null;
+        }
 
         var sectionContentTypeAlias = _conventions.SectionContentTypeAlias(source.Name);
+
+        var sectionKey = context.ContentTypes.GetKeyByAlias(sectionContentTypeAlias);
 
         var sections = source.Sections
             .Select(x => (Grid: x.Grid.GetIntOrDefault(0), x.Rows))
@@ -54,9 +67,30 @@ internal class GridToBlockContentHelper
 
         var blockLayouts = new List<BlockGridLayoutItem>();
 
-        foreach (var (sectionColums, rows) in sections)
+        BlockGridLayoutItem? rootLayoutItem = null;
+
+        if (sectionKey != Guid.Empty)
         {
-            var sectionIsFullWidth = sectionColums == gridColumns;
+            var rootSection = new BlockItemData
+            {
+                Udi = Udi.Create(UmbConstants.UdiEntityType.Element, Guid.NewGuid()),
+                ContentTypeKey = sectionKey,
+                ContentTypeAlias = sectionContentTypeAlias
+            };
+            block.ContentData.Add(rootSection);
+            rootLayoutItem = new BlockGridLayoutItem
+            {
+                ContentUdi = rootSection.Udi,
+                ColumnSpan = gridColumns,
+                RowSpan = 1
+            };
+        }
+        var rootLayoutAreas = new List<BlockGridLayoutAreaItem>();
+
+        foreach (var item in sections.Select((value, sectionIndex) => new {sectionIndex, value}))
+        {
+            var (sectionColumns, rows) = item.value;
+            var sectionIsFullWidth = sectionColumns == gridColumns;
 
             foreach (var row in rows)
             {
@@ -87,7 +121,7 @@ internal class GridToBlockContentHelper
                     {
                         var areaItem = new BlockGridLayoutAreaItem
                         {
-                            Key =  _conventions.LayoutAreaAlias(row.Name, _conventions.AreaAlias(area.index)).ToGuid(),
+                            Key =  _conventions.LayoutAreaAlias(row.Name!, _conventions.AreaAlias(area.index)).ToGuid(),
                             Items = layouts.ToArray()
                         };
 
@@ -115,6 +149,21 @@ internal class GridToBlockContentHelper
             }
 
             // section 
+            if (!sectionIsFullWidth)
+            {
+                var areaItem = new BlockGridLayoutAreaItem
+                {
+                  Key = _conventions.GridAreaConfigAlias(_conventions.AreaAlias(item.sectionIndex)).ToGuid(),
+                  Items = blockLayouts.ToArray()
+                };
+                rootLayoutAreas.Add(areaItem);
+                blockLayouts.Clear();
+            }
+        }
+        if (rootLayoutItem != null && rootLayoutAreas.Count > 1)
+        {
+            rootLayoutItem.Areas = rootLayoutAreas.ToArray();
+            blockLayouts.Add(rootLayoutItem);
         }
 
         // end - process layouts into block format. 
@@ -122,6 +171,8 @@ internal class GridToBlockContentHelper
         {
             { UmbConstants.PropertyEditors.Aliases.BlockGrid, JToken.FromObject(blockLayouts) }
         };
+
+        _logger.LogDebug(">> {method}", nameof(ConvertToBlockValue));
 
         return block;
     }
@@ -158,7 +209,7 @@ internal class GridToBlockContentHelper
 
     private BlockItemData GetGridRowBlockContent(GridValue.GridRow row, SyncMigrationContext context)
     {
-        var rowLayoutContentTypeAlias = _conventions.LayoutContentTypeAlias(row.Name);
+        var rowLayoutContentTypeAlias = _conventions.LayoutContentTypeAlias(row.Name!);
         var rowContentTypeKey = context.GetContentTypeKeyOrDefault(rowLayoutContentTypeAlias, rowLayoutContentTypeAlias.ToGuid()); 
 
         return new BlockItemData
@@ -197,6 +248,16 @@ internal class GridToBlockContentHelper
         {
             _logger.LogWarning("No contentTypeAlias from migrator {migrator}", blockMigrator.GetType().Name);
             return null;
+        }
+
+        if(control.Editor.Alias.InvariantEquals("macro"))
+        {
+            var macroObject = JsonConvert.DeserializeObject<MacroObject>(control.Value.ToString());
+
+            if (macroObject != null)
+            {
+                contentTypeAlias = macroObject.MacroEditorAlias;
+            }
         }
 
         var contentTypeKey = context.ContentTypes.GetKeyByAlias(contentTypeAlias);

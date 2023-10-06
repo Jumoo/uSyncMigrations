@@ -8,7 +8,7 @@ namespace Archetype.Models
     public class ArchetypeFieldsetModel
     {
         [JsonProperty("alias")]
-        public string Alias { get; set; }
+        public string? Alias { get; set; }
 
         [JsonProperty("disabled")]
         public bool Disabled { get; set; }
@@ -26,7 +26,7 @@ namespace Archetype.Models
         public DateTime? ExpireDate { get; set; }
 
         [JsonProperty("allowedMemberGroups")]
-        public string AllowedMemberGroups { get; set; }
+        public string? AllowedMemberGroups { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ArchetypeFieldsetModel"/> class.

@@ -8,7 +8,7 @@ using uSync.Migrations.Models;
 namespace uSync.Migrations.Migrators.BlockGrid.BlockMigrators;
 public interface ISyncBlockMigrator
 {
-	// the grid aliases this block migrator work for., 
+	// the grid aliases this block migrator work for.,
 	string[] Aliases { get; }
 
 	IEnumerable<NewContentTypeInfo> AdditionalContentTypes(ILegacyGridEditorConfig editorConfig);
@@ -35,9 +35,30 @@ public class SyncBlockMigratorCollection
 	public SyncBlockMigratorCollection(Func<IEnumerable<ISyncBlockMigrator>> items) : base(items)
 	{}
 
+	public Dictionary<string, ISyncBlockMigrator> GetDefaults()
+	{
+		var defaults = new Dictionary<string, ISyncBlockMigrator>(StringComparer.OrdinalIgnoreCase);
+		foreach (var item in this.Where(x => x.GetType().GetCustomAttribute<SyncDefaultMigratorAttribute>(false) != null))
+		{
+			foreach (var alias in item.Aliases)
+			{
+				defaults[alias] = item;
+			}
+		}
+
+		return defaults;
+	}
+
 	public ISyncBlockMigrator? GetMigrator(string? gridAlias)
 	{
 		if (gridAlias == null) return null;
+
+		var defaults = GetDefaults();
+		if (defaults.TryGetValue(gridAlias, out var migrator))
+		{
+		    return migrator;
+		}
+
 		return this.FirstOrDefault(x => x.Aliases.InvariantContains(gridAlias));
 	}
 
@@ -48,7 +69,7 @@ public class SyncBlockMigratorCollection
 	{
 
         ISyncBlockMigrator? migrator;
-        
+
 		var viewName = Path.GetFileNameWithoutExtension(gridEditor?.View ?? "");
 		if (!string.IsNullOrWhiteSpace(viewName))
 		{
@@ -81,6 +102,6 @@ public class SyncBlockMigratorCollection
 		if (migrator != null) return migrator;
 
 		// if it goes wrong , we return the default, and everything becomes a label.
-		return GetDefaultMigrator();	
+		return GetDefaultMigrator();
 	}
 }

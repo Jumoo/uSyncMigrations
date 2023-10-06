@@ -31,23 +31,21 @@ public abstract class GridBlockMigratorSimpleBase
 	{
 		var alias = this.GetContentTypeAlias(editor);
 
-		return new NewContentTypeInfo
+		return new NewContentTypeInfo(
+			alias.ToGuid(),
+			alias,
+			editor.Name ?? editor.Alias!,
+			$"{editor.Icon ?? "icon-book"} color-purple",
+			"BlockGrid/Elements")
 		{
-			Key = alias.ToGuid(),
-			Alias = alias,
-			Name = editor.Name ?? editor.Alias,
 			Description = $"Converted from Grid {editor.Name} element",
-			Icon = $"{editor.Icon ?? "icon-book"} color-purple",
 			IsElement = true,
-			Folder = "BlockGrid/Elements",
 			Properties = new List<NewContentTypeProperty>
 			{
-				new NewContentTypeProperty
-				{
-					Alias = editor.Alias,
-					Name = editor.Name ?? editor.Alias,
-					DataTypeAlias = this.GetEditorAlias(editor)
-				}
+				new NewContentTypeProperty(
+					alias: editor.Alias!,
+					name: editor.Name ?? editor.Alias!,
+					dataTypeAlias: this.GetEditorAlias(editor))				
 			}
 		}.AsEnumerableOfOne();
 	}
@@ -61,8 +59,8 @@ public abstract class GridBlockMigratorSimpleBase
 	public virtual string GetContentTypeAlias(ILegacyGridEditorConfig editorConfig)
 	{
 		var alias = string.IsNullOrEmpty(editorConfig.Alias) 
-			? Path.GetFileNameWithoutExtension(editorConfig.View)
-			: editorConfig.Alias;
+			? Path.GetFileNameWithoutExtension(editorConfig.View) ?? editorConfig.Alias!
+			: editorConfig.Alias!;
 
 		return alias.GetBlockElementContentTypeAlias(_shortStringHelper);
 	}

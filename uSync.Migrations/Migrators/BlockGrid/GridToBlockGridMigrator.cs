@@ -1,7 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 
 using Newtonsoft.Json;
-
+using Newtonsoft.Json.Linq;
+using Umbraco.Cms.Core.Logging;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Cms.Core.Strings;
@@ -24,6 +25,7 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
 	private readonly SyncBlockMigratorCollection _blockMigrators;
 	private readonly ILoggerFactory _loggerFactory;
 	private readonly ILogger<GridToBlockGridMigrator> _logger;
+	private readonly IProfilingLogger _profilingLogger;
 
 	private readonly GridConventions _conventions;
 
@@ -31,13 +33,15 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
         ILegacyGridConfig gridConfig,
         SyncBlockMigratorCollection blockMigrators,
         IShortStringHelper shortStringHelper,
-        ILoggerFactory loggerFactory)
+        ILoggerFactory loggerFactory,
+        IProfilingLogger profilingLogger)
     {
         _gridConfig = gridConfig;
         _blockMigrators = blockMigrators;
         _conventions = new GridConventions(shortStringHelper);
         _loggerFactory = loggerFactory;
-		_logger = loggerFactory.CreateLogger<GridToBlockGridMigrator>();	
+        _profilingLogger = profilingLogger;
+        _logger = loggerFactory.CreateLogger<GridToBlockGridMigrator>();	
     }
 
     public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
@@ -48,14 +52,22 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
 
 	public override object? GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
 	{
-		if (dataTypeProperty.ConfigAsString == null)
+        _logger.LogDebug(">> {method}", nameof(GetConfigValues));
+
+        if (dataTypeProperty.ConfigAsString == null)
+		{
+			_logger.LogDebug("   Config is null, returning empty block grid config");
 			return new BlockGridConfiguration();
+		}
 
 		var gridConfiguration = JsonConvert
 			.DeserializeObject<GridConfiguration>(dataTypeProperty.ConfigAsString);
 
 		if (gridConfiguration == null)
+		{
+			_logger.LogDebug("   Grid Config is null, returning empty block grid config");
 			return new BlockGridConfiguration();
+		}
 
 
 		var legacyGridEditorsConfig = GetGridConfig(context);
@@ -79,7 +91,9 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
 		// Make sure all the block elements have been added to the migration context.
 		context.ContentTypes.AddElementTypes(result.Blocks.Select(x => x.ContentElementTypeKey), true);
 
-		return result;
+        _logger.LogDebug("<< {method}", nameof(GetConfigValues));
+
+        return result;
 	}
 
 	private ILegacyGridEditorsConfig GetGridConfig(SyncMigrationContext context)
@@ -89,32 +103,61 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
 
     public override string? GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
 	{
+		_logger.LogDebug(">> {method}", nameof(GetContentValue));
+
 		if (string.IsNullOrWhiteSpace(contentProperty.Value))
+		{
+			_logger.LogDebug("  Content property is blank, nothing to migrate");
 			return string.Empty;
+		}
 
 		// has already been converted. 
 		if (contentProperty.Value.Contains("\"Umbraco.BlockGrid\""))
 		{
-			_logger.LogDebug("Property [{name}] is already BlockGrid", contentProperty.EditorAlias);
+			_logger.LogDebug("  Property [{name}] is already BlockGrid", contentProperty.EditorAlias);
 			return contentProperty.Value;
 		}
 
 		var source = JsonConvert.DeserializeObject<GridValue>(contentProperty.Value);
 		if (source == null)
 		{
-			_logger.LogDebug("Property {alias} is empty", contentProperty.EditorAlias);
+			_logger.LogDebug("  Property {alias} is empty", contentProperty.EditorAlias);
 			return string.Empty;
 		}
 
-		var helper = new GridToBlockContentHelper(_conventions, _blockMigrators,
-			_loggerFactory.CreateLogger<GridToBlockContentHelper>());
+		// For some reason, DTGEs can sometimes end up without a view specified. This should fix it.
+		foreach (var section in source.Sections)
+		{
+			foreach (var row in section.Rows)
+			{
+				foreach (var area in row.Areas)
+				{
+					foreach (var control in area.Controls)
+					{
+						if (control.Editor.View == null && control.Value is JObject value && value["dtgeContentTypeAlias"] != null)
+						{
+							control.Editor.View = "/App_Plugins/DocTypeGridEditor/Views/doctypegrideditor.html";
+							_logger.LogDebug("Control {alias} looks like a DTGE, but has no view, {view} has been added as view", control.Editor.Alias, control.Editor.View);
+						}
+					}
+				}
+			}
+		}
+
+		var helper = new GridToBlockContentHelper(
+			_conventions, 
+			_blockMigrators,
+			_loggerFactory.CreateLogger<GridToBlockContentHelper>(), 
+			_profilingLogger);
 		
 		var blockValue = helper.ConvertToBlockValue(source, context);
 		if (blockValue == null)
 		{
-			_logger.LogDebug("Converted value for {alias} is empty", contentProperty.EditorAlias);
+			_logger.LogDebug("  Converted value for {alias} is empty", contentProperty.EditorAlias);
 			return string.Empty;
 		}
+
+		_logger.LogDebug("<< {method}", nameof(GetContentValue));
 
 		return JsonConvert.SerializeObject(blockValue, Formatting.Indented);
 	}

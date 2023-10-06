@@ -8,6 +8,7 @@ using uSync.Migrations.Migrators.Models;
 
 namespace uSync.Migrations.Migrators;
 
+[SyncMigrator("Umbraco.ColorPicker")]
 [SyncMigrator("Umbraco.ColorPickerAlias")]
 public class ColorPickerMigrator : SyncPropertyMigratorBase
 {
@@ -98,8 +99,8 @@ public class ColorPickerMigrator : SyncPropertyMigratorBase
     [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
     private class ColorItemValue
     {
-        public string Value { get; set; }
-        public string Label { get; set; }
+        public string? Value { get; set; }
+        public string? Label { get; set; }
     }
 
     private class LegacyColourValue : ColorItemValue
@@ -110,9 +111,9 @@ public class ColorPickerMigrator : SyncPropertyMigratorBase
     [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
     private class ColourContentValue
     {
-        public string Value { get; set; }
-        public string Label { get; set; }
+        public string? Value { get; set; }
+        public string? Label { get; set; }
         public int SortOrder { get; set; }
-        public string Id { get; set; }
+        public string? Id { get; set; }
     }
 }

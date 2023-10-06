@@ -1,9 +1,6 @@
 ﻿using System.Xml.Linq;
 
-using Microsoft.CodeAnalysis.FlowAnalysis;
 using Microsoft.Extensions.Logging;
-
-using Polly;
 
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
@@ -11,7 +8,6 @@ using Umbraco.Cms.Core.Strings;
 using Umbraco.Extensions;
 
 using uSync.Core;
-using uSync.Migrations.Composing;
 using uSync.Migrations.Context;
 using uSync.Migrations.Extensions;
 using uSync.Migrations.Migrators;
@@ -24,7 +20,7 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
     where TEntity : ContentBase
 {
     protected readonly IShortStringHelper _shortStringHelper;
-   
+
     protected readonly HashSet<string> _ignoredProperties = new(StringComparer.OrdinalIgnoreCase);
     protected readonly Dictionary<string, string> _mediaTypeAliasForFileExtension = new(StringComparer.OrdinalIgnoreCase);
 
@@ -32,7 +28,7 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
         IEventAggregator eventAggregator,
         ISyncMigrationFileService migrationFileService,
         IShortStringHelper shortStringHelper,
-        ILogger<SharedContentBaseHandler<TEntity>> logger) 
+        ILogger<SharedContentBaseHandler<TEntity>> logger)
         : base(eventAggregator, migrationFileService, logger)
     {
         _shortStringHelper = shortStringHelper;
@@ -42,7 +38,7 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
 
     protected override void PrepareFile(XElement source, SyncMigrationContext context)
     {
-        var (alias, key) = GetAliasAndKey(source);
+        var (alias, key) = GetAliasAndKey(source, context);
 
         if (key != Guid.Empty)
         {
@@ -63,7 +59,7 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
 
     protected abstract Guid GetParent(XElement source);
 
-    protected abstract string GetContentType(XElement source);
+    protected abstract string GetContentType(XElement source, SyncMigrationContext context);
 
     protected abstract string GetPath(string alias, Guid parent, SyncMigrationContext context);
 
@@ -73,10 +69,10 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
 
     protected override XElement? MigrateFile(XElement source, int level, SyncMigrationContext context)
     {
-        var (alias, key) = GetAliasAndKey(source);
+        var (alias, key) = GetAliasAndKey(source, context);
 
         var parent = GetParent(source);
-        var contentType = GetContentType(source);
+        var contentType = GetContentType(source, context);
 
         var path = GetPath(alias, parent, context);
         context.Content.AddContentPath(key, path);
@@ -109,9 +105,9 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
         }
 
         var mergedProperties = context.Content.GetMergedProperties(contentType);
-        if (mergedProperties != null) 
+        if (mergedProperties != null)
             MergeContentProperties(contentType, mergedProperties, propertiesList, context);
-            
+
 
         target.Add(propertiesList);
 
@@ -158,7 +154,7 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
             return new XElement(property.Name.LocalName,
                         new XElement("Value", new XCData(migratedValue))).AsEnumerableOfOne();
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             _logger.LogWarning("Failed to migrate property [{editorAlias} {property}] {ex}",
                 editorAlias, property.Name.LocalName, ex.Message);
@@ -183,14 +179,14 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
     /// </summary>
     protected virtual XElement? GetVariedValueNode(ISyncVariationPropertyMigrator migrator, string contentTypeAlias, string propertyName, SyncMigrationContentProperty migrationProperty, SyncMigrationContext context)
     {
+        var newProperty = new XElement(propertyName);
+
         // Get varied elements from the migrator.
         var attempt = migrator.GetVariedElements(migrationProperty, context);
         if (attempt.Success && attempt.Result != null)
         {
             // this returns an object which tells us what datatype to use
-            // and a dictionary of cultuire / values we can migrate. 
-
-            var newProperty = new XElement(propertyName);
+            // and a dictionary of cultuire / values we can migrate.
 
             // get editor alias from dtdguid
             var variantDataType = context.DataTypes.GetByDefinition(attempt.Result.DtdGuid);
@@ -209,18 +205,28 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
                         new XCData(migratedValue)));
                 }
             }
-
-            return newProperty;
         }
 
-        return null;
+        return newProperty;
     }
 
     protected virtual string MigrateContentValue(SyncMigrationContentProperty migrationProperty, SyncMigrationContext context)
     {
-        if (migrationProperty?.Value == null) return string.Empty;
+        if (migrationProperty?.Value == null)
+        {
+            _logger.LogDebug("{info} value is null, nothing to migrate",
+                migrationProperty?.GetDetailString() ?? "(Blank)");
 
-        if (string.IsNullOrWhiteSpace(migrationProperty.EditorAlias)) return migrationProperty.Value;
+            return string.Empty;
+        }
+
+        if (string.IsNullOrWhiteSpace(migrationProperty.EditorAlias))
+        {
+            _logger.LogDebug("{info} has a blank editorAlias, can't migrate",
+                migrationProperty.GetDetailString());
+
+            return migrationProperty.Value;
+        }
 
         var migrator = context.Migrators.TryGetMigrator(
             $"{migrationProperty.ContentTypeAlias}_{migrationProperty.PropertyAlias}", migrationProperty.EditorAlias);
@@ -228,11 +234,18 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
         // var migrator = context.Migrators.TryGetMigrator(migrationProperty.EditorAlias);
         if (migrator != null)
         {
+            _logger.LogDebug("{info} migrating with {migrator}",
+                migrationProperty.GetDetailString());
+
             return migrator?.GetContentValue(migrationProperty, context) ?? migrationProperty.Value;
         }
 
+        _logger.LogDebug("{info}, no migrator, value will not change",
+            migrationProperty.GetDetailString());
+
         return migrationProperty.Value;
     }
+
 
     /// <summary>
     ///  something we probibly only need to do for v7 - but ensure we have 
@@ -284,7 +297,6 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
         }
     }
 
-
     /// <summary>
     ///  Merge multiple properties into one single property. 
     /// </summary>
@@ -300,7 +312,7 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
         if (propertiesElement == null) return;
 
         var merger = context.Migrators.GetMergingMigrator(contentType);
-        if (merger == null) return; 
+        if (merger == null) return;
 
         if (config == null) return;
         if (!config.MergedProperties.Any()) return;
@@ -314,7 +326,7 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
 
         if (config.RemoveMergedProperties)
             propertiesElement.RemoveByName(config.MergedProperties);
-    } 
+    }
 
     /// <summary>
     ///  get the properties and values that we want to merge sorted by culture. 
@@ -366,5 +378,4 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
         // add the new target to the element.
         return targetElement;
     }
-        
 }

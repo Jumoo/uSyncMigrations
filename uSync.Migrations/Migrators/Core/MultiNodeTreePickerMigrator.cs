@@ -19,6 +19,12 @@ public class MultiNodeTreePickerMigrator : SyncPropertyMigratorBase
     {
         var config = new MultiNodePickerConfiguration();
 
+        var filter = dataTypeProperty.PreValues?.FirstOrDefault(pv => pv.Alias == "filter");
+        if (filter != null)
+        {
+            filter.Value = string.Join(",", filter.Value?.Split(",").Select(x => context.ContentTypes.GetReplacementAlias(x)) ?? Enumerable.Empty<string>());
+        }
+
         var mappings = new Dictionary<string, string>
         {
             { "filter", nameof(config.Filter) },

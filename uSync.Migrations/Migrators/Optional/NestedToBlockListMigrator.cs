@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -10,6 +10,7 @@ using Umbraco.Extensions;
 
 using uSync.Migrations.Context;
 using uSync.Migrations.Extensions;
+using uSync.Migrations.Migrators.Core;
 using uSync.Migrations.Migrators.Models;
 
 using static Umbraco.Cms.Core.Constants;
@@ -88,10 +89,12 @@ public class NestedToBlockListMigrator : SyncPropertyMigratorBase
             {
                 if (string.IsNullOrWhiteSpace(item.Alias)) continue;
 
-                var contentTypeKey = context.ContentTypes.GetKeyByAlias(item.Alias);
+                var alias = context.ContentTypes.GetReplacementAlias(item.Alias);
+                
+                var contentTypeKey = context.ContentTypes.GetKeyByAlias(alias);
 
                 // tell the process we need this to be an element type
-                context.ContentTypes.AddElementType(contentTypeKey);
+                context.ContentTypes.AddElementTypes(new[] { contentTypeKey }, true);
 
                 blocks.Add(new BlockListConfiguration.BlockConfiguration
                 {
@@ -106,11 +109,28 @@ public class NestedToBlockListMigrator : SyncPropertyMigratorBase
         return config;
     }
 
+    /// <summary>
+    ///  stub of what block list json looks like, 
+    /// </summary>
+    /// <remarks>
+    ///  if a property has already been converted, then it will have this json in it. 
+    /// </remarks>
+    private static string blockListJsonStub = "{\r\n  \"layout\": {\r\n    \"Umbraco.BlockList\":";
 
+    /// <summary>
+    ///  convert the content value from nested content to blocklist. 
+    /// </summary>
     public override string? GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
     {
         if (string.IsNullOrWhiteSpace(contentProperty.Value)) return string.Empty;
-        var rowValues = JsonConvert.DeserializeObject<IList<NestedContentRowValue>>(contentProperty.Value);
+
+        if (contentProperty.Value.InvariantStartsWith(blockListJsonStub))
+        {
+            _logger.LogDebug("Property [{name}] is already BlockList", contentProperty.EditorAlias);
+            return contentProperty.Value;
+        }
+
+        var rowValues = JsonConvert.DeserializeObject<IList<NestedContentRowValue>>(contentProperty.Value, new JsonSerializerSettings() { DateParseHandling = DateParseHandling.None });
         if (rowValues == null) return string.Empty;
 
         var blockValue = new BlockValue();
@@ -119,10 +139,11 @@ public class NestedToBlockListMigrator : SyncPropertyMigratorBase
 
         foreach (var row in rowValues)
         {
+            var contentTypeAlias = context.ContentTypes.GetReplacementAlias(row.ContentTypeAlias);
             if (row.Id == Guid.Empty)
-                row.Id = $"{contentProperty.EditorAlias}{contentProperty.ContentTypeAlias}{row.ContentTypeAlias}{row.Name}".ToGuid();
+                row.Id = $"{contentProperty.EditorAlias}{contentProperty.ContentTypeAlias}{contentTypeAlias}{row.Name}".ToGuid();
 
-            var contentTypeKey = context.ContentTypes.GetKeyByAlias(row.ContentTypeAlias);
+            var contentTypeKey = context.ContentTypes.GetKeyByAlias(contentTypeAlias);
             var blockUdi = Udi.Create(UdiEntityType.Element, row.Id);
 
             var block = new BlockItemData
@@ -138,9 +159,9 @@ public class NestedToBlockListMigrator : SyncPropertyMigratorBase
 
             foreach (var property in row.RawPropertyValues)
             {
-                _logger.LogDebug("NestedToBlockList: {ContentType} {key}", row.ContentTypeAlias, property.Key);
+                _logger.LogDebug("NestedToBlockList: {ContentType} {key}", contentTypeAlias, property.Key);
 
-                var editorAlias = context.ContentTypes.GetEditorAliasByTypeAndProperty(row.ContentTypeAlias, property.Key);
+                var editorAlias = context.ContentTypes.GetEditorAliasByTypeAndProperty(contentTypeAlias, property.Key);
                 if (editorAlias == null) continue;
 
                 _logger.LogDebug("NestedToBlockList: Property: {editorAlias}", editorAlias);
@@ -152,9 +173,9 @@ public class NestedToBlockListMigrator : SyncPropertyMigratorBase
 
                     block.RawPropertyValues[property.Key] = migrator.GetContentValue(
                         new SyncMigrationContentProperty(
-                            row.ContentTypeAlias,
+                            contentTypeAlias,
                             property.Key,
-                            row.ContentTypeAlias, property.Value?.ToString() ?? string.Empty), context);
+                            editorAlias.OriginalEditorAlias, property.Value?.ToString() ?? string.Empty), context);
                 }
                 else
                 {

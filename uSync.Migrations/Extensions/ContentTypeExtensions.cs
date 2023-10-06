@@ -1,18 +1,16 @@
 ﻿using System.Xml.Linq;
-
-using Umbraco.Cms.Core.Models.ContentEditing;
 using Umbraco.Cms.Core.Services;
-using Umbraco.Cms.Core.Strings;
 using Umbraco.Extensions;
 
 using uSync.Core;
+using uSync.Migrations.Context;
 using uSync.Migrations.Models;
 
 namespace uSync.Migrations.Extensions;
 internal static class ContentTypeExtensions
 {
 	public static XElement MakeXMLFromNewDocType(this NewContentTypeInfo newDocType,
-		IDataTypeService dataTypeService)
+		IDataTypeService dataTypeService, SyncMigrationContext context)
 	{
 		var source = new XElement("ContentType",
 					 new XAttribute(uSyncConstants.Xml.Key, newDocType.Alias.ToGuid()),
@@ -27,16 +25,10 @@ internal static class ContentTypeExtensions
 						 new XElement("IsListView", false),
 						 new XElement("Variations", "Nothing"),
 						 new XElement("IsElement", newDocType.IsElement),
-						 new XElement("Folder", newDocType.Folder ?? "")),
+						 new XElement("Folder", newDocType.Folder ?? ""),
+                         new XElement("Compositions", GetCompositions(newDocType, context))),
 					 new XElement("GenericProperties"),
-					 new XElement("Tabs",
-						 new XElement("Tab",
-							 new XElement("Key", Guid.NewGuid().ToString()),
-							 new XElement("Caption", "Block"),
-							 new XElement("Alias", "block"),
-							 new XElement("Type", "Group"),
-							 new XElement("SortOrder", 0))
-						 )
+					 new XElement("Tabs", GetTabs(newDocType))
 					 );
 
 		var properties = source.Element("GenericProperties");
@@ -60,7 +52,7 @@ internal static class ContentTypeExtensions
 					new XElement("Validation", ""),
 					new XElement("Description", new XCData("")),
 					new XElement("SortOrder", index),
-					new XElement("Tab", "Block", new XAttribute("Alias", "block")),
+					GetTabElement(property, newDocType),
 					new XElement("Variations", "Nothing"),
 					new XElement("MandatoryMessage", ""),
 					new XElement("ValidationRegExpMessage", ""),
@@ -73,5 +65,39 @@ internal static class ContentTypeExtensions
 		return source;
 
 
+	}
+
+	private static XElement GetTabElement(NewContentTypeProperty property, NewContentTypeInfo contentTypeInfo)
+	{
+		var tab = contentTypeInfo.Tabs.FirstOrDefault(x => x.Alias == property.TabAlias);
+		return tab == null ? 
+			new XElement("Tab", "Block", new XAttribute("Alias", "block")) : 
+			new XElement("Tab", tab.Name, new XAttribute("Alias", tab.Alias));
+	}
+
+	private static IEnumerable<XElement> GetCompositions(NewContentTypeInfo newDocType,
+		SyncMigrationContext context)
+	{
+		foreach (var composition in newDocType.CompositionAliases)
+		{
+			var element = new XElement("Composition");
+			element.Add(new XAttribute("Key", context.ContentTypes.GetKeyByAlias(composition)));
+			element.Add(composition);
+			yield return element;
+		}
+	}
+	
+	private static IEnumerable<XElement> GetTabs(NewContentTypeInfo newDocType)
+	{
+		foreach (var tab in newDocType.Tabs)
+		{
+			var element = new XElement("Tab",
+				new XElement("Key", Guid.NewGuid().ToString()),
+				new XElement("Caption", tab.Name),
+				new XElement("Alias", tab.Alias),
+				new XElement("Type", tab.Type),
+				new XElement("SortOrder", tab.SortOrder));
+			yield return element;
+		}
 	}
 }

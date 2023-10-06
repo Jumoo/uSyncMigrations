@@ -28,7 +28,7 @@ internal abstract class ContentBaseMigrationHandler<TEntity> : SharedContentBase
     protected override int GetId(XElement source)
         => source.Attribute("id").ValueOrDefault(0);
 
-    protected override (string alias, Guid key) GetAliasAndKey(XElement source)
+    protected override (string alias, Guid key) GetAliasAndKey(XElement source, SyncMigrationContext? context)
        => (
             alias: source.Attribute("nodeName").ValueOrDefault(string.Empty),
             key: source.Attribute("guid").ValueOrDefault(Guid.Empty)
@@ -37,8 +37,8 @@ internal abstract class ContentBaseMigrationHandler<TEntity> : SharedContentBase
     protected override Guid GetParent(XElement source)
         => source.Attribute("parentGUID").ValueOrDefault(Guid.Empty);
 
-    protected override string GetContentType(XElement source)
-        => source.Attribute("nodeTypeAlias").ValueOrDefault(string.Empty);
+    protected override string GetContentType(XElement source, SyncMigrationContext context)
+        => context.ContentTypes.GetReplacementAlias(source.Attribute("nodeTypeAlias").ValueOrDefault(string.Empty));
 
     protected override string GetPath(string alias, Guid parent, SyncMigrationContext context)
         => context.Content.GetContentPath(parent) + "/" + alias.ToSafeAlias(_shortStringHelper);
@@ -63,7 +63,7 @@ internal abstract class ContentBaseMigrationHandler<TEntity> : SharedContentBase
 
     protected override XElement GetBaseXml(XElement source, Guid parent, string contentType, int level, SyncMigrationContext context)
     {
-        var (alias, key) = GetAliasAndKey(source);
+        var (alias, key) = GetAliasAndKey(source, context);
 
         var template = source.Attribute("templateAlias").ValueOrDefault(string.Empty);
         var published = source.Attribute("published").ValueOrDefault(false);
