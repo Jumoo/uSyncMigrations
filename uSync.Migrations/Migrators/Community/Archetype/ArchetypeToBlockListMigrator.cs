@@ -19,6 +19,13 @@ namespace uSync.Migrations.Migrators.Community.Archetype;
 [SyncMigratorVersion(7)]
 public class ArchetypeToBlockListMigrator : SyncPropertyMigratorBase
 {
+    private readonly IArchetypeMigrationConfigurer _archetypeMigrationConfigurer;
+
+    public ArchetypeToBlockListMigrator(IArchetypeMigrationConfigurer archetypeMigrationConfigurer)
+    {
+        _archetypeMigrationConfigurer = archetypeMigrationConfigurer;
+    }
+    
     public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
         => UmbConstants.PropertyEditors.Aliases.BlockList;
 
@@ -51,7 +58,7 @@ public class ArchetypeToBlockListMigrator : SyncPropertyMigratorBase
 
         foreach (var fieldSet in archetypeConfiguration.Fieldsets)
         {
-            var alias = context.ContentTypes.ArchetypeMigrationConfigurer?.GetBlockElementAlias(fieldSet, dataTypeProperty,context);
+            var alias = _archetypeMigrationConfigurer?.GetBlockElementAlias(fieldSet, dataTypeProperty,context);
             if (string.IsNullOrEmpty(alias)) continue;
 
             var newContentType = new NewContentTypeInfo(
@@ -126,7 +133,7 @@ public class ArchetypeToBlockListMigrator : SyncPropertyMigratorBase
 
         foreach (var item in items)
         {
-            var blockElementAlias = context.ContentTypes.ArchetypeMigrationConfigurer?.GetBlockElementAlias(item,contentProperty, context);
+            var blockElementAlias = _archetypeMigrationConfigurer?.GetBlockElementAlias(item,contentProperty, context);
             if (blockElementAlias is null) continue;
 
             var rawValues = new Dictionary<string, object?>();

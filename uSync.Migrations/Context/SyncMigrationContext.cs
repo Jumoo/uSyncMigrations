@@ -1,5 +1,4 @@
 ﻿using uSync.Migrations.Configuration.Models;
-using uSync.Migrations.Migrators.Community.Archetype;
 
 namespace uSync.Migrations.Context;
 
