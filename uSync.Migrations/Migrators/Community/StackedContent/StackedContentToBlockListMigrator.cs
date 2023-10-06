@@ -35,7 +35,7 @@ public class StackedContentToBlockListMigrator : SyncPropertyMigratorBase
             .DeserializeObject<List<StackedContentConfigurationBlock>>(contentTypes)?
             .Select(x => new BlockListConfiguration.BlockConfiguration
             {
-                ContentElementTypeKey = x.ContentTypeKey,
+                ContentElementTypeKey = !string.IsNullOrWhiteSpace(x.ContentTypeAlias)? context.ContentTypes.GetKeyByAlias(x.ContentTypeAlias) : x.ContentTypeKey,
                 Label = x.NameTemplate,
             })
             .ToArray();
@@ -52,7 +52,7 @@ public class StackedContentToBlockListMigrator : SyncPropertyMigratorBase
         return new BlockListConfiguration
         {
             Blocks = blocks ?? Array.Empty<BlockListConfiguration.BlockConfiguration>(),
-            ValidationLimit = validationLimit,
+            ValidationLimit = validationLimit
         };
     }
 
@@ -75,7 +75,11 @@ public class StackedContentToBlockListMigrator : SyncPropertyMigratorBase
 
         foreach (var item in items)
         {
-            var contentTypeAlias = context.ContentTypes.GetAliasByKey(item.ContentTypeKey);
+            var useGuid = string.IsNullOrWhiteSpace(item.ContentTypeAlias);
+            var contentTypeKey = useGuid
+                ? item.ContentTypeKey
+                : context.ContentTypes.GetKeyByAlias(item.ContentTypeAlias);
+            var contentTypeAlias = useGuid ? context.ContentTypes.GetAliasByKey(item.ContentTypeKey) : item.ContentTypeAlias;
 
             foreach (var (propertyAlias, value) in item.Values)
             {
@@ -102,7 +106,7 @@ public class StackedContentToBlockListMigrator : SyncPropertyMigratorBase
 
             var block = new BlockItemData
             {
-                ContentTypeKey = item.ContentTypeKey,
+                ContentTypeKey = contentTypeKey,
                 Udi = Udi.Create(UmbConstants.UdiEntityType.Element, item.Key),
                 RawPropertyValues = item.Values,
             };
@@ -131,6 +135,8 @@ public class StackedContentToBlockListMigrator : SyncPropertyMigratorBase
 
     internal class StackedContentItem
     {
+        [JsonProperty("icContentTypeAlias")]
+        public string ContentTypeAlias { get; set; }
         [JsonProperty("icContentTypeGuid")]
         public Guid ContentTypeKey { get; set; }
 
@@ -151,6 +157,8 @@ public class StackedContentToBlockListMigrator : SyncPropertyMigratorBase
     {
         [JsonProperty("icContentTypeGuid")]
         public Guid ContentTypeKey { get; set; }
+        [JsonProperty("icContentTypeAlias")]
+        public string ContentTypeAlias { get; set; }
 
         [JsonProperty("nameTemplate")]
         public string? NameTemplate { get; set; }
