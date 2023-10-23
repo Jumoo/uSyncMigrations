@@ -76,6 +76,14 @@ public class SyncMigrationContext : IDisposable
     /// </summary>
     public Guid GetKey(int id)
         => _idKeyMap?.TryGetValue(id, out var key) == true ? key : Guid.Empty;
+
+		/// <summary>
+		/// Retrieves the `int` ID reference (from the v7 CMS) from the `Guid` key.
+		/// </summary>
+		/// <param name="key"></param>
+		/// <returns></returns>
+		public int GetId(Guid key)
+				=> _idKeyMap?.FirstOrDefault(x => x.Value == key).Key ?? 0;
    
     public void Dispose()
     { }
