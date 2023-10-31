@@ -151,7 +151,7 @@ internal class GridToBlockContentHelper
                 {
                     block.SettingsData.Add(rowContentAndSettings.Settings);
                 }
-                blockLayouts.Add(GetGridRowBlockLayout(rowContentAndSettings.Content, rowLayoutAreas, rowColumns));
+                blockLayouts.Add(GetGridRowBlockLayout(rowContentAndSettings, rowLayoutAreas, rowColumns));
             }
 
             // section 
@@ -225,11 +225,11 @@ internal class GridToBlockContentHelper
             ContentTypeAlias = rowLayoutContentTypeAlias
         };
 
-        var settingsData = GetSettingsBlockItemDataFromRow(row, context, dataTypeAlias);
+        var settingsData = GetSettingsBlockItemDataFromRow(row, context, dataTypeAlias, contentData.Udi);
 
         return new BlockContentPair(content: contentData, settings: settingsData);
     }
-    private BlockItemData? GetSettingsBlockItemDataFromRow(GridValue.GridRow row, SyncMigrationContext context, string dataTypeAlias)
+    private BlockItemData? GetSettingsBlockItemDataFromRow(GridValue.GridRow row, SyncMigrationContext context, string dataTypeAlias, Udi contentUdi)
     {
         if (dataTypeAlias.IsNullOrWhiteSpace())
         {
@@ -265,17 +265,18 @@ internal class GridToBlockContentHelper
 
         return new BlockItemData
         {
-            Udi = Udi.Create(UmbConstants.UdiEntityType.Element, Guid.NewGuid()),
+            Udi = contentUdi,
             ContentTypeKey = rowSettingsContentTypeKey,
             ContentTypeAlias = rowLayoutSettingsContentTypeAlias,
             RawPropertyValues = settingsValues
         };
     }
-    private BlockGridLayoutItem GetGridRowBlockLayout(BlockItemData rowContent, List<BlockGridLayoutAreaItem> rowLayoutAreas, int? rowColumns)
+    private BlockGridLayoutItem GetGridRowBlockLayout(BlockContentPair rowContentAndSettings, List<BlockGridLayoutAreaItem> rowLayoutAreas, int? rowColumns)
     {
         return new BlockGridLayoutItem
         {
-            ContentUdi = rowContent.Udi,
+            ContentUdi = rowContentAndSettings.Content.Udi,
+            SettingsUdi = rowContentAndSettings.Settings?.Udi,
             Areas = rowLayoutAreas.ToArray(),
             ColumnSpan = rowColumns,
             RowSpan = 1,
