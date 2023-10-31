@@ -5,8 +5,10 @@ using Newtonsoft.Json.Linq;
 using Umbraco.Cms.Core.Logging;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.PropertyEditors;
+using Umbraco.Cms.Core.Services;
+using Umbraco.Cms.Core.Services.Implement;
 using Umbraco.Cms.Core.Strings;
-
+using uSync.Core.Tracking.Impliment;
 using uSync.Migrations.Context;
 using uSync.Migrations.Legacy.Grid;
 using uSync.Migrations.Migrators.BlockGrid.BlockMigrators;
@@ -29,7 +31,6 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
 	private readonly ILoggerFactory _loggerFactory;
 	private readonly ILogger<GridToBlockGridMigrator> _logger;
 	private readonly IProfilingLogger _profilingLogger;
-
 	private readonly GridConventions _conventions;
 
     public GridToBlockGridMigrator(
@@ -46,7 +47,7 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
         _conventions = new GridConventions(shortStringHelper);
         _loggerFactory = loggerFactory;
         _profilingLogger = profilingLogger;
-        _logger = loggerFactory.CreateLogger<GridToBlockGridMigrator>();	
+        _logger = loggerFactory.CreateLogger<GridToBlockGridMigrator>();
     }
 
     public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
@@ -87,7 +88,7 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
 		layoutSettingsBlockHelper.AddGridSettings(gridToBlockContext, context, dataTypeProperty.DataTypeAlias);
 
 		// prep the layouts 
-		layoutBlockHelper.AddLayoutBlocks(gridToBlockContext, context);
+		layoutBlockHelper.AddLayoutBlocks(gridToBlockContext, context, dataTypeProperty.DataTypeAlias);
 
 		// Add the content blocks
 		contentBlockHelper.AddContentBlocks(gridToBlockContext, context);
@@ -118,10 +119,22 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
 			return string.Empty;
 		}
 
-		var dataTypeAlias = context.ContentTypes.GetDataTypeAlias(contentProperty.ContentTypeAlias, contentProperty.PropertyAlias);
-		
-		
-		if (string.IsNullOrWhiteSpace(dataTypeAlias))
+		var dataTypeAlias = "";
+
+		var dataTypeGuid = context.ContentTypes.GetEditorAliasByTypeAndProperty(contentProperty.ContentTypeAlias, contentProperty.PropertyAlias)?.DataTypeDefinition ?? Guid.Empty;
+
+		if (dataTypeGuid != Guid.Empty)
+        {
+            dataTypeAlias = context.DataTypes.GetByDefinition(dataTypeGuid)?.DataTypeName;
+        }
+
+/*        var gridDataTypeId = _contentTypeService.Get(contentProperty.ContentTypeAlias)?.PropertyTypes
+			.Where(propertyType => propertyType.PropertyEditorAlias == contentProperty.EditorAlias && propertyType.Alias == contentProperty.PropertyAlias)
+			.Select(propertyType => propertyType.DataTypeId)
+        .FirstOrDefault();*/
+
+/*        var test = _dataTypeService.GetDataType((int)gridDataTypeId)?.Name;
+*/      if (string.IsNullOrWhiteSpace(dataTypeAlias))
 		{
 			_logger.LogWarning("  Data type for grid could not be found when converting {alias}. Migration will run, but layout setting will not be migrated.", contentProperty.EditorAlias);
 		}

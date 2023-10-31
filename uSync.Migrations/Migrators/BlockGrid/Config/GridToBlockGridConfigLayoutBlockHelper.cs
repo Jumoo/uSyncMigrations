@@ -27,13 +27,13 @@ internal class GridToBlockGridConfigLayoutBlockHelper
         _logger = logger;
     }
 
-    public void AddLayoutBlocks(GridToBlockGridConfigContext gridBlockContext, SyncMigrationContext context)
+    public void AddLayoutBlocks(GridToBlockGridConfigContext gridBlockContext, SyncMigrationContext context, string dataTypeAlias)
     {
         // gather all the layout blocks we can from the templates 
         // and layouts sections of the config. 
         GetTemplateLayouts(gridBlockContext.GridConfiguration.GetItemBlock("templates"), gridBlockContext, context);
 
-        GetLayoutLayouts(gridBlockContext.GridConfiguration.GetItemBlock("layouts"), gridBlockContext, context);
+        GetLayoutLayouts(gridBlockContext.GridConfiguration.GetItemBlock("layouts"), gridBlockContext, context, dataTypeAlias);
 
         AddContentTypesForLayoutBlocks(gridBlockContext, context);
     }
@@ -50,7 +50,6 @@ internal class GridToBlockGridConfigLayoutBlockHelper
         foreach (var template in gridTemplateConfiguration)
         {
             if (template.Sections == null) continue;
-            if (string.IsNullOrEmpty(template.Name)) continue;
 
             var areas = new List<BlockGridConfiguration.BlockGridAreaConfiguration>();
 
@@ -77,7 +76,7 @@ internal class GridToBlockGridConfigLayoutBlockHelper
                 {
                     Alias = $"area_{index}",
                     ColumnSpan = section.Grid,
-		    RowSpan = 1
+                    RowSpan = 1
                 };
 
                 var alias = _conventions.GridAreaConfigAlias(area.Alias);
@@ -121,24 +120,20 @@ internal class GridToBlockGridConfigLayoutBlockHelper
                 GroupKey = gridBlockContext.LayoutsGroup.Key.ToString(),
                 BackgroundColor = Grid.LayoutBlocks.Background,
                 IconColor = Grid.LayoutBlocks.Icon
-			};
+            };
 
             gridBlockContext.LayoutBlocks.TryAdd(contentTypeAlias, layoutBlock);
 
-            context.ContentTypes.AddNewContentType(new NewContentTypeInfo(
-                layoutBlock.ContentElementTypeKey,
-                contentTypeAlias,
-                template?.Name ?? contentTypeAlias,
-                "icon-layout color-purple",
-                "BlockGrid/Layouts")
+            context.ContentTypes.AddNewContentType(new NewContentTypeInfo(layoutBlock.ContentElementTypeKey, contentTypeAlias, template?.Name ?? contentTypeAlias, "icon-layout color-purple", "BlockGrid/Layouts")
             {
-                Description = "Grid Layout block",
+                Description = "Grid Layoutblock",
+                Icon = "icon-layout color-purple",
                 IsElement = true
             });
         }
     }
 
-    private void GetLayoutLayouts(JToken? layouts, GridToBlockGridConfigContext gridBlockContext, SyncMigrationContext context)
+    private void GetLayoutLayouts(JToken? layouts, GridToBlockGridConfigContext gridBlockContext, SyncMigrationContext context, string dataTypeAlias)
     {
         if (layouts == null) return;
 
@@ -168,7 +163,6 @@ internal class GridToBlockGridConfigLayoutBlockHelper
                 {
                     gridBlockContext.AppendToRootEditors(allowed);
                     gridBlockContext.AppendToRootLayouts(allowed);
-                    continue;
                 }
 
                 var area = new BlockGridConfiguration.BlockGridAreaConfiguration
@@ -178,7 +172,7 @@ internal class GridToBlockGridConfigLayoutBlockHelper
                     RowSpan = 1
                 };
 
-                var alias = _conventions.LayoutAreaAlias(layout.Name!, area.Alias);
+                var alias = _conventions.LayoutAreaAlias(layout.Name, area.Alias);
                 area.Key = alias.ToGuid();
 
                 rowAreas.Add(area);
@@ -189,33 +183,25 @@ internal class GridToBlockGridConfigLayoutBlockHelper
 
             if (rowAreas.Count == 0) continue;
 
-            var contentTypeAlias = _conventions.LayoutContentTypeAlias(layout.Name!);
+            var contentTypeAlias = _conventions.LayoutContentTypeAlias(layout.Name);
+            var settingsContentTypeAlias = _conventions.LayoutSettingsContentTypeAlias(dataTypeAlias);
 
             var layoutBlock = new BlockGridConfiguration.BlockGridBlockConfiguration
             {
                 Label = layout?.Name,
                 Areas = rowAreas.ToArray(),
                 ContentElementTypeKey = context.GetContentTypeKeyOrDefault(contentTypeAlias, contentTypeAlias.ToGuid()),
+                SettingsElementTypeKey = context.GetContentTypeKeyOrDefault(settingsContentTypeAlias, settingsContentTypeAlias.ToGuid()),
                 GroupKey = gridBlockContext.LayoutsGroup.Key.ToString(),
-				BackgroundColor = Grid.LayoutBlocks.Background,
-				IconColor = Grid.LayoutBlocks.Icon,
-			};
+                BackgroundColor = Grid.LayoutBlocks.Background,
+                IconColor = Grid.LayoutBlocks.Icon,
+            };
 
             gridBlockContext.LayoutBlocks.TryAdd(contentTypeAlias, layoutBlock);
 
-            context.ContentTypes.AddNewContentType(new NewContentTypeInfo(
-                key: layoutBlock.ContentElementTypeKey,
-                alias: contentTypeAlias,
-                name: layout?.Name ?? contentTypeAlias,
-                icon: "icon-layout color-purple",
-                folder: "BlockGrid/Layouts")
+            context.ContentTypes.AddNewContentType(new NewContentTypeInfo(layoutBlock.ContentElementTypeKey, contentTypeAlias, layout?.Name ?? contentTypeAlias, "icon-layout color-purple", folder: "BlockGrid/Layouts")
             {
-                Key = layoutBlock.ContentElementTypeKey,
-                Alias = contentTypeAlias,
-                Name = layout?.Name ?? contentTypeAlias,
                 Description = "Grid Layoutblock",
-                Folder = "BlockGrid/Layouts",
-                Icon = "icon-layout color-purple",
                 IsElement = true
             });
         }
@@ -268,8 +254,4 @@ internal class GridToBlockGridConfigLayoutBlockHelper
             context.ContentTypes.AddElementType(block.ContentElementTypeKey);
         }
     }
-
-
-
-
 }
