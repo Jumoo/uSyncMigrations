@@ -103,7 +103,7 @@ internal class GridToBlockContentHelper
 
                 foreach (var area in row.Areas.Select((value, index) => (value, index)))
                 {
-                    var areaIsFullWidth = rowIsFullWidth && area.value.Grid.GetIntOrDefault(0) == gridColumns;
+                    var areaIsFullWidth = false;
 
                     // get the content
                     var contentAndSettings = GetGridAreaBlockContent(area.value, context).ToList();
