@@ -36,8 +36,7 @@ dotnet add package uSync.Migrations --prerelease
 
 This release covers core things, Vorto and a few community editors. 
 
-if you want to migrate complex data you need to write a Migrator (implementing `ISyncMigrator` class) take a look at the [uSync.Migrations/Migrators](uSync.Migrations/Migrators) folder.
-
+if you want to migrate complex data you need to write a Migrator (implementing `ISyncMigrator` class) take a look at the [uSync.Migrations.Migrators](uSync.Migrations.Migrators) project.
 
 If you want to see how you can customize the process. take a look at the [MyMigrations](MyMigrations) project in this repo
 
