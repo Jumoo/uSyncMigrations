@@ -11,7 +11,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\uSync.Migrations\uSync.Migrations.csproj" />
+	  <ProjectReference Include="..\uSync.Migrations.Client\uSync.Migrations.Client.csproj" />
+	  <ProjectReference Include="..\uSync.Migrations.Core\uSync.Migrations.Core.csproj" />
+	  <ProjectReference Include="..\uSync.Migrations.Migrators\uSync.Migrations.Migrators.csproj" />
 	</ItemGroup>
 
 </Project>

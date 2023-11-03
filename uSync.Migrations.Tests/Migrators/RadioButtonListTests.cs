@@ -1,9 +1,10 @@
 ﻿using Newtonsoft.Json.Linq;
-using NUnit.Framework;
-using uSync.Migrations.Migrators;
-using uSync.Migrations.Migrators.Models;
-using uSync.Migrations.Models;
 
+using NUnit.Framework;
+
+using uSync.Migrations.Core.Migrators.Models;
+using uSync.Migrations.Core.Models;
+using uSync.Migrations.Migrators.Core;
 
 namespace uSync.Migrations.Tests.Migrators;
 
@@ -26,7 +27,7 @@ public class RadioButtonListTests : MigratorTestBase
                 new PreValue { SortOrder = 1, Alias = "1", Value = "Two" },
                 new PreValue { SortOrder = 2, Alias = "2", Value = "Three" },
             });
-    
+
     private SyncMigrationDataTypeProperty GetMigrationDataTypePropertyWithInvalidSortOrder() =>
         new SyncMigrationDataTypeProperty("RadioButtonList", UmbConstants.PropertyEditors.Aliases.RadioButtonList,
             "Nvarchar",
@@ -59,14 +60,14 @@ public class RadioButtonListTests : MigratorTestBase
 
         Assert.AreEqual(expected, ConvertResultToJsonTestResult(configFile));
     }
-    
+
     [Test]
     public void ConfigValue_As_Expected_When_Source_Has_Invalid_SortOrder()
     {
         // In this test we will get the config values for a data type property that has invalid sort order values
         // that are all the same
         var configFile = _migrator!.GetConfigValues(GetMigrationDataTypePropertyWithInvalidSortOrder(), _context!);
-        
+
         // Parse the JSON to a JObject so we don't have to mess around inserting newlines which are enforced
         // by the base class serializer config
         var obj = JObject.Parse(

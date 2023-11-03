@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using uSync.Migrations.Configuration.Models;
-using uSync.Migrations.Models;
+﻿using uSync.Migrations.Core.Configuration.Models;
+using uSync.Migrations.Core.Models;
 
 namespace MyMigrations.Mergers;
 internal class SimpleMergePlan : ISyncMigrationPlan

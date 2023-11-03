@@ -1,8 +1,11 @@
 using Newtonsoft.Json;
+
 using Umbraco.Extensions;
-using uSync.Migrations.Context;
-using uSync.Migrations.Migrators;
-using uSync.Migrations.Migrators.Models;
+
+using uSync.Migrations.Core.Context;
+using uSync.Migrations.Core.Migrators;
+using uSync.Migrations.Core.Migrators.Models;
+using uSync.Migrations.Migrators.Core;
 
 namespace MyMigrations.DTGEMigrator;
 
@@ -21,7 +24,7 @@ public class DTGECheckboxListMigrator : CheckboxListMigrator
         DTGEPrevaluesMap prevaluesMap = new DTGEPrevaluesMap(context);
 
         IList<string>? inputValues = JsonConvert.DeserializeObject<List<string>>(contentProperty.Value);
-        if (inputValues == null) return null;   
+        if (inputValues == null) return null;
 
         List<string> outputValues = new List<string>();
         foreach (var inputVal in inputValues)

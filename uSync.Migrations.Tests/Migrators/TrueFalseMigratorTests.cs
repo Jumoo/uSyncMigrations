@@ -2,9 +2,9 @@
 
 using NUnit.Framework;
 
-using uSync.Migrations.Migrators;
-using uSync.Migrations.Migrators.Models;
-using uSync.Migrations.Models;
+using uSync.Migrations.Core.Migrators.Models;
+using uSync.Migrations.Core.Models;
+using uSync.Migrations.Migrators.Core;
 
 namespace uSync.Migrations.Tests.Migrators;
 
