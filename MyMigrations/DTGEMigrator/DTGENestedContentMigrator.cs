@@ -3,12 +3,12 @@
 using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Extensions;
 
-using uSync.Migrations.Context;
-using uSync.Migrations.Migrators;
+using uSync.Migrations.Core.Context;
+using uSync.Migrations.Core.Migrators;
+using uSync.Migrations.Core.Migrators.Models;
 using uSync.Migrations.Migrators.Core;
-using uSync.Migrations.Migrators.Models;
 
-namespace MyMigrations.Migrators;
+namespace MyMigrations.DTGEMigrator;
 
 [SyncMigrator("DTGE." + Umbraco.Cms.Core.Constants.PropertyEditors.Aliases.NestedContent, typeof(NestedContentConfiguration), IsDefaultAlias = true)]
 [SyncMigrator("DTGE.Our.Umbraco.NestedContent")]
@@ -48,9 +48,9 @@ public class DTGENestedContentMigrator : NestedContentMigrator
 
                     var contentValue = migrator.GetContentValue(
                         new SyncMigrationContentProperty(
-                                contentTypeAlias: row.ContentTypeAlias, 
+                                contentTypeAlias: row.ContentTypeAlias,
                                 propertyAlias: property.Key,
-                                editorAlias: row.ContentTypeAlias, 
+                                editorAlias: row.ContentTypeAlias,
                                 value: property.Value?.ToString()),
                         context);
 

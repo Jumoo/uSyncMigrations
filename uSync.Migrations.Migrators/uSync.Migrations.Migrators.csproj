@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>net6.0;net7.0</TargetFrameworks>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+
+
+	<ItemGroup>
+		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="[10.4,14)" />
+		<PackageReference Include="Umbraco.Cms.Web.Website" Version="[10.4,14)" />
+		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+		<PackageReference Include="uSync.BackOffice" Version="10.3.2" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+	  <ProjectReference Include="..\uSync.Migrations.Core\uSync.Migrations.Core.csproj" />
+	</ItemGroup>
+
+</Project>

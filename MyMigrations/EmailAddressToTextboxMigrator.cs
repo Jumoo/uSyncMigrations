@@ -1,17 +1,13 @@
-﻿using Umbraco.Cms.Core.PropertyEditors;
+﻿using uSync.Migrations.Core.Context;
+using uSync.Migrations.Core.Migrators;
+using uSync.Migrations.Core.Migrators.Models;
 
-using uSync.Migrations.Context;
-using uSync.Migrations.Extensions;
-using uSync.Migrations.Migrators;
-using uSync.Migrations.Migrators.Models;
+namespace MyMigrations;
 
-namespace MyMigrations
+[SyncMigrator("Umbraco.EmailAddress")]
+public class EmailAddressToTextboxMigrator : SyncPropertyMigratorBase
 {
-    [SyncMigrator("Umbraco.EmailAddress")]
-    public class EmailAddressToTextboxMigrator : SyncPropertyMigratorBase
-    {
-        public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
-      => Umbraco.Cms.Core.Constants.PropertyEditors.Aliases.TextBox;
-        
-    }
+    public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
+  => Umbraco.Cms.Core.Constants.PropertyEditors.Aliases.TextBox;
+
 }

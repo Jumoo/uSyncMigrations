@@ -1,12 +1,12 @@
 ﻿
 using Newtonsoft.Json;
 
-using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Extensions;
-using uSync.Migrations.Context;
-using uSync.Migrations.Extensions;
-using uSync.Migrations.Migrators;
-using uSync.Migrations.Migrators.Models;
+
+using uSync.Migrations.Core.Context;
+using uSync.Migrations.Core.Migrators;
+using uSync.Migrations.Core.Migrators.Models;
+using uSync.Migrations.Migrators.Core;
 
 namespace MyMigrations.DTGEMigrator;
 
@@ -15,7 +15,7 @@ namespace MyMigrations.DTGEMigrator;
 [SyncMigrator("DTGE.Umbraco.DropDown")]
 public class DTGEDropDownMigrator : DropdownMigrator
 {
-    
+
     public override string? GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
     {
         if (contentProperty.Value == null)
@@ -45,6 +45,6 @@ public class DTGEDropDownMigrator : DropdownMigrator
         }
 
         return JsonConvert.SerializeObject(outputValues);
-        
+
     }
 }

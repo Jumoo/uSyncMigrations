@@ -4,17 +4,18 @@ global using UmbEditors = Umbraco.Cms.Core.Constants.PropertyEditors;
 using Newtonsoft.Json;
 
 using NUnit.Framework;
-using uSync.Migrations.Context;
-using uSync.Migrations.Migrators;
-using uSync.Migrations.Migrators.Models;
-using uSync.Migrations.Serialization;
+
+using uSync.Migrations.Core.Context;
+using uSync.Migrations.Core.Migrators;
+using uSync.Migrations.Core.Migrators.Models;
+using uSync.Migrations.Core.Serialization;
 
 namespace uSync.Migrations.Tests.Migrators;
 
 public abstract class MigratorTestBase
 {
     protected SyncMigrationContext? _context;
-    protected ISyncPropertyMigrator?  _migrator;
+    protected ISyncPropertyMigrator? _migrator;
 
     [SetUp]
     public virtual void Setup()

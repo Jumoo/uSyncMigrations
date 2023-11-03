@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using uSync.Migrations.Context;
-using uSync.Migrations.Migrators;
-using uSync.Migrations.Migrators.Models;
-using uSync.Migrations.Models;
+﻿using uSync.Migrations.Core.Context;
+using uSync.Migrations.Core.Migrators;
+using uSync.Migrations.Core.Migrators.Models;
+using uSync.Migrations.Core.Models;
 
 namespace MyMigrations.Mergers;
 

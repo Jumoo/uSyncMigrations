@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+	<PropertyGroup>
+		<TargetFrameworks>net6.0;net7.0</TargetFrameworks>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+
+		<StaticWebAssetBasePath>/</StaticWebAssetBasePath>
+
+	</PropertyGroup>
+
+
+	<ItemGroup>
+		<ProjectReference Include="..\uSync.Migrations.Core\uSync.Migrations.Core.csproj" />
+	</ItemGroup>
+
+</Project>

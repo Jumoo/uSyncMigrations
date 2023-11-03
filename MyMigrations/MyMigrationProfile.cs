@@ -1,10 +1,9 @@
 ﻿using Umbraco.Cms.Core.Models;
 
-using uSync.Migrations;
-using uSync.Migrations.Composing;
-using uSync.Migrations.Configuration.Models;
-using uSync.Migrations.Extensions;
-using uSync.Migrations.Migrators;
+using uSync.Migrations.Core;
+using uSync.Migrations.Core.Composing;
+using uSync.Migrations.Core.Configuration.Models;
+using uSync.Migrations.Core.Extensions;
 using uSync.Migrations.Migrators.Optional;
 
 namespace MyMigrations;
@@ -41,7 +40,7 @@ public class MyMigrationProfile : ISyncMigrationPlan
         Handlers = _migrationHandlers
                         .Handlers
                         // .Select(x => x.ToHandlerOption(x.Group == uSync.BackOffice.uSyncConstants.Groups.Content))
-                        .Select(x => x.ToHandlerOption(true) )
+                        .Select(x => x.ToHandlerOption(true))
                         .ToList(),
 
         // for this migrator we want to use our special grid migrator.
@@ -103,7 +102,7 @@ public class MyMigrationProfile : ISyncMigrationPlan
             {
                 //Move the contents of the tab Carousel into the Content tab.  If content doesn't exist it will
                 //be created with the alias "Content"
-                new TabOptions(                
+                new TabOptions(
                     originalName: "Carousel",
                     newName: "Content",
                     alias: string.Empty)

@@ -1,8 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-
-
-using uSync.Migrations.Context;
+using uSync.Migrations.Core.Context;
 
 namespace MyMigrations.DTGEMigrator;
 
@@ -37,13 +35,13 @@ public class DTGEPrevaluesMap
 
         return new Dictionary<int, string>();
     }
-    
+
 
     private IDictionary<int, string> LoadValues(string filename)
     {
         try
         {
-            
+
             var config = File.ReadAllText(filename);
 
             var elements = JsonConvert.DeserializeObject<List<PreValueItem>>(config);
@@ -56,7 +54,7 @@ public class DTGEPrevaluesMap
 
             return new Dictionary<int, string>();
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             // something went wrong parsing the config file.
             throw new Exception($"Error parsing the dtgePreValues.config.json file {ex.Message}", ex);
