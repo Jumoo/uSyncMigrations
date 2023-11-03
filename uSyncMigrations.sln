@@ -15,7 +15,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "uSync.Migrations.Migrators"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "uSync.Migrations.Core", "uSync.Migrations.Core\uSync.Migrations.Core.csproj", "{0F6C6938-AB6A-400B-A0E0-44C7D9DAC9DF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "uSync.Migrations.Client", "uSync.Migrations.Client\uSync.Migrations.Client.csproj", "{DD65BF5B-E1B5-4595-9904-8B52B80A73FD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "uSync.Migrations.Client", "uSync.Migrations.Client\uSync.Migrations.Client.csproj", "{DD65BF5B-E1B5-4595-9904-8B52B80A73FD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C83F8979-6D30-4926-9AC1-16F8E8C47BAC}"
+	ProjectSection(SolutionItems) = preProject
+		dist\build-package.ps1 = dist\build-package.ps1
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

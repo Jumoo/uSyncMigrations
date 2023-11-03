@@ -82,10 +82,22 @@ jobs:
       run: dotnet test
       working-directory: uSync.Migrations.Tests
 
-    - name: Dotnet Pack
+    - name: Dotnet Pack (Core)
+      run: dotnet pack --configuration Release --output ../build.out/ /p:version=${{ steps.gitversion.outputs.NuGetVersionV2 }}
+      working-directory: uSync.Migrations.Core
+
+    - name: Dotnet Pack (Client)
+      run: dotnet pack --configuration Release --output ../build.out/ /p:version=${{ steps.gitversion.outputs.NuGetVersionV2 }}
+      working-directory: uSync.Migrations.Client
+
+    - name: Dotnet Pack (Migrators)
+      run: dotnet pack --configuration Release --output ../build.out/ /p:version=${{ steps.gitversion.outputs.NuGetVersionV2 }}
+      working-directory: uSync.Migrations.Migrators
+
+    - name: Dotnet Pack (Parent Package)
       run: dotnet pack --configuration Release --output ../build.out/ /p:version=${{ steps.gitversion.outputs.NuGetVersionV2 }}
       working-directory: uSync.Migrations
-      
+
 #    - name: Push to Nuget Repo
 #      working-directory: build.out
 #      run: dotnet nuget push *.nupkg --source https://api.nuget.org/v3/index.json --skip-duplicate --api-key ${{secrets.NUGET_TOKEN}}

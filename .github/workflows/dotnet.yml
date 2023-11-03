@@ -2,7 +2,7 @@ name: .NET
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, dev/* ]
   pull_request:
     branches: [ main ]
 
@@ -47,10 +47,22 @@ jobs:
       run: dotnet test
       working-directory: uSync.Migrations.Tests
       
-    - name: Dotnet Pack
+    - name: Dotnet Pack (Core)
+      run: dotnet pack --output ../build.out/ /p:version=${{ steps.gitversion.outputs.fullSemVer }}
+      working-directory: uSync.Migrations.Core
+
+    - name: Dotnet Pack (Client)
+      run: dotnet pack --output ../build.out/ /p:version=${{ steps.gitversion.outputs.fullSemVer }}
+      working-directory: uSync.Migrations.Client
+
+    - name: Dotnet Pack (Migrators)
+      run: dotnet pack --output ../build.out/ /p:version=${{ steps.gitversion.outputs.fullSemVer }}
+      working-directory: uSync.Migrations.Migrators
+
+    - name: Dotnet Pack (Main package)
       run: dotnet pack --output ../build.out/ /p:version=${{ steps.gitversion.outputs.fullSemVer }}
       working-directory: uSync.Migrations
-      
+
     - name: Upload nuget file as build artifact      
       uses: actions/upload-artifact@v2
       with:

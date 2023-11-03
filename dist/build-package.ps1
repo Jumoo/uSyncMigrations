@@ -59,7 +59,10 @@ dotnet build ..\uSyncMigrations.sln -c $env /p:$buildParams
 
 ""; "##### Packaging"; "----------------------------------" ; ""
 
-dotnet pack ..\uSync.Migrations\uSync.Migrations.csproj --no-restore --no-build -c $env -o $outFolder /p:$buildParams
+dotnet pack ..\uSync.Migrations.Core\uSync.Migrations.Core.csproj --no-restore --no-build -c $env -o $outFolder -p:$buildParams
+dotnet pack ..\uSync.Migrations.Clients\uSync.Migrations.Client.csproj --no-restore --no-build -c $env -o $outFolder -p:$buildParams
+dotnet pack ..\uSync.Migrations.Migrators\uSync.Migrations.Migrators.csproj --no-restore --no-build -c $env -o $outFolder -p:$buildParams
+dotnet pack ..\uSync.Migrations\uSync.Migrations.csproj --no-restore --no-build -c $env -o $outFolder -p:$buildParams
 
 ## will copy to c:\source\localgit (assuming it exists)
 

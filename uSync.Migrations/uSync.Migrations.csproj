@@ -1,9 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<TargetFrameworks>net6.0;net7.0</TargetFrameworks>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-		<StaticWebAssetBasePath>App_Plugins</StaticWebAssetBasePath>
 	</PropertyGroup>
 	
 	<PropertyGroup>
@@ -11,13 +10,6 @@
 		<Title>uSync Migrations</Title>
 		<Description>Migration tool for Umbraco Runs on 10+ migrates from 7</Description>
 	</PropertyGroup>
-	
-	<ItemGroup>
-	  <Compile Remove="__Migrators\**" />
-	  <Content Remove="__Migrators\**" />
-	  <EmbeddedResource Remove="__Migrators\**" />
-	  <None Remove="__Migrators\**" />
-	</ItemGroup>	
 	
 	<ItemGroup>
 		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="[10.4,14)" />
