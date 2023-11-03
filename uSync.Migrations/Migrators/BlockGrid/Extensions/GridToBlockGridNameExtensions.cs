@@ -37,6 +37,7 @@ internal static class GridToBlockGridNameExtensions
         context.Content.AddKey(defaultKey, alias);
         return defaultKey;
     }
-
+    public static string GetBlockGridLayoutSettingsContentTypeAlias(this string name, IShortStringHelper shortStringHelper)
+        => name.GetContentTypeAlias("BlockGridLayoutSettings_", shortStringHelper);
 
 }

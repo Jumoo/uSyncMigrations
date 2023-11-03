@@ -42,7 +42,7 @@ internal class GridToBlockContentHelper
     /// <summary>
     ///  convert a grid value (so with sections, rows, areas and controls) into a block value for a grid.
     /// </summary>
-    public BlockValue? ConvertToBlockValue(GridValue source, SyncMigrationContext context)
+    public BlockValue? ConvertToBlockValue(GridValue source, SyncMigrationContext context, string dataTypeAlias)
     {
         _logger.LogDebug(">> {method}", nameof(ConvertToBlockValue));
 
@@ -142,10 +142,16 @@ internal class GridToBlockContentHelper
                 // row 
                 if (!rowLayoutAreas.Any()) continue;
 
-                var rowContent = GetGridRowBlockContent(row, context);
 
-                block.ContentData.Add(rowContent);
-                blockLayouts.Add(GetGridRowBlockLayout(rowContent, rowLayoutAreas, rowColumns));
+                var rowContentAndSettings = GetGridRowBlockContentAndSettings(row, context, dataTypeAlias);
+
+                block.ContentData.Add(rowContentAndSettings.Content);
+
+                if (rowContentAndSettings.Settings is not null)
+                {
+                    block.SettingsData.Add(rowContentAndSettings.Settings);
+                }
+                blockLayouts.Add(GetGridRowBlockLayout(rowContentAndSettings, rowLayoutAreas, rowColumns));
             }
 
             // section 
@@ -207,24 +213,70 @@ internal class GridToBlockContentHelper
         }
     }
 
-    private BlockItemData GetGridRowBlockContent(GridValue.GridRow row, SyncMigrationContext context)
+    private BlockContentPair GetGridRowBlockContentAndSettings(GridValue.GridRow row, SyncMigrationContext context, string dataTypeAlias)
     {
-        var rowLayoutContentTypeAlias = _conventions.LayoutContentTypeAlias(row.Name!);
+        var rowLayoutContentTypeAlias = _conventions.LayoutContentTypeAlias(row.Name);
         var rowContentTypeKey = context.GetContentTypeKeyOrDefault(rowLayoutContentTypeAlias, rowLayoutContentTypeAlias.ToGuid()); 
 
-        return new BlockItemData
+        var contentData = new BlockItemData
         {
             Udi = Udi.Create(UmbConstants.UdiEntityType.Element, row.Id),
             ContentTypeKey = rowContentTypeKey,
             ContentTypeAlias = rowLayoutContentTypeAlias
         };
-    }
 
-    private BlockGridLayoutItem GetGridRowBlockLayout(BlockItemData rowContent, List<BlockGridLayoutAreaItem> rowLayoutAreas, int? rowColumns)
+        var settingsData = GetSettingsBlockItemDataFromRow(row, context, dataTypeAlias, contentData.Udi);
+
+        return new BlockContentPair(content: contentData, settings: settingsData);
+    }
+    private BlockItemData? GetSettingsBlockItemDataFromRow(GridValue.GridRow row, SyncMigrationContext context, string dataTypeAlias, Udi contentUdi)
+    {
+        if (dataTypeAlias.IsNullOrWhiteSpace())
+        {
+            return null;
+        }
+
+        var settingsValues = new Dictionary<string, object?>();
+
+        var rowLayoutSettingsContentTypeAlias = _conventions.LayoutSettingsContentTypeAlias(dataTypeAlias);
+        var rowSettingsContentTypeKey = context.GetContentTypeKeyOrDefault(rowLayoutSettingsContentTypeAlias, rowLayoutSettingsContentTypeAlias.ToGuid());
+
+        if (row.Config is not null)
+        {
+            foreach (JProperty config in row.Config)
+            {
+                settingsValues.Add(_conventions.FormatGridSettingKey(config.Name), config.Value);
+            }
+        }
+
+        if (row.Styles is not null)
+        {
+            foreach (JProperty style in row.Styles)
+            {
+                // Dont overwrite values. If styles have same settings keys as config, what should happen?
+                // TODO: Figure out what to do here / what gets priority?##
+                var formattedKey = _conventions.FormatGridSettingKey(style.Name);
+                if (!settingsValues.ContainsKey(formattedKey))
+                {
+                    settingsValues.Add(formattedKey, style.Value);
+                }
+            }
+        }
+
+        return new BlockItemData
+        {
+            Udi = contentUdi,
+            ContentTypeKey = rowSettingsContentTypeKey,
+            ContentTypeAlias = rowLayoutSettingsContentTypeAlias,
+            RawPropertyValues = settingsValues
+        };
+    }
+    private BlockGridLayoutItem GetGridRowBlockLayout(BlockContentPair rowContentAndSettings, List<BlockGridLayoutAreaItem> rowLayoutAreas, int? rowColumns)
     {
         return new BlockGridLayoutItem
         {
-            ContentUdi = rowContent.Udi,
+            ContentUdi = rowContentAndSettings.Content.Udi,
+            SettingsUdi = rowContentAndSettings.Settings?.Udi,
             Areas = rowLayoutAreas.ToArray(),
             ColumnSpan = rowColumns,
             RowSpan = 1,

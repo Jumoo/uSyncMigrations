@@ -55,7 +55,31 @@ internal class GridAreaConfiguration
     public bool? AllowAll { get; set; }
     public string[]? Allowed { get; set; }
 }
+internal class GridSettingsConfiguration
+{
+    GridSettingsConfigurationItem[]? ConfigItems { get; set; }
+}
 
+internal class GridSettingsConfigurationItem
+{
+    [JsonProperty("label")]
+    public string? Label { get; set; }
+
+    [JsonProperty("description")]
+    public string? Description { get; set; }
+
+    [JsonProperty("key")]
+    public string? Key { get; set; }
+
+    [JsonProperty("view")]
+    public string? View { get; set; }
+
+    [JsonProperty("modifier")]
+    public string? Modifier { get; set; }
+
+    [JsonProperty("applyTo")]
+    public string? ApplyTo { get; set; }
+}
 /// <summary>
 ///  contains the data for a block (content and settings)
 /// </summary>
