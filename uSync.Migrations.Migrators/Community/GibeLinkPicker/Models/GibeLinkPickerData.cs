@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace uSync.Migrations.Migrators.Community.GibeLinkPicker.Models
+﻿namespace uSync.Migrations.Migrators.Community.GibeLinkPicker.Models
 {
 	public class GibeLinkPickerData
 	{

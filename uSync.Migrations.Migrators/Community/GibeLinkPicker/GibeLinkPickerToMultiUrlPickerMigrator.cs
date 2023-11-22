@@ -55,9 +55,11 @@ namespace uSync.Migrations.Migrators.Community.GibeLinkPicker
 
 			if (contentValue.StartsWith("["))
 			{
-				return JsonConvert.DeserializeObject<IEnumerable<GibeLinkPickerData>>(contentValue) ?? Enumerable.Empty<GibeLinkPickerData>();
+				return JsonConvert.DeserializeObject<IEnumerable<GibeLinkPickerData>>(contentValue) 
+				       ?? Enumerable.Empty<GibeLinkPickerData>();
 			}
-			return JsonConvert.DeserializeObject<GibeLinkPickerData>(contentValue)?.AsEnumerableOfOne() ?? Enumerable.Empty<GibeLinkPickerData>();
+			return JsonConvert.DeserializeObject<GibeLinkPickerData>(contentValue)?.AsEnumerableOfOne() 
+			       ?? Enumerable.Empty<GibeLinkPickerData>();
 		}
 	}
 }
