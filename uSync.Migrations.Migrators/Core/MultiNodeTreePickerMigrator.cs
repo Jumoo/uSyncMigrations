@@ -55,6 +55,16 @@ public class MultiNodeTreePickerMigrator : SyncPropertyMigratorBase
                 else if (UdiParser.TryParse<GuidUdi>(item, out var udi) == true)
                 {
                     values.Add(udi);
+                } 
+                else if (int.TryParse(item, out var id) == true) 
+                {
+                    // Really old editors might have numeric ids
+                    var possibleGuid = context.GetKey(id);
+                    if (possibleGuid != Guid.Empty)
+                    {
+                        // TODO: Eeek! This might possibly be content, media or member! [LK]
+                        values.Add(Udi.Create(UmbConstants.UdiEntityType.Document, possibleGuid));
+                    }
                 }
             }
         }
