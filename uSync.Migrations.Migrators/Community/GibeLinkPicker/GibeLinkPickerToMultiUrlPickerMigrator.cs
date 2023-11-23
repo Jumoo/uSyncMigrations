@@ -10,9 +10,18 @@ namespace uSync.Migrations.Migrators.Community.GibeLinkPicker
 	public class GibeLinkPickerToMultiUrlPickerMigrator : SyncPropertyMigratorBase
 	{
 		public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
-				=> Constants.PropertyEditors.Aliases.MultiUrlPicker;
+				=> UmbConstants.PropertyEditors.Aliases.MultiUrlPicker;
 
-		public override string GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
+        public override object? GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
+        {
+            var config = new MultiUrlPickerConfiguration
+            {
+                MaxNumber = 1
+            };
+            return config;
+        }
+
+        public override string GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
 		{
 			if (contentProperty?.Value == null)
 			{
@@ -34,6 +43,7 @@ namespace uSync.Migrations.Migrators.Community.GibeLinkPicker
 				{
 					Name = picker?.Name ?? string.Empty,
 					Url = picker?.Url ?? string.Empty,
+					Udi = picker?.Uid != null ? new GuidUdi(UmbConstants.UdiEntityType.Document, Guid.Parse(picker.Uid)) : null,
 				};
 
 				if (picker?.Target == "_blank")
