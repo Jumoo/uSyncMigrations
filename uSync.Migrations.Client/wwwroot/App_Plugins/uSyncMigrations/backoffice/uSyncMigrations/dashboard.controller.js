@@ -88,11 +88,14 @@
         }
 
         function validate(status) {
+            vm.validating = true;
             uSyncMigrationService.validate(status)
                 .then(function (result) {
+                    vm.validating = false; 
                     vm.validation = result.data;
                     vm.sourceValid = vm.validation.success;
                 }, function (error) {
+                    vm.validating = false; 
                     vm.error = error.data.ExceptionMessage;
                 });
         }

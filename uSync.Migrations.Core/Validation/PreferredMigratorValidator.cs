@@ -56,6 +56,9 @@ internal class PreferredMigratorValidator : ISyncMigrationValidator
         if (results.Count == 0)
         {
             return new MigrationMessage("Migrators", "Migrators OK", MigrationMessageType.Success)
+            {
+                Message = "there are non duplicate property migrators"
+            }
                 .AsEnumerableOfOne();
         }
         else

@@ -94,9 +94,14 @@
                                 <div class="flex justify-between">
                                     <div class="umb-textstring umb-property-editor">{{vm.migrationStatus.source}}</div>
                                     <div>
-                                        <umb-button action="vm.showValidation = !vm.showValidation"
-                                                    label-key="usyncmigrate_showValidation"
-                                                    button-style="link"></umb-button>
+                                        <div ng-if="vm.validating == true">
+                                            validating ...
+                                        </div>
+                                        <div ng-if="vm.validating == false">
+                                            <umb-button action="vm.showValidation = !vm.showValidation"
+                                                        label-key="usyncmigrate_showValidation"
+                                                        button-style="link"></umb-button>
+                                        </div>
                                                     
                                     </div>
                                 </div>
@@ -136,10 +141,23 @@
 
 
                     <div ng-if="!vm.migrationStatus.migrated || vm.showValidation">
-                        <usync-migration-results results="vm.validation"
-                                                 action="Validation"
-                                                 is-valid="vm.sourceValid">
-                        </usync-migration-results>
+
+                        <div ng-if="vm.validating">
+                            <umb-box>
+                                <umb-box-content>
+                                    <div class="text-center">
+                                        Validation in progress....<br/>
+                                        (For big sites this can take a while)
+                                    </div>
+                                </umb-box-content>
+                            </umb-box>
+                        </div>
+                        <div ng-if="vm.validating == false">
+                            <usync-migration-results results="vm.validation"
+                                                     action="Validation"
+                                                     is-valid="vm.sourceValid">
+                            </usync-migration-results>
+                        </div>
                     </div>
                 </div>
                 
