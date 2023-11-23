@@ -97,7 +97,7 @@
                                         <umb-button action="vm.showValidation = !vm.showValidation"
                                                     label-key="usyncmigrate_showValidation"
                                                     button-style="link"></umb-button>
-                                                    
+
                                     </div>
                                 </div>
                             </umb-control-group>
@@ -142,7 +142,7 @@
                         </usync-migration-results>
                     </div>
                 </div>
-                
+
                 <div ng-if="vm.sourceValid && !vm.migrationStatus.migrated">
                     <div class="flex justify-center flex-column items-center">
                         <umb-button action="vm.migrate()"
@@ -162,9 +162,16 @@
             <div ng-if="vm.step == 'migrating'">
 
                 <div ng-if="vm.working">
-                    <usync-migration-messages working="vm.working"></usync-migration-messages>
+                    <umb-load-indicator>xxxxx</umb-load-indicator>
+                    <div style="position: absolute; top: 55%; left: 0; width: 100%; display:flex; align-items: center; flex-direction:column;">
+                        <div>{{vm.update.message}}</div>
+                        <div style="width:50%;margin-top:30px;">
+                            <umb-progress-bar percentage="{{vm.update.percentage}}"
+                                              size="m"
+                                              color="secondary"></umb-progress-bar>
+                        </div>
+                    </div>
                 </div>
-
             </div>
 
             <div ng-if="vm.step == 'migrated'">
@@ -199,11 +206,11 @@
 
         <umb-editor-footer>
             <umb-editor-footer-content-left>
-                    <umb-button ng-if="vm.step != 'init'"
-                                action="vm.goBack()"
-                                label-key="general_back"
-                                icon="icon-arrow-left"
-                                button-style="link"></umb-button>
+                <umb-button ng-if="vm.step != 'init'"
+                            action="vm.goBack()"
+                            label-key="general_back"
+                            icon="icon-arrow-left"
+                            button-style="link"></umb-button>
             </umb-editor-footer-content-left>
         </umb-editor-footer>
     </umb-editor-view>

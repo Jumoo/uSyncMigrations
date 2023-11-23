@@ -25,7 +25,7 @@
         vm.$onInit = function () {
 
             getHandlerGroups();
-            InitHub();
+            // InitHub();
         }
 
         // work out what import options we have 
@@ -125,6 +125,8 @@
 
         function report(group) {
 
+            InitHub();
+
             if (vm.working === true) return;
             vm.progress = 'reporting';
 
@@ -160,6 +162,8 @@
         }
 
         function importItems(group) {
+
+            InitHub();
 
             var folder = vm.folder; 
 
@@ -327,6 +331,9 @@
         ////// SignalR things 
 
         function InitHub() {
+
+            if (vm.hub != null) { return; }
+
             uSyncHub.initHub(function (hub) {
 
                 vm.hub = hub;

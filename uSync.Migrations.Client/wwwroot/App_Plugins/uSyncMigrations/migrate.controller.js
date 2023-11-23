@@ -40,8 +40,9 @@
             vm.working = true;
             vm.state = 'busy';
             vm.progress = 'migrating'
+            vm.options.clientId = getClientId();
 
-            doMigrationMessages();
+            // doMigrationMessages();
 
             uSyncMigrationService.migrate(vm.options)
                 .then(function (result) {
@@ -382,8 +383,6 @@
                 $timeout(function () { doMigrationMessages(); }, 2281);
             }
         }
-
-        
     }
 
     angular.module('umbraco')
