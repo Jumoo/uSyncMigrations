@@ -52,5 +52,12 @@ public class MigrationStatus
     ///  the profile we are going to use for this migration
     /// </summary>
     public string? Plan { get; set; }
+
+
+    /// <summary>
+    ///  SignalR client id, can be used to send messages back to the client. 
+    /// </summary>
+    public string ClientId { get; set; } = string.Empty;
+
 }
 

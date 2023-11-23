@@ -145,6 +145,8 @@ internal class SyncMigrationService : ISyncMigrationService
 
             if (success == true && results.Any())
             {
+                migrationContext.SendUpdate("Copying to final folder", 9, 10);
+
                 // here...
                 _logger.LogInformation("Copying from working to folder {targetRoot}", targetRoot);
 
@@ -155,6 +157,8 @@ internal class SyncMigrationService : ISyncMigrationService
 
             sw.Stop();
             _logger.LogInformation("Migration Complete {success} {count} ({elapsed}ms)", success, results.Count(), sw.ElapsedMilliseconds);
+
+            migrationContext.SendUpdate("Migration complete", 10, 10);
 
             return new MigrationResults
             {
@@ -183,10 +187,14 @@ internal class SyncMigrationService : ISyncMigrationService
         // maybe replace with a Dictionary<string, MigrationMessage> (with `ItemType` as the key)?
         var results = new List<MigrationMessage>();
 
-        foreach (var handler in handlers)
+        for(int i =0; i < handlers.Count; i++)
         {
-            _logger.LogInformation("Migrating {handler} files", handler.GetType().Name);
-            results.AddRange(handler.DoMigration(migrationContext));
+            var handlerName = handlers[i].GetType().Name;   
+            
+            migrationContext.SendUpdate($"Migrating {handlerName}", i, handlers.Count);
+            _logger.LogInformation("Migrating {handler} files", handlerName);
+            
+            results.AddRange(handlers[i].DoMigration(migrationContext));
         }
 
         return results;
@@ -200,6 +208,9 @@ internal class SyncMigrationService : ISyncMigrationService
         var siteFolderIsSameAsWebsite = siteFolder.Equals(_migrationFileService.GetWebSitePath("/"));
 
         var context = new SyncMigrationContext(migrationId, sourceRoot, siteFolder, siteFolderIsSameAsWebsite, options.SourceVersion);
+        context.Callbacks = options.Callbacks;
+
+        context.SendUpdate("Preparing Migration", 0, 10);
 
         if (options.BlockListViews)
         {
@@ -239,6 +250,8 @@ internal class SyncMigrationService : ISyncMigrationService
 
         options.ReplacementAliases?
             .ForEach(kvp => context.ContentTypes.AddReplacementAlias(kvp.Key, kvp.Value));
+
+        context.SendUpdate("Preparing Migration handlers", 5,10);
 
         // let the handlers run through their prep (populate all the lookups)
         GetHandlers(options.SourceVersion)?

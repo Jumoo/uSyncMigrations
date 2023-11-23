@@ -83,7 +83,11 @@ internal abstract class MigrationHandlerBase<TObject>
     {
         Stopwatch sw = Stopwatch.StartNew();
 
-        _logger.LogInformation("[{type}] Preparing Migration {source}", typeof(TObject).Name, context.Metadata.SourceFolder);
+        var typeName = typeof(TObject).Name;
+
+        context.SendUpdate($"Preparing : {typeName}", 0, 0);
+
+        _logger.LogInformation("[{type}] Preparing Migration {source}", typeName, context.Metadata.SourceFolder);
         var files = GetSourceFiles(context.Metadata.SourceFolder);
         if (files == null)
         {
@@ -152,7 +156,8 @@ internal abstract class MigrationHandlerBase<TObject>
 
         var messages = new List<MigrationMessage>();
 
-        foreach (var file in files)
+
+        foreach(var file in files) 
         {
             try
             {
@@ -169,6 +174,8 @@ internal abstract class MigrationHandlerBase<TObject>
                 {
                     continue;
                 }
+
+                context.SendUpdate($"Migrating {alias}", 0, 0);
 
                 var target = MigrateFile(source, level, context);
 
