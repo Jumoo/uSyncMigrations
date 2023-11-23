@@ -1,4 +1,6 @@
-﻿namespace uSync.Migrations.Core.Context;
+﻿using uSync.BackOffice;
+
+namespace uSync.Migrations.Core.Context;
 
 /// <summary>
 ///  A uSync migration context, lets us keep a whole list of things in memory while we do the migration.
@@ -85,5 +87,17 @@ public class SyncMigrationContext : IDisposable
 
     public void Dispose()
     { }
+
+
+    /// <summary>
+    ///  the callback functions for sending information to the client.
+    /// </summary>
+    public uSyncCallbacks? Callbacks { get; set; }
+
+    public void SendUpdate(string message, int count, int total)
+    {
+        Callbacks?.Update(message, count, total);   
+    }
+
 
 }

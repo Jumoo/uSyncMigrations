@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
+using uSync.BackOffice;
 using uSync.Migrations.Core.Models;
 
 namespace uSync.Migrations.Core.Configuration.Models;
@@ -65,6 +66,11 @@ public class MigrationOptions
     /// Mapping of old to new content type aliases
     /// </summary>
     public IDictionary<string, string>? ReplacementAliases { get; set; }
+
+    /// <summary>
+    ///  client id for signalR
+    /// </summary>
+    public uSyncCallbacks? Callbacks { get; set; }
 }
 
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
