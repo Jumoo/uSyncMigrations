@@ -92,8 +92,8 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
             context.DataTypes.GetByDefinition(dtd)!.OriginalEditorAlias = editorAlias;
         }
     }
-
-    public void PrePrepareFiles(XElement source, SyncMigrationContext context)
+    
+    protected override void PrePrepareFile(XElement source, SyncMigrationContext context)
     {
         var editorAlias = GetEditorAlias(source);
         var (alias, dtd) = GetAliasAndKey(source, context);
