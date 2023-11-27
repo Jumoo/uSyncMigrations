@@ -4,13 +4,13 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
-	
+
 	<PropertyGroup>
 		<PackageId>uSync.Migrations</PackageId>
 		<Title>uSync Migrations</Title>
 		<Description>Migration tool for Umbraco Runs on 10+ migrates from 7</Description>
 	</PropertyGroup>
-	
+
 	<ItemGroup>
 		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="[10.4,14)" />
 		<PackageReference Include="Umbraco.Cms.Web.Website" Version="[10.4,14)" />
@@ -25,7 +25,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\uSync.Migrations.Client\uSync.Migrations.Client.csproj" />
-	  <ProjectReference Include="..\uSync.Migrations.Core\uSync.Migrations.Core.csproj" />
+		<ProjectReference Include="..\uSync.Migrations.Client\uSync.Migrations.Client.csproj" />
+		<ProjectReference Include="..\uSync.Migrations.Core\uSync.Migrations.Core.csproj" />
+		<ProjectReference Include="..\uSync.Migrations.Migrators\uSync.Migrations.Migrators.csproj" />
 	</ItemGroup>
 </Project>

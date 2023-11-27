@@ -1,4 +1,5 @@
-﻿using uSync.Migrations.Core.Migrators;
+﻿using uSync.BackOffice;
+using uSync.Migrations.Core.Migrators;
 
 namespace uSync.Migrations.Core.Context;
 

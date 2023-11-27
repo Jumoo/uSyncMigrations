@@ -1,6 +1,7 @@
 ﻿using System.Text;
 
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.SignalR;
 
 using Newtonsoft.Json;
 
@@ -8,6 +9,8 @@ using Umbraco.Cms.Core.Extensions;
 using Umbraco.Cms.Core.Strings;
 using Umbraco.Extensions;
 
+using uSync.BackOffice;
+using uSync.BackOffice.Hubs;
 using uSync.Migrations.Core.Configuration.CoreProfiles;
 using uSync.Migrations.Core.Configuration.Models;
 using uSync.Migrations.Core.Helpers;
@@ -39,13 +42,19 @@ internal class SyncMigrationStatusService : ISyncMigrationStatusService
     private readonly IShortStringHelper _shortStringHelper;
     private readonly IWebHostEnvironment _webHostEnvironment;
 
+    private readonly IHubContext<SyncHub> _hubContext;
+
     private readonly string _migrateRoot;
 
-    public SyncMigrationStatusService(IWebHostEnvironment webHostEnvironment, IShortStringHelper shortStringHelper)
+    public SyncMigrationStatusService(
+        IWebHostEnvironment webHostEnvironment,
+        IShortStringHelper shortStringHelper,
+        IHubContext<SyncHub> hubContext)
     {
         _webHostEnvironment = webHostEnvironment;
         _shortStringHelper = shortStringHelper;
         _migrateRoot = _webHostEnvironment.MapPathContentRoot(_migrationsFolderName);
+        _hubContext = hubContext;
     }
 
     public IEnumerable<MigrationStatus> GetAll()
@@ -179,6 +188,13 @@ internal class SyncMigrationStatusService : ISyncMigrationStatusService
     {
         if (status.Source == null || status.Target == null) return null;
 
+        uSyncCallbacks callbacks = null;
+        if (!string.IsNullOrEmpty(status.ClientId))
+        {
+            var client = new HubClientService(_hubContext, status.ClientId);
+            callbacks = client.Callbacks();
+        }
+
         return new MigrationOptions
         {
             Source = status.Source,
@@ -198,6 +214,7 @@ internal class SyncMigrationStatusService : ISyncMigrationStatusService
             PropertyMigrators = defaultOptions.PropertyMigrators,
             MergingProperties = defaultOptions.MergingProperties,
             ReplacementAliases = defaultOptions.ReplacementAliases,
+            Callbacks = callbacks ?? null,
         };
     }
 }

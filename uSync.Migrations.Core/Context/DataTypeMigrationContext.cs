@@ -82,9 +82,9 @@ public class DataTypeMigrationContext
     /// <summary>
     ///  retrieve the variation that a datatype will ask a doctype property to perform.
     /// </summary>
-    public string GetVariation(Guid guid)
+    public string GetVariation(Guid guid, string defaultValue)
         => _dataTypeVariations?.TryGetValue(guid, out var variation) == true
-            ? variation : "Nothing";
+            ? variation : defaultValue;
 
     /// <summary>
     ///  return the first definition that we find matching the editorAlias

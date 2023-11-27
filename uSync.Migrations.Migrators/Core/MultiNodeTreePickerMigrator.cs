@@ -63,7 +63,6 @@ public class MultiNodeTreePickerMigrator : SyncPropertyMigratorBase
                     {
                         values.Add(Udi.Create(context.GetEntityType(possibleGuid), possibleGuid));
                     }
-                    
                 }
             }
         }

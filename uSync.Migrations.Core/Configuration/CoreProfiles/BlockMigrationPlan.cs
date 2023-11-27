@@ -14,7 +14,7 @@ public class BlockMigrationPlan : ISyncMigrationPlan
 
     public int Order => 200;
 
-    public string Name => "Convert to Nested Content to BlockLists and Grid to BlockGrid";
+    public string Name => "Convert Nested Content to BlockList and Grid to BlockGrid";
 
     public string Icon => "icon-brick color-green";
 

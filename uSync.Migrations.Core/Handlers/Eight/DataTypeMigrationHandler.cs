@@ -6,31 +6,43 @@ using Newtonsoft.Json.Linq;
 
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Services;
+using Umbraco.Extensions;
 
 using uSync.Core;
+using uSync.Migrations.Core.Composing;
 using uSync.Migrations.Core.Context;
 using uSync.Migrations.Core.Handlers.Shared;
 using uSync.Migrations.Core.Migrators;
 using uSync.Migrations.Core.Migrators.Models;
+using uSync.Migrations.Core.Models;
 using uSync.Migrations.Core.Services;
+using uSync.Migrations.Core.Validation;
 
 namespace uSync.Migrations.Core.Handlers.Eight;
 [SyncMigrationHandler(BackOfficeConstants.Groups.Settings, uSyncMigrations.Priorities.DataTypes,
     SourceVersion = 8,
     SourceFolderName = "DataTypes",
     TargetFolderName = "DataTypes")]
-internal class DataTypeMigrationHandler : SharedDataTypeHandler, ISyncMigrationHandler
+internal class DataTypeMigrationHandler : SharedDataTypeHandler, ISyncMigrationHandler, ISyncMigrationValidator
 {
+    private readonly SyncPropertyMigratorCollection _migrators;
+
     public DataTypeMigrationHandler(
         IEventAggregator eventAggregator,
         ISyncMigrationFileService migrationFileService,
         IDataTypeService dataTypeService,
-        ILogger<DataTypeMigrationHandler> logger)
+        ILogger<DataTypeMigrationHandler> logger,
+        SyncPropertyMigratorCollection migrators)
         : base(eventAggregator, migrationFileService, dataTypeService, logger)
-    { }
+    {
+        _migrators = migrators;
+    }
 
     protected override string GetEditorAlias(XElement source)
         => source.Element("Info")?.Element("EditorAlias").ValueOrDefault(string.Empty) ?? string.Empty;
+
+    string GetName(XElement source)
+        => source.Element("Info")?.Element("Name").ValueOrDefault(string.Empty) ?? string.Empty;
 
     protected override string GetDatabaseType(XElement source)
         => source.Element("Info")?.Element("DatabaseType").ValueOrDefault(string.Empty) ?? string.Empty;
@@ -79,4 +91,47 @@ internal class DataTypeMigrationHandler : SharedDataTypeHandler, ISyncMigrationH
     protected override object? GetDataTypeConfig(ISyncPropertyMigrator? migrator, SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
         => migrator?.GetConfigValues(dataTypeProperty, context) ?? MakeEmptyLabelConfig(dataTypeProperty);
 
+    public IEnumerable<MigrationMessage> Validate(SyncValidationContext validationContext)
+    {
+        var messages = new List<MigrationMessage>();
+
+        var dataTypes = Path.Combine(validationContext.Options.Source, "DataTypes");
+        var migrators = _migrators.GetPreferredMigratorList(validationContext.Options.PreferredMigrators);
+
+        foreach (var file in Directory.GetFiles(dataTypes, "*.config", SearchOption.AllDirectories))
+        {
+            try
+            {
+                var source = XElement.Load(file);
+                var alias = source.GetAlias();
+                var key = source.GetKey();
+                var editorAlias = GetEditorAlias(source);
+
+                var name = GetName(source);
+                var databaseType = GetDatabaseType(source);
+
+                if (key == Guid.Empty) throw new Exception("Missing Key value");
+                if (string.IsNullOrEmpty(editorAlias)) throw new Exception("Id (EditorAlias) value");
+                if (string.IsNullOrEmpty(name)) throw new Exception("Missing Name value");
+                if (string.IsNullOrEmpty(databaseType)) throw new Exception("Missing database type");
+
+                if (!migrators.Any(x => x.EditorAlias.InvariantEquals(editorAlias)))
+                {
+                    messages.Add(new MigrationMessage(ItemType, name, MigrationMessageType.Warning)
+                    {
+                        Message = $"there is no migrator for {editorAlias} value will be untouched but might not import correctly"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                messages.Add(new MigrationMessage(ItemType, Path.GetFileName(file), MigrationMessageType.Error)
+                {
+                    Message = $"The Datatype file seems to be corrupt or missing something {ex.Message}"
+                });
+            }
+        }
+
+        return messages;
+    }
 }

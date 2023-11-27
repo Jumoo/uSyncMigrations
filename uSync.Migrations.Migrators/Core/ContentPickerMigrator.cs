@@ -34,6 +34,16 @@ public class ContentPicker1Migrator : SyncPropertyMigratorBase
         if (Guid.TryParse(contentProperty.Value, out var guid))
         {
             return new GuidUdi(UmbConstants.UdiEntityType.Document, guid).ToString();
+        } 
+        
+        // Really old pickers might have numeric ids
+        if (int.TryParse(contentProperty.Value, out var id))
+        {
+            var possibleGuid = context.GetKey(id);
+            if (possibleGuid != Guid.Empty)
+            {
+                return new GuidUdi(UmbConstants.UdiEntityType.Document, possibleGuid).ToString();
+            }
         }
 
         return base.GetContentValue(contentProperty, context);

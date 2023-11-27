@@ -63,6 +63,12 @@ public class MediaPickerMigrator : SyncPropertyMigratorBase
                 guid = udi.Guid;
             }
 
+            // Really old pickers might have numeric ids
+            if (guid.Equals(Guid.Empty) && int.TryParse(image, out var id))
+            {
+                guid = context.GetKey(id);
+            }
+
             if (guid.Equals(Guid.Empty) == false)
             {
                 media.Add(new MediaWithCropsDto
