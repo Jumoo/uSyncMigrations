@@ -10,6 +10,7 @@ using Umbraco.Extensions;
 using uSync.Core;
 using uSync.Migrations.Core.Context;
 using uSync.Migrations.Core.Extensions;
+using uSync.Migrations.Core.Handlers.Seven;
 using uSync.Migrations.Core.Migrators;
 using uSync.Migrations.Core.Migrators.Models;
 using uSync.Migrations.Core.Models;
@@ -42,6 +43,12 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
 
         if (key != Guid.Empty)
         {
+            var entityType = this.GetEntityType();
+            if (entityType != null)
+            {
+                context.AddEntityMap(key, entityType);
+            }
+
             var id = GetId(source);
             if (id > 0)
             {
@@ -54,6 +61,8 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
             }
         }
     }
+
+    protected abstract string? GetEntityType();
 
     protected abstract XElement GetBaseXml(XElement source, Guid parent, string contentType, int level, SyncMigrationContext context);
 

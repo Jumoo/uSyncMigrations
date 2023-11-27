@@ -44,4 +44,9 @@ internal class MediaMigrationHandler : ContentBaseMigrationHandler<Media>, ISync
             { "webm", UmbConstants.Conventions.MediaTypes.VideoAlias },
         });
     }
+
+    protected override string? GetEntityType()
+    {
+        return UmbConstants.UdiEntityType.Media;
+    }
 }

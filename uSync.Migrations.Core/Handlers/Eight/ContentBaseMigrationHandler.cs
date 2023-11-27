@@ -41,6 +41,9 @@ internal class ContentBaseMigrationHandler<TEntity> : SharedContentBaseHandler<T
     protected override IEnumerable<XElement>? GetProperties(XElement source)
         => source.Element("Properties")?.Elements() ?? Enumerable.Empty<XElement>();
 
+    protected override string? GetEntityType()
+        => null;
+
     protected override XElement GetBaseXml(XElement source, Guid parent, string contentType, int level, SyncMigrationContext context)
     {
         var target = new XElement(source.Name.LocalName,
