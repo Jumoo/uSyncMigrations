@@ -1,4 +1,4 @@
-﻿using Umbraco.Cms.Core;
+using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Extensions;
@@ -49,8 +49,7 @@ public class MultiNodeTreePickerMigrator : SyncPropertyMigratorBase
             {
                 if (Guid.TryParse(item, out var guid) == true)
                 {
-                    // TODO: Eeek! This might possibly be content, media or member! [LK]
-                    values.Add(Udi.Create(UmbConstants.UdiEntityType.Document, guid));
+                    values.Add(Udi.Create(context.GetEntityType(guid), guid));
                 }
                 else if (UdiParser.TryParse<GuidUdi>(item, out var udi) == true)
                 {
@@ -62,8 +61,7 @@ public class MultiNodeTreePickerMigrator : SyncPropertyMigratorBase
                     var possibleGuid = context.GetKey(id);
                     if (possibleGuid != Guid.Empty)
                     {
-                        // TODO: Eeek! This might possibly be content, media or member! [LK]
-                        values.Add(Udi.Create(UmbConstants.UdiEntityType.Document, possibleGuid));
+                        values.Add(Udi.Create(context.GetEntityType(possibleGuid), possibleGuid));
                     }
                 }
             }

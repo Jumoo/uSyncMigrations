@@ -21,4 +21,9 @@ internal class ContentMigrationHandler : ContentBaseMigrationHandler<Content>, I
         ILogger<ContentMigrationHandler> logger)
         : base(eventAggregator, migrationFileService, shortStringHelper, logger)
     { }
+
+    protected override string? GetEntityType()
+    {
+        return UmbConstants.UdiEntityType.Document;
+    }
 }
