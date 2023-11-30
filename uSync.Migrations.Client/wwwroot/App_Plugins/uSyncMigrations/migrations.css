@@ -28,3 +28,29 @@
     padding-top: 27px;
     padding-bottom: 28px;
 }
+
+.usync-migration-button {
+    text-align: left;
+    display: flex;
+    margin: 10px 0;
+    padding: 0 0 10px;
+    border-bottom: 1px solid #eee;
+}
+
+    .usync-migration-button:last-child {
+        border: none;
+    }
+
+    .usync-migration-button .umb-button {
+        width: 200px;
+        margin-right: 20px;
+    }
+
+    .usync-migration-button .umb-button .btn {
+        width: 100%;
+    }
+
+    .usync-migration-button .usync-migration-button-desc {
+        color: #555;
+        font-style: italic;
+    }

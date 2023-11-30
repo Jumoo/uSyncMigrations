@@ -25,11 +25,38 @@
 		<key alias="startIntro">Convert some files, import them into umbraco</key>
 		
 		<key alias="selectSource">Select source</key>
+		<key alias="selectSource-desc">Select a folder on disk containing the data you want to migrate</key>
+		
 		<key alias="uploadZip">Upload a zip</key>
+		<key alias="uploadZip-desc">Select a zip file containing the uSync and config files for the migration</key>
 
 		<key alias="convertTitle">Convert this site</key>
-		<key alias="convertIntro">Convert the properties on this site</key>
+		<key alias="convertIntro">Convert the properties on this site in place</key>
 		<key alias="convert">Convert</key>
+		<key alias="convert-desc">Convert the settings and content of this site. (don't do this on a production site!)</key>
+
+		<key alias="download">Download</key>
+		<key alias="download-desc">Download the contents of this site for conversion on another umbraco install</key>
+
+		<key alias="download-intro">
+			<![CDATA[
+			<p>Create a zip of the settings and content for this site.</p>
+			<p>
+			  This zip file can then be uploaded to another Umbraco instance to perform the migration
+			</p>			
+			<p>The zip file will contain:</p>
+			<ul>
+				<li>uSync Files (setting, content and media)</li>
+				<li>Select config (grid)</li>
+				<li>Views/scripts/js files</li>
+			</ul>
+			<div>
+				<strong>Note:</strong>
+				If you are not updating property editors - you don't need to migrate an 
+				umbraco 10/11/12 site to v13 you can simply pick up the uSync files 
+				and run an import on the new site. 
+			</div>
+		]]></key>
 
 		<key alias="convertedLabel">Files converted</key>
 		<key alias="convertedDesc">Have the files been converted</key>

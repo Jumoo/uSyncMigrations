@@ -25,6 +25,7 @@ internal class SyncMigrationsManifestFilter : IManifestFilter
                 uSyncMigrations.PluginFolder + "/components/migrationImport.component.js",
                 uSyncMigrations.PluginFolder + "/dialogs/filePicker.controller.js",
                 uSyncMigrations.PluginFolder + "/dialogs/upload.controller.js",
+                uSyncMigrations.PluginFolder + "/dialogs/download.controller.js"
             },
             Stylesheets = new[]
             {

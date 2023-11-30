@@ -9,6 +9,7 @@
 
         vm.pickSource = pickSource;
         vm.uploadZip = uploadZip;
+        vm.download = download;
         vm.edit = edit;
 
         vm.canBeImported = canBeImported;
@@ -87,6 +88,19 @@
                 }
             });
         }
+
+        function download() {
+            editorService.open({
+                title: 'download',
+                size: 'small',
+                view: Umbraco.Sys.ServerVariables.umbracoSettings.appPluginsPath + '/uSyncMigrations/dialogs/download.html',
+                hub: vm.hub,
+                close: function () {
+                    editorService.close();
+                }
+            });
+        }
+
 
         function validate(status) {
             vm.validating = true;
