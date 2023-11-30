@@ -38,9 +38,24 @@
 		<key alias="download">Download</key>
 		<key alias="download-desc">Download the contents of this site for conversion on another umbraco install</key>
 
-		<key alias="download-intro"><![CDATA[
+		<key alias="download-intro">
+			<![CDATA[
 			<p>Create a zip of the settings and content for this site.</p>
-			<p>The zip file will contain...</p>
+			<p>
+			  This zip file can then be uploaded to another Umbraco instance to perform the migration
+			</p>			
+			<p>The zip file will contain:</p>
+			<ul>
+				<li>uSync Files (setting, content and media)</li>
+				<li>Select config (grid)</li>
+				<li>Views/scripts/js files</li>
+			</ul>
+			<div>
+				<strong>Note:</strong>
+				If you are not updating property editors - you don't need to migrate an 
+				umbraco 10/11/12 site to v13 you can simply pick up the uSync files 
+				and run an import on the new site. 
+			</div>
 		]]></key>
 
 		<key alias="convertedLabel">Files converted</key>
