@@ -1,0 +1,70 @@
+﻿<div ng-controller="uSyncDownloadMigrationController as vm">
+    <umb-editor-panel>
+        <umb-editor-header name="'download'"
+                           description="'download the setup of this site'"
+                           name-locked="true"
+                           description-locked="true"
+                           hide-alias="true"
+                           hide-icon="true"></umb-editor-header>
+
+        <umb-editor-container class="form-horizontal">
+
+            <umb-box>
+                <umb-box-header title="Download"></umb-box-header>
+                <umb-box-content>
+                    <localize key="usyncmigrate_download-intro"></localize>
+                </umb-box-content>
+
+                <umb-box-content ng-if="!vm.working">
+                    <div class="flex justify-center">
+
+                        <umb-button type="button"
+                                    button-style="success"
+                                    size="l"
+                                    label-key="usyncmigrate_download"
+                                    action="vm.download()"></umb-button>
+
+                    </div>
+                </umb-box-content>
+            </umb-box>
+
+            <umb-box ng-if="vm.working">
+                <umb-box-content class="flex justify-center flex-column items-stretch">
+
+                    <div>
+                        <div class="text-center">
+                            <div>
+                                <strong>{{vm.status.message}}</strong>
+                            </div>
+                            <em>({{vm.status.count}} / {{vm.status.total}})</em>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <div style="margin-top: 20px; height: 50px;">
+                            {{vm.update.message}}
+                        </div>
+                        <umb-progress-bar percentage="{{vm.update.percentage}}"
+                                          size="m"
+                                          color="primary"></umb-progress-bar>
+                        <div>
+                            <em>{{vm.update.count}}/{{vm.update.total}}</em>
+                        </div>
+                    </div>
+                </umb-box-content>
+
+            </umb-box>
+
+        </umb-editor-container>
+
+        <umb-editor-footer>
+            <umb-editor-footer-content-right>
+
+                <umb-button type="button"
+                            button-style="link"
+                            label-key="general_close"
+                            action="vm.close()"></umb-button>
+
+            </umb-editor-footer-content-right>
+        </umb-editor-footer>
+    </umb-editor-panel>
+</div>

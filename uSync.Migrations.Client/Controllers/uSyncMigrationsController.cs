@@ -1,6 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Net.Mime;
+
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -10,6 +13,7 @@ using Umbraco.Cms.Web.BackOffice.Controllers;
 using Umbraco.Extensions;
 
 using uSync.BackOffice;
+using uSync.BackOffice.Hubs;
 using uSync.BackOffice.Services;
 using uSync.Migrations.Core;
 using uSync.Migrations.Core.Configuration;
@@ -31,7 +35,10 @@ public class uSyncMigrationsController : UmbracoAuthorizedApiController
     private readonly ISyncMigrationConfigurationService _profileConfigService;
     private readonly ISyncMigrationStatusService _migrationStatusService;
 
+    private readonly ISyncMigrationPackService _packService;
+
     private readonly uSyncService _uSyncService;
+    private readonly IHubContext<SyncHub> _hubContext;
     private readonly SyncFileService _syncFileService;
     private readonly string _tempPath;
     private readonly string _siteRoot;
@@ -44,7 +51,9 @@ public class uSyncMigrationsController : UmbracoAuthorizedApiController
         SyncFileService syncFileService,
         ISyncMigrationFileService migrationFileService,
         IShortStringHelper shortStringHelper,
-        ISyncMigrationStatusService migrationStatusService)
+        ISyncMigrationStatusService migrationStatusService,
+        ISyncMigrationPackService packService,
+        IHubContext<SyncHub> hubContext)
     {
         _migrationService = migrationService;
         _profileConfigService = profileConfigService;
@@ -58,10 +67,39 @@ public class uSyncMigrationsController : UmbracoAuthorizedApiController
         _migrationFileService = migrationFileService;
         _shortStringHelper = shortStringHelper;
         _migrationStatusService = migrationStatusService;
+        _packService = packService;
+        _hubContext = hubContext;
     }
 
     [HttpGet]
     public bool GetApi() => true;
+
+    [HttpPost]
+    [Authorize(Roles = UmbConstants.Security.AdminGroupAlias)]
+    public ActionResult Download(string clientId)
+    {
+        var client = new HubClientService(_hubContext, clientId);
+
+
+        client?.Callbacks().Update.Invoke("Downloading ", 0, 10);
+
+        var id = Guid.NewGuid();
+        var result = _packService.CreateSitePack(id, client?.Callbacks());
+
+
+        client?.Callbacks().Callback.Invoke(
+            new SyncProgressSummary(Enumerable.Empty<SyncHandlerSummary>(), "Zipping package", 1));
+
+        client?.Callbacks().Update.Invoke("Zipping", 1, 1);
+
+        var stream = _packService.ZipPack(result);
+
+        return new FileStreamResult(stream, MediaTypeNames.Application.Zip)
+        {
+            FileDownloadName = $"migrationPack_{DateTime.Now:yyyyMMdd_HHmmss}.zip"
+        };
+
+    }
 
 
     [HttpPost]

@@ -71,6 +71,8 @@ public static class SyncMigrationsBuilderExtensions
         builder.Services.AddTransient<ISyncMigrationService, SyncMigrationService>();
         builder.Services.AddTransient<ISyncMigrationConfigurationService, SyncMigrationConfigurationService>();
 
+        builder.Services.AddTransient<ISyncMigrationPackService, SyncMigrationPackService>();
+
         builder.Services.AddOptions<uSyncMigrationOptions>().Configure<IConfiguration>((settings, configuration)
             => configuration.GetSection(uSyncMigrationOptions.Section).Bind(settings));
 
