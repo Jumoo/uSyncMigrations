@@ -18,7 +18,7 @@ public static class uSyncMigrations
 
     public const string MigrationFolder = "uSync/Migrations";
 
-    internal static class Priorities
+    public static class Priorities
     {
         public const int Templates = 5;
 
