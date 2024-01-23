@@ -14,7 +14,7 @@ namespace uSync.Migrations.Core.Handlers.Seven;
     SourceVersion = 7,
     SourceFolderName = "DocumentType",
     TargetFolderName = "ContentTypes")]
-internal class ContentTypeMigrationHandler : ContentTypeBaseMigrationHandler<ContentType>, ISyncMigrationHandler
+public class ContentTypeMigrationHandler : ContentTypeBaseMigrationHandler<ContentType>, ISyncMigrationHandler
 {
     public ContentTypeMigrationHandler(
         IEventAggregator eventAggregator,

@@ -12,7 +12,7 @@ namespace uSync.Migrations.Core.Handlers.Eight;
     SourceVersion = 8,
     SourceFolderName = "Languages",
     TargetFolderName = "Languages")]
-internal class LanguageMigrationHandler : SharedHandlerBase<Language>, ISyncMigrationHandler
+public class LanguageMigrationHandler : SharedHandlerBase<Language>, ISyncMigrationHandler
 {
     public LanguageMigrationHandler(
         IEventAggregator eventAggregator,

@@ -14,7 +14,8 @@ using uSync.Migrations.Core.Handlers.Shared;
 using uSync.Migrations.Core.Services;
 
 namespace uSync.Migrations.Core.Handlers.Eight;
-internal class ContentBaseMigrationHandler<TEntity> : SharedContentBaseHandler<TEntity>
+
+public class ContentBaseMigrationHandler<TEntity> : SharedContentBaseHandler<TEntity>
     where TEntity : ContentBase
 {
     public ContentBaseMigrationHandler(

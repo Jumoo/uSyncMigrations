@@ -16,7 +16,8 @@ using uSync.Migrations.Core.Serialization;
 using uSync.Migrations.Core.Services;
 
 namespace uSync.Migrations.Core.Handlers.Shared;
-internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
+
+public abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
 {
     protected readonly IDataTypeService _dataTypeService;
     protected readonly JsonSerializerSettings _jsonSerializerSettings;
