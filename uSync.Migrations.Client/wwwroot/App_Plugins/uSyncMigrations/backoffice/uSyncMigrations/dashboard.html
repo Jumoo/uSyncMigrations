@@ -227,12 +227,17 @@
 
                         ({{vm.migrationResults.messages.length}} messages returned)
                     </umb-box-content>
+
                 </umb-box>
+
+                <div class="alert alert-danger" ng-if="vm.migrationResults.success == false">
+                    There where one or more errors during the migration.
+                </div>
 
                 <usync-migration-results results="vm.migrationResults"
                                          action="Migration"
                                          is-valid="vm.resultValid"
-                                         show-all="true">
+                                         show-all="vm.migrationResults.success">
                 </usync-migration-results>
             </div>
 

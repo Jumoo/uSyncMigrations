@@ -103,6 +103,9 @@ internal class DataTypeMigrationHandler : SharedDataTypeHandler, ISyncMigrationH
             try
             {
                 var source = XElement.Load(file);
+                // don't validate the empties
+                if (source.IsEmptyItem()) continue;
+
                 var alias = source.GetAlias();
                 var key = source.GetKey();
                 var editorAlias = GetEditorAlias(source);
