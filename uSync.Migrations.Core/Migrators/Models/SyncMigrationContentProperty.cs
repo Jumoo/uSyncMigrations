@@ -32,7 +32,7 @@ public sealed class SyncMigrationContentProperty : SyncMigrationPropertyBase
         PropertyAlias = propertyAlias;
     }
 
-    public string? Value { get; private set; }
+    public string? Value { get; set; }
 
 }
 

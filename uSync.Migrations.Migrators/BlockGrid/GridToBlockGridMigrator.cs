@@ -138,12 +138,13 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
             return contentProperty.Value;
         }
 
-        var source = JsonConvert.DeserializeObject<GridValue>(contentProperty.Value);
+        var source = GetGridValueFromString(contentProperty.EditorAlias, contentProperty.Value);
         if (source == null)
         {
             _logger.LogDebug("  Property {alias} is empty", contentProperty.EditorAlias);
             return string.Empty;
         }
+
 
         // For some reason, DTGEs can sometimes end up without a view specified. This should fix it.
         foreach (var section in source.Sections)
@@ -180,6 +181,20 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
         _logger.LogDebug("<< {method}", nameof(GetContentValue));
 
         return JsonConvert.SerializeObject(blockValue, Formatting.Indented);
+    }
+
+
+    private GridValue? GetGridValueFromString(string editorAlias, string value)
+    {
+        try
+        {
+            return JsonConvert.DeserializeObject<GridValue>(value);
+        }
+        catch(Exception ex) 
+        {
+            _logger.LogError(ex, "Error getting grid {alias}", editorAlias);
+            throw;
+        }
     }
 }
 
