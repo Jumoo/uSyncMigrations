@@ -66,19 +66,14 @@ public class BlockListMigrator : SyncPropertyMigratorBase
     {
         foreach (var property in row.RawPropertyValues)
         {
-            var contentTypeAlias = context.ContentTypes.GetAliasByKey(row.ContentTypeKey);
+            if (context.ContentTypes.TryGetAliasByKey(row.ContentTypeKey, out var contentTypeAlias) is false) { continue; }
+            if (context.ContentTypes.TryGetEditorAliasByTypeAndProperty(contentTypeAlias, property.Key, out var editorAlias) is false) { continue; }
+            if (context.Migrators.TryGetMigrator(editorAlias.OriginalEditorAlias, out var migrator) is false) { continue; }
 
-            var editorAlias = context.ContentTypes.GetEditorAliasByTypeAndProperty(contentTypeAlias, property.Key);
-            if (editorAlias == null) continue;
-
-            var migrator = context.Migrators.TryGetMigrator(editorAlias.OriginalEditorAlias);
-            if (migrator != null)
-            {
-                row.RawPropertyValues[property.Key] = migrator.GetContentValue(
-                    new SyncMigrationContentProperty(
-                        contentTypeAlias, property.Key, contentTypeAlias, property.Value?.ToString()),
-                        context);
-            }
+            row.RawPropertyValues[property.Key] = migrator.GetContentValue(
+                new SyncMigrationContentProperty(
+                    contentTypeAlias, property.Key, contentTypeAlias, property.Value?.ToString()),
+                    context);
         }
     }
 

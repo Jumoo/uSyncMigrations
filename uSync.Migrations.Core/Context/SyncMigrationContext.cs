@@ -113,7 +113,7 @@ public class SyncMigrationContext : IDisposable
 
     public void SendUpdate(string message, int count, int total)
     {
-        Callbacks?.Update(message, count, total);   
+        Callbacks?.Update(message, count, total);
     }
 
 

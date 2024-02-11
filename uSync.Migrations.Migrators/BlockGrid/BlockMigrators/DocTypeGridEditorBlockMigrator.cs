@@ -90,14 +90,10 @@ internal class DocTypeGridEditorBlockMigrator : ISyncBlockMigrator
 
         foreach (var (propertyAlias, value) in elementValue)
         {
-            var editorAlias = context.ContentTypes.GetEditorAliasByTypeAndProperty(contentTypeAlias, propertyAlias);
+            if (context.ContentTypes.TryGetEditorAliasByTypeAndProperty(contentTypeAlias, propertyAlias, out var editorAlias) is false) { continue; }
 
-            if (editorAlias == null) continue;
-
-            var migrator = context.Migrators.TryGetMigrator(editorAlias.OriginalEditorAlias);
             var propertyValue = value;
-
-            if (migrator != null)
+            if (context.Migrators.TryGetMigrator(editorAlias.OriginalEditorAlias, out var migrator) is true)
             {
                 var property = new SyncMigrationContentProperty(
                     $"Grid.{editorAlias.OriginalEditorAlias}",

@@ -14,11 +14,11 @@ using uSync.Migrations.Core;
 namespace uSync.Migrations.Client.Controllers;
 
 [Tree(UmbConstants.Applications.Settings,
-    uSyncMigrations.TreeName,
+    uSyncMigrationsClient.TreeName,
     TreeGroup = "sync",
     TreeTitle = "uSync Migrations",
     SortOrder = 99)]
-[PluginController(uSyncMigrations.TreeName)]
+[PluginController(uSyncMigrationsClient.TreeName)]
 public class uSyncMigrationsTreeController : TreeController
 {
     private readonly IMenuItemCollectionFactory _menuItemCollectionFactory;
@@ -39,8 +39,8 @@ public class uSyncMigrationsTreeController : TreeController
 
         if (root.Value != null)
         {
-            root.Value.RoutePath = $"{SectionAlias}/{uSyncMigrations.TreeName}/dashboard";
-            root.Value.Icon = uSyncMigrations.Icon;
+            root.Value.RoutePath = $"{SectionAlias}/{uSyncMigrationsClient.TreeName}/dashboard";
+            root.Value.Icon = uSyncMigrationsClient.Icon;
             root.Value.HasChildren = false;
             root.Value.MenuUrl = null;
         }

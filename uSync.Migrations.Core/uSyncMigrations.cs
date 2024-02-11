@@ -5,20 +5,11 @@ namespace uSync.Migrations.Core;
 
 public static class uSyncMigrations
 {
-    public const string AppName = "uSync Migrations";
-
-    public const string TreeName = "uSyncMigrations";
-
-    public const string Icon = "icon-filter-arrows";
-    public static string AppVersion => typeof(uSyncMigrations).Assembly.GetName().Version?.ToString(3) ?? "10.0.0";
-
-    public const string PluginFolder = "/App_Plugins/uSyncMigrations";
-
     public const string SourceFolder = "uSync/data";
 
     public const string MigrationFolder = "uSync/Migrations";
 
-    internal static class Priorities
+    public static class Priorities
     {
         public const int Templates = 5;
 

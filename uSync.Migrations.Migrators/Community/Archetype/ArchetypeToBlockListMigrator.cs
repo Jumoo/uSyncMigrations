@@ -72,11 +72,7 @@ public class ArchetypeToBlockListMigrator : SyncPropertyMigratorBase
                 newContentType.Properties = fieldSet.Properties
                     .Select(p =>
                     {
-                        var dataType = context.DataTypes.GetByDefinition(p.DataTypeGuid);
-                        if (dataType == null)
-                        {
-                            return null;
-                        }
+                        if (context.DataTypes.TryGetInfoByDefinition(p.DataTypeGuid, out var dataType) is false) { return null; }
 
                         return new NewContentTypeProperty(
                             alias: p.Alias!,
@@ -132,18 +128,16 @@ public class ArchetypeToBlockListMigrator : SyncPropertyMigratorBase
         {
             var blockElementAlias = _archetypeMigrationConfigurer?.GetBlockElementAlias(item, contentProperty, context);
             if (blockElementAlias is null) continue;
+            if (context.ContentTypes.TryGetKeyByAlias(blockElementAlias, out var blockElementKey) is false) { continue; }
 
             var rawValues = new Dictionary<string, object?>();
             foreach (var property in item.Properties)
             {
                 if (string.IsNullOrEmpty(property.Alias)) continue;
 
-                var editorAlias = context.ContentTypes.GetEditorAliasByTypeAndProperty(blockElementAlias, property.Alias);
-                if (editorAlias is null) continue;
+                if (context.ContentTypes.TryGetEditorAliasByTypeAndProperty(blockElementAlias, property.Alias, out var editorAlias) is false) { continue; }
 
-                var migrator = context.Migrators.TryGetMigrator(editorAlias.OriginalEditorAlias);
-
-                if (migrator is null)
+                if (context.Migrators.TryGetMigrator(editorAlias.OriginalEditorAlias, out var migrator) is false)
                 {
                     rawValues[property.Alias] = property.Value;
                     continue;
@@ -158,10 +152,9 @@ public class ArchetypeToBlockListMigrator : SyncPropertyMigratorBase
                 rawValues[property.Alias] = migrator.GetContentValue(childProperty, context);
             }
 
-            var key = context.ContentTypes.GetKeyByAlias(blockElementAlias);
             var block = new BlockItemData
             {
-                ContentTypeKey = key,
+                ContentTypeKey = blockElementKey,
                 Udi = Udi.Create(UmbConstants.UdiEntityType.Element, item.Id),
                 RawPropertyValues = rawValues,
             };

@@ -1,5 +1,7 @@
-﻿using uSync.Migrations.Core.Configuration.Models;
+﻿using System.Diagnostics.CodeAnalysis;
+
 using uSync.Migrations.Core.Models;
+using uSync.Migrations.Core.Plans.Models;
 
 namespace uSync.Migrations.Core.Context;
 
@@ -8,7 +10,6 @@ namespace uSync.Migrations.Core.Context;
 /// </summary>
 public class ContentTypeMigrationContext
 {
-
     private Dictionary<Guid, string> _contentTypeAliases { get; set; } = new();
     private Dictionary<string, Guid> _contentTypeKeys { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     private Dictionary<string, HashSet<string>> _contentTypeCompositions { get; set; } = new(StringComparer.OrdinalIgnoreCase);
@@ -42,26 +43,24 @@ public class ContentTypeMigrationContext
     /// <param name="contentTypeKey">GUID key value</param>
     public void AddAliasAndKey(string? contentTypeAlias, Guid? contentTypeKey)
     {
-        _ = string.IsNullOrWhiteSpace(contentTypeAlias) == false &&
-            contentTypeKey.HasValue == true &&
-            _contentTypeAliases.TryAdd(contentTypeKey.Value, contentTypeAlias) &&
-            _contentTypeKeys.TryAdd(contentTypeAlias, contentTypeKey.Value);
+        if (string.IsNullOrWhiteSpace(contentTypeAlias) is true || contentTypeKey.HasValue is false)
+            return;
+
+        _ = _contentTypeAliases.TryAdd(contentTypeKey.Value, contentTypeAlias);
+        _ = _contentTypeKeys.TryAdd(contentTypeAlias, contentTypeKey.Value);
     }
 
     /// <summary>
     ///  get the alias of a content type by providing the key value 
     /// </summary>
-    /// <param name="contentTypeKey"></param>
-    /// <returns>alias of a content type</returns>
-    public string GetAliasByKey(Guid contentTypeKey)
-        => _contentTypeAliases?.TryGetValue(contentTypeKey, out var alias) == true ? alias : string.Empty;
+    public bool TryGetAliasByKey(Guid contentTypeKey, [MaybeNullWhen(false)]out string alias)
+        => _contentTypeAliases.TryGetValue(contentTypeKey, out alias);
 
     /// <summary>
     ///  get the key for a given content type alias from the context.
     /// </summary>
-    /// <returns>GUID Key value for a content type</returns>
-    public Guid GetKeyByAlias(string contentTypeAlias)
-        => _contentTypeKeys?.TryGetValue(contentTypeAlias, out var key) == true ? key : Guid.Empty;
+    public bool TryGetKeyByAlias(string contentTypeAlias, [MaybeNullWhen(false)]out Guid key)
+        => _contentTypeKeys.TryGetValue(contentTypeAlias, out key);
 
     /// <summary>
     ///  return all the content aliases we have loaded in the context.
@@ -86,16 +85,16 @@ public class ContentTypeMigrationContext
     /// <param name="contentTypeAlias">Alias of the content type</param>
     /// <param name="compositionAliases">Enumerable of alises for the compositions</param>
     /// <returns>true if succeeded.</returns>
-    public bool TryGetCompositionsByAlias(string? contentTypeAlias, out IEnumerable<string>? compositionAliases)
+    public bool TryGetCompositionsByAlias(string? contentTypeAlias, out IEnumerable<string> compositionAliases)
     {
-        compositionAliases = null;
+        compositionAliases = Enumerable.Empty<string>();
 
         if (contentTypeAlias != null && _contentTypeCompositions.TryGetValue(contentTypeAlias, out var compositions))
         {
-            compositionAliases = compositions?.ToArray();
+            compositionAliases = compositions.ToArray();
         }
 
-        return compositionAliases != null;
+        return compositionAliases.Any();
     }
 
 
@@ -127,24 +126,25 @@ public class ContentTypeMigrationContext
     ///  and then when we are in content we can say, what is the underling property for this 
     ///  value based on the content type we know we are in. 
     /// </remarks>
-    public EditorAliasInfo? GetEditorAliasByTypeAndProperty(string contentType, string propertyAlias)
+    public bool TryGetEditorAliasByTypeAndProperty(string contentTypeAlias, string propertyAlias, [MaybeNullWhen(false)] out EditorAliasInfo alias)
     {
-        if (_propertyTypes?.TryGetValue($"{contentType}_{propertyAlias}", out var alias) == true)
+        if (_propertyTypes.TryGetValue($"{contentTypeAlias}_{propertyAlias}", out alias) is true)
         {
-            return alias;
-        }
-        else if (TryGetEditorAliasByComposition(contentType, propertyAlias, out var alias1) == true)
-        {
-            return alias1;
+            return true;
         }
 
-        return null;
+        if (TryGetEditorAliasByComposition(contentTypeAlias, propertyAlias, out alias) is true)
+        {
+            return true;
+        }
+
+        return false; 
     }
 
     /// <summary>
     ///  returns the editor alias from a property within a composition of a content type.
     /// </summary>
-    private bool TryGetEditorAliasByComposition(string compositionKey, string propertyAlias, out EditorAliasInfo? editorAliasInfo)
+    private bool TryGetEditorAliasByComposition(string compositionKey, string propertyAlias, [MaybeNullWhen(false)] out EditorAliasInfo editorAliasInfo)
     {
         if (_contentTypeCompositions?.TryGetValue(compositionKey, out var compositions) == true)
         {
@@ -194,22 +194,16 @@ public class ContentTypeMigrationContext
                 continue;
             }
 
-            var contentTypeAlias = GetAliasByKey(contentTypeKey);
+            if (TryGetAliasByKey(contentTypeKey, out var contentTypeAlias) is false) { continue; }
 
-            if (!TryGetCompositionsByAlias(contentTypeAlias, out var compositionAliases))
-            {
-                continue;
-            }
-
-            if (compositionAliases?.Any() != true)
-            {
-                continue;
-            }
+            if (TryGetCompositionsByAlias(contentTypeAlias, out var compositionAliases) is false) { continue; }
 
             foreach (var compositionContentTypeAlias in compositionAliases)
             {
-                var compositionContentTypeKey = GetKeyByAlias(compositionContentTypeAlias);
-                AddElementType(compositionContentTypeKey);
+                if (TryGetKeyByAlias(compositionContentTypeAlias, out var key) is true)
+                {
+                    AddElementType(key);
+                }
             }
         }
     }
@@ -269,12 +263,8 @@ public class ContentTypeMigrationContext
     /// <summary>
     ///  get the block editor alias from the name.
     /// </summary>
-    /// <param name="name"></param>
-    /// <returns></returns>
-    public string GetBlockEditorAliasByName(string name)
-        => _blockAliases.TryGetValue(name, out var alias) == true
-            ? alias
-            : name;
+    public bool TryGetBlockEditorAliasByName(string name, [MaybeNullWhen(false)] out string alias)
+        => _blockAliases.TryGetValue(name, out alias);
 
     /// <summary>
     /// Add changed tabs to the context.
@@ -301,9 +291,8 @@ public class ContentTypeMigrationContext
     /// <param name="contentTypeAlias"></param>
     /// <param name="propertyAlias"></param>
     /// <returns></returns>
-    public string GetDataTypeAlias(string contentTypeAlias, string propertyAlias)
-        => _dataTypeAliases.TryGetValue($"{contentTypeAlias}_{propertyAlias}", out var alias) == true
-            ? alias : string.Empty;
+    public bool TryGetDataTypeAlias(string contentTypeAlias, string propertyAlias, [MaybeNullWhen(false)] out string alias)
+        => _dataTypeAliases.TryGetValue($"{contentTypeAlias}_{propertyAlias}", out alias);
 
     /// <summary>
     /// Add a replacement alias for a content type alias

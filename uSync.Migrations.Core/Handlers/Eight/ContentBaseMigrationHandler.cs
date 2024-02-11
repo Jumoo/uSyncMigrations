@@ -37,7 +37,7 @@ internal class ContentBaseMigrationHandler<TEntity> : SharedContentBaseHandler<T
         => source.Element("Info")?.Element("Parent")?.Attribute("Key").ValueOrDefault(Guid.Empty) ?? Guid.Empty;
 
     protected override string GetPath(string alias, Guid parent, SyncMigrationContext context)
-        => context.Content.GetContentPath(parent) + "/" + alias.ToSafeAlias(_shortStringHelper);
+        => context.Content.GetContentPathOrDefault(parent, string.Empty) + "/" + alias.ToSafeAlias(_shortStringHelper);
 
     protected override IEnumerable<XElement>? GetProperties(XElement source)
         => source.Element("Properties")?.Elements() ?? Enumerable.Empty<XElement>();
@@ -68,8 +68,9 @@ internal class ContentBaseMigrationHandler<TEntity> : SharedContentBaseHandler<T
         {
             // variant migration 
             // variant migration, doesn't support splitting, or variant migrators ! 
-            var editorAlias = context.ContentTypes.GetEditorAliasByTypeAndProperty(contentType, property.Name.LocalName)
-                ?.OriginalEditorAlias ?? string.Empty;
+            string? editorAlias = context.ContentTypes.TryGetEditorAliasByTypeAndProperty(contentType, property.Name.LocalName, out var editorInfo) is false
+                ? string.Empty
+                : editorInfo.OriginalEditorAlias ?? string.Empty;
 
             try
             {
@@ -96,7 +97,7 @@ internal class ContentBaseMigrationHandler<TEntity> : SharedContentBaseHandler<T
 
                 return migratedNodes.AsEnumerableOfOne();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex, "Error trying to migrate variant node values {editor}", editorAlias);
                 throw;

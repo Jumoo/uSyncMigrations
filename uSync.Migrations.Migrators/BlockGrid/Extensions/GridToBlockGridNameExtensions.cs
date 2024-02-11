@@ -24,11 +24,11 @@ internal static class GridToBlockGridNameExtensions
 
     public static Guid GetContentTypeKeyOrDefault(this SyncMigrationContext context, string alias, Guid defaultKey)
     {
-        var key = context.ContentTypes.GetKeyByAlias(alias);
-        if (key != Guid.Empty) return key;
+        if (context.ContentTypes.TryGetKeyByAlias(alias, out var key) is false)
+            return defaultKey; 
 
-        context.Content.AddKey(defaultKey, alias);
-        return defaultKey;
+        context.Content.AddKey(key, alias);
+        return key;
     }
     public static string GetBlockGridLayoutSettingsContentTypeAlias(this string name, IShortStringHelper shortStringHelper)
         => name.GetContentTypeAlias("BlockGridLayoutSettings_", shortStringHelper);

@@ -9,13 +9,14 @@ using Umbraco.Cms.Core.Models;
 using Umbraco.Extensions;
 
 using uSync.BackOffice.Configuration;
-using uSync.Migrations.Core.Composing;
 using uSync.Migrations.Core.Configuration;
-using uSync.Migrations.Core.Configuration.Models;
 using uSync.Migrations.Core.Context;
 using uSync.Migrations.Core.Handlers;
 using uSync.Migrations.Core.Helpers;
+using uSync.Migrations.Core.Migrators;
 using uSync.Migrations.Core.Models;
+using uSync.Migrations.Core.Plans.Models;
+using uSync.Migrations.Core.Validation;
 
 namespace uSync.Migrations.Core.Services;
 
@@ -187,13 +188,13 @@ internal class SyncMigrationService : ISyncMigrationService
         // maybe replace with a Dictionary<string, MigrationMessage> (with `ItemType` as the key)?
         var results = new List<MigrationMessage>();
 
-        for(int i =0; i < handlers.Count; i++)
+        for (int i = 0; i < handlers.Count; i++)
         {
-            var handlerName = handlers[i].GetType().Name;   
-            
+            var handlerName = handlers[i].GetType().Name;
+
             migrationContext.SendUpdate($"Migrating {handlerName}", i, handlers.Count);
             _logger.LogInformation("Migrating {handler} files", handlerName);
-            
+
             results.AddRange(handlers[i].DoMigration(migrationContext));
         }
 
@@ -251,7 +252,7 @@ internal class SyncMigrationService : ISyncMigrationService
         options.ReplacementAliases?
             .ForEach(kvp => context.ContentTypes.AddReplacementAlias(kvp.Key, kvp.Value));
 
-        context.SendUpdate("Preparing Migration handlers", 5,10);
+        context.SendUpdate("Preparing Migration handlers", 5, 10);
 
         // let the handlers run through their prep (populate all the lookups)
         GetHandlers(options.SourceVersion)?

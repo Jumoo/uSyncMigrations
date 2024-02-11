@@ -16,7 +16,7 @@ using uSync.Migrations.Core.Notifications;
 using uSync.Migrations.Core.Services;
 
 namespace uSync.Migrations.Core.Handlers;
-internal abstract class MigrationHandlerBase<TObject>
+public abstract class MigrationHandlerBase<TObject>
     where TObject : IEntity
 {
     protected readonly IEventAggregator _eventAggregator;
@@ -157,7 +157,7 @@ internal abstract class MigrationHandlerBase<TObject>
         var messages = new List<MigrationMessage>();
 
 
-        foreach(var file in files) 
+        foreach (var file in files)
         {
             try
             {

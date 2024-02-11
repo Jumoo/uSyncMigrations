@@ -1,9 +1,10 @@
 ﻿using Umbraco.Cms.Core.Models;
 
 using uSync.Migrations.Core;
-using uSync.Migrations.Core.Composing;
-using uSync.Migrations.Core.Configuration.Models;
 using uSync.Migrations.Core.Extensions;
+using uSync.Migrations.Core.Handlers;
+using uSync.Migrations.Core.Plans;
+using uSync.Migrations.Core.Plans.Models;
 using uSync.Migrations.Migrators.Optional;
 
 namespace MyMigrations;

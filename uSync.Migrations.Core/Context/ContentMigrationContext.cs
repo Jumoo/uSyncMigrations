@@ -1,4 +1,6 @@
-﻿using uSync.Migrations.Core.Models;
+﻿using System.Diagnostics.CodeAnalysis;
+
+using uSync.Migrations.Core.Models;
 
 namespace uSync.Migrations.Core.Context;
 public class ContentMigrationContext
@@ -17,9 +19,9 @@ public class ContentMigrationContext
     /// <summary>
     ///  get the content path for a parent item from the context.
     /// </summary>
-    public string GetContentPath(Guid parentKey)
-        => _contentPaths?.TryGetValue(parentKey, out var path) == true ? path : string.Empty;
-
+    public string GetContentPathOrDefault(Guid parentKey, string defaultPath)
+        => _contentPaths?.TryGetValue(parentKey, out var path) == true ? path : defaultPath;
+  
     /// <summary>
     ///  add a content key to the context.
     /// </summary>
@@ -29,8 +31,8 @@ public class ContentMigrationContext
     /// <summary>
     ///  get a context alias from the context
     /// </summary>
-    public string GetAliasByKey(Guid key)
-        => _contentKeys?.TryGetValue(key, out var alias) == true ? alias : string.Empty;
+    public bool TryGetAliasByKey(Guid key, [MaybeNullWhen(false)] out string alias)
+        => _contentKeys.TryGetValue(key, out alias);
 
     /// <summary>
     ///  a information for when two (or more) properties are being merged into one.
@@ -43,6 +45,6 @@ public class ContentMigrationContext
     /// <summary>
     ///  get details of a merged set of properties. 
     /// </summary>
-    public MergingPropertiesConfig? GetMergedProperties(string contentType)
-        => _mergedProperties?.TryGetValue(contentType, out MergingPropertiesConfig? properties) == true ? properties : null;
+    public bool TryGetMergedProperties(string contentType, [MaybeNullWhen(false)] out MergingPropertiesConfig properties)
+        => _mergedProperties.TryGetValue(contentType, out properties);
 }

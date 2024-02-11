@@ -118,13 +118,14 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
             return string.Empty;
         }
 
-        var dataTypeAlias = "";
+        var dataTypeGuid = context.ContentTypes.TryGetEditorAliasByTypeAndProperty(contentProperty.ContentTypeAlias, contentProperty.PropertyAlias, out var editorInfo) is true
+            ? editorInfo.DataTypeDefinition : Guid.Empty;
 
-        var dataTypeGuid = context.ContentTypes.GetEditorAliasByTypeAndProperty(contentProperty.ContentTypeAlias, contentProperty.PropertyAlias)?.DataTypeDefinition ?? Guid.Empty;
 
-        if (dataTypeGuid != Guid.Empty)
+        var dataTypeAlias = string.Empty;
+        if (dataTypeGuid.HasValue && dataTypeGuid.Value != Guid.Empty)
         {
-            dataTypeAlias = context.DataTypes.GetByDefinition(dataTypeGuid)?.DataTypeName;
+            dataTypeAlias = context.DataTypes.TryGetInfoByDefinition(dataTypeGuid.Value, out var dataTypeInfo) is true ? dataTypeInfo.DataTypeName : string.Empty;
         }
 
         if (string.IsNullOrWhiteSpace(dataTypeAlias))

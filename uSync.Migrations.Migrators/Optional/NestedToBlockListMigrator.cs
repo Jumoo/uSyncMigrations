@@ -3,6 +3,8 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
+using NPoco.RowMappers;
+
 using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Models.Blocks;
 using Umbraco.Cms.Core.PropertyEditors;
@@ -89,7 +91,7 @@ public class NestedToBlockListMigrator : SyncPropertyMigratorBase
 
                 var alias = context.ContentTypes.GetReplacementAlias(item.Alias);
 
-                var contentTypeKey = context.ContentTypes.GetKeyByAlias(alias);
+                if (context.ContentTypes.TryGetKeyByAlias(alias, out var contentTypeKey) is false) { continue; }
 
                 // tell the process we need this to be an element type
                 context.ContentTypes.AddElementTypes(new[] { contentTypeKey }, true);
@@ -141,9 +143,13 @@ public class NestedToBlockListMigrator : SyncPropertyMigratorBase
             if (row.Id == Guid.Empty)
                 row.Id = $"{contentProperty.EditorAlias}{contentProperty.ContentTypeAlias}{contentTypeAlias}{row.Name}".ToGuid();
 
-            var contentTypeKey = context.ContentTypes.GetKeyByAlias(contentTypeAlias);
-            var blockUdi = Udi.Create(UdiEntityType.Element, row.Id);
+            if (context.ContentTypes.TryGetKeyByAlias(contentTypeAlias, out var contentTypeKey) is false)
+            {
+                _logger.LogWarning("Cannot find content key for alias {contentTypeAlias}", contentTypeAlias);
+                continue;
+            }
 
+            var blockUdi = Udi.Create(UdiEntityType.Element, row.Id);
             var block = new BlockItemData
             {
                 ContentTypeKey = contentTypeKey,
@@ -159,27 +165,24 @@ public class NestedToBlockListMigrator : SyncPropertyMigratorBase
             {
                 _logger.LogDebug("NestedToBlockList: {ContentType} {key}", contentTypeAlias, property.Key);
 
-                var editorAlias = context.ContentTypes.GetEditorAliasByTypeAndProperty(contentTypeAlias, property.Key);
-                if (editorAlias == null) continue;
+                if (context.ContentTypes.TryGetEditorAliasByTypeAndProperty(contentTypeAlias, property.Key, out var editorAlias) is false) { continue; }
 
                 _logger.LogDebug("NestedToBlockList: Property: {editorAlias}", editorAlias);
 
-                var migrator = context.Migrators.TryGetMigrator(editorAlias.OriginalEditorAlias);
-                if (migrator != null)
-                {
-                    _logger.LogDebug("NestedToBlockList: Found Migrator: {migrator}", migrator.GetType().Name);
-
-                    block.RawPropertyValues[property.Key] = migrator.GetContentValue(
-                        new SyncMigrationContentProperty(
-                            contentTypeAlias,
-                            property.Key,
-                            editorAlias.OriginalEditorAlias, property.Value?.ToString() ?? string.Empty), context);
-                }
-                else
+                if (context.Migrators.TryGetMigrator(editorAlias.OriginalEditorAlias, out var migrator) is false)
                 {
                     _logger.LogDebug("NestedToBlockList: No Migrator found");
                     block.RawPropertyValues[property.Key] = property.Value;
+                    continue;
                 }
+
+                _logger.LogDebug("NestedToBlockList: Found Migrator: {migrator}", migrator.GetType().Name);
+
+                block.RawPropertyValues[property.Key] = migrator.GetContentValue(
+                    new SyncMigrationContentProperty(
+                        contentTypeAlias,
+                        property.Key,
+                        editorAlias.OriginalEditorAlias, property.Value?.ToString() ?? string.Empty), context);
             }
 
             contentData.Add(block);

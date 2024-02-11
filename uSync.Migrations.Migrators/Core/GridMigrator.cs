@@ -104,34 +104,29 @@ public class GridMigrator : SyncPropertyMigratorBase
 
         foreach (var (propertyAlias, value) in elementValue)
         {
-            var editorAliasInfo = context.ContentTypes.GetEditorAliasByTypeAndProperty(
-                contentTypeAlias, propertyAlias);
+            if (context.ContentTypes.TryGetEditorAliasByTypeAndProperty(contentTypeAlias, propertyAlias, out var editorAliasInfo) is false) { continue; }
+            if (context.Migrators.TryGetMigrator(editorAliasInfo.OriginalEditorAlias, out var migrator) is false) { continue; }
 
-            if (editorAliasInfo == null) continue;
+            var valueToConvert = (value?.ToString() ?? "").Trim();
 
-            var propertyValue = value;
+            var property = new SyncMigrationContentProperty(
+                editorAliasInfo.OriginalEditorAlias,
+                propertyAlias,
+                editorAliasInfo.OriginalEditorAlias,
+                valueToConvert);
 
-            var migrator = context.Migrators.TryGetMigrator(editorAliasInfo.OriginalEditorAlias);
-            if (migrator != null)
+            var convertedValue = migrator.GetContentValue(property, context);
+
+            object? propertyValue;
+            if (convertedValue?.Trim().DetectIsJson() == true)
             {
-                var valueToConvert = (value?.ToString() ?? "").Trim();
-
-                var property = new SyncMigrationContentProperty(
-                    editorAliasInfo.OriginalEditorAlias,
-                    propertyAlias,
-                    editorAliasInfo.OriginalEditorAlias,
-                    valueToConvert);
-
-                var convertedValue = migrator.GetContentValue(property, context);
-                if (convertedValue?.Trim().DetectIsJson() == true)
-                {
-                    propertyValue = JsonConvert.DeserializeObject(convertedValue ?? "");
-                }
-                else
-                {
-                    propertyValue = convertedValue;
-                }
+                propertyValue = JsonConvert.DeserializeObject(convertedValue ?? "");
             }
+            else
+            {
+                propertyValue = convertedValue;
+            }
+
 
             propertyValues[propertyAlias] = propertyValue;
         }

@@ -29,7 +29,8 @@ public class NestedContentMigrator : SyncPropertyMigratorBase
             .WhereNotNull() // satisfy nullability requirement
             .Select(context.ContentTypes.GetReplacementAlias)
             .Where(a => !string.IsNullOrWhiteSpace(a))
-            .Select(context.ContentTypes.GetKeyByAlias);
+            .Select(b => context.ContentTypes.TryGetKeyByAlias(b, out var key) ? key : Guid.Empty)
+            .Where(x => x != Guid.Empty);
 
         context.ContentTypes.AddElementTypes(contentTypeKeys, true);
 
@@ -55,20 +56,18 @@ public class NestedContentMigrator : SyncPropertyMigratorBase
             {
                 var contentTypeAlias = context.ContentTypes.GetReplacementAlias(row.ContentTypeAlias);
                 var propertyAlias = context.ContentTypes.GetReplacementAlias(property.Key);
-                var editorAlias = context.ContentTypes.GetEditorAliasByTypeAndProperty(contentTypeAlias, propertyAlias);
-                if (editorAlias == null) continue;
+
+                if (context.ContentTypes.TryGetEditorAliasByTypeAndProperty(contentTypeAlias, propertyAlias, out var editorAlias) is false) { continue; }
 
                 try
                 {
-                    var migrator = context.Migrators.TryGetMigrator(
-                        $"{contentProperty.ContentTypeAlias}_{contentProperty.PropertyAlias}", editorAlias.OriginalEditorAlias);
-                    if (migrator != null)
-                    {
-                        row.RawPropertyValues[property.Key] = migrator.GetContentValue(
-                            new SyncMigrationContentProperty(
-                                contentTypeAlias, property.Key, contentTypeAlias, property.Value?.ToString()),
-                                context);
-                    }
+                    if (context.Migrators.TryGetMigrator($"{contentProperty.ContentTypeAlias}_{contentProperty.PropertyAlias}", editorAlias.OriginalEditorAlias, out var migrator) is false) { continue; }
+
+                    row.RawPropertyValues[property.Key] = migrator.GetContentValue(
+                        new SyncMigrationContentProperty(
+                            contentTypeAlias, property.Key, contentTypeAlias, property.Value?.ToString()),
+                            context);
+
                 }
                 catch (Exception ex)
                 {

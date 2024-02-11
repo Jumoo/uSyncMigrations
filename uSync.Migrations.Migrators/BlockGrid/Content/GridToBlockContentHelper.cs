@@ -53,7 +53,6 @@ internal class GridToBlockContentHelper
 
         var sectionContentTypeAlias = _conventions.SectionContentTypeAlias(source.Name);
 
-        var sectionKey = context.ContentTypes.GetKeyByAlias(sectionContentTypeAlias);
 
         var sections = source.Sections
             .Select(x => (Grid: x.Grid.GetIntOrDefault(0), x.Rows))
@@ -67,7 +66,7 @@ internal class GridToBlockContentHelper
 
         BlockGridLayoutItem? rootLayoutItem = null;
 
-        if (sectionKey != Guid.Empty)
+        if (context.ContentTypes.TryGetKeyByAlias(sectionContentTypeAlias, out var sectionKey))
         {
             var rootSection = new BlockItemData
             {
@@ -310,8 +309,7 @@ internal class GridToBlockContentHelper
             }
         }
 
-        var contentTypeKey = context.ContentTypes.GetKeyByAlias(contentTypeAlias);
-        if (contentTypeKey == Guid.Empty)
+        if (context.ContentTypes.TryGetKeyByAlias(contentTypeAlias, out var contentTypeKey) is false)
         {
             _logger.LogWarning("Cannot find content type key from alias {alias}", contentTypeAlias);
             return null;
@@ -327,24 +325,21 @@ internal class GridToBlockContentHelper
 
         foreach (var (propertyAlias, value) in blockMigrator.GetPropertyValues(control, context))
         {
-            var editorAlias = context.ContentTypes.GetEditorAliasByTypeAndProperty(contentTypeAlias, propertyAlias);
-            var propertyValue = value;
-            if (editorAlias != null)
-            {
+            if (context.ContentTypes.TryGetEditorAliasByTypeAndProperty(contentTypeAlias, propertyAlias, out var editorAlias) is false) { continue; }
 
-                var migrator = context.Migrators.TryGetMigrator(editorAlias.OriginalEditorAlias);
-                if (migrator != null)
-                {
-                    var property = new SyncMigrationContentProperty(
-                        contentTypeAlias, propertyAlias,
-                        editorAlias.OriginalEditorAlias, value?.ToString() ?? string.Empty);
-                    propertyValue = migrator.GetContentValue(property, context);
-                    _logger.LogDebug("Migrator: {migrator} returned {value}", migrator.GetType().Name, propertyValue);
-                }
-                else
-                {
-                    _logger.LogDebug("No Block Migrator found for [{alias}] (value will be passed through)", editorAlias.OriginalEditorAlias);
-                }
+            var propertyValue = value;
+
+            if (context.Migrators.TryGetMigrator(editorAlias.OriginalEditorAlias, out var migrator) is true)
+            {
+                var property = new SyncMigrationContentProperty(
+                    contentTypeAlias, propertyAlias,
+                    editorAlias.OriginalEditorAlias, value?.ToString() ?? string.Empty);
+                propertyValue = migrator.GetContentValue(property, context);
+                _logger.LogDebug("Migrator: {migrator} returned {value}", migrator.GetType().Name, propertyValue);
+            }
+            else
+            {
+                _logger.LogDebug("No Block Migrator found for [{alias}] (value will be passed through)", editorAlias.OriginalEditorAlias);
             }
 
             data.RawPropertyValues[propertyAlias] = propertyValue;

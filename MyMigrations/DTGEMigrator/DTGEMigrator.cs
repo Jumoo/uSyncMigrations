@@ -106,13 +106,13 @@ public class DTGEMigrator : SyncPropertyMigratorBase
 
         foreach (var (propertyAlias, value) in elementValue)
         {
-            var editorAlias = context.ContentTypes.GetEditorAliasByTypeAndProperty(contentTypeAlias, propertyAlias);
+            if (context.ContentTypes.TryGetEditorAliasByTypeAndProperty(contentTypeAlias, propertyAlias, out var editorAlias) is false) { continue; }
 
-            if (editorAlias == null) continue;
-
-            var migrator = context.Migrators.TryGetMigrator("DTGE." + editorAlias.OriginalEditorAlias);
-            if (migrator == null)
-                migrator = context.Migrators.TryGetMigrator(editorAlias.OriginalEditorAlias);
+            if (context.Migrators.TryGetMigrator("DTGE." + editorAlias.OriginalEditorAlias, out var migrator) is false
+                && context.Migrators.TryGetMigrator(editorAlias.OriginalEditorAlias, out migrator) is false)
+            {
+                return propertyValues;
+            }
 
             var propertyValue = value;
 
