@@ -185,11 +185,11 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
     }
 
 
-    private GridValue? GetGridValueFromString(string editorAlias, string value)
+    private LegacyGridValue? GetGridValueFromString(string editorAlias, string value)
     {
         try
         {
-            return JsonConvert.DeserializeObject<GridValue>(value);
+            return JsonConvert.DeserializeObject<LegacyGridValue>(value);
         }
         catch(Exception ex) 
         {
