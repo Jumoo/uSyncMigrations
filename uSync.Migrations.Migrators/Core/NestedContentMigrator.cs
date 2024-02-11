@@ -54,7 +54,8 @@ public class NestedContentMigrator : SyncPropertyMigratorBase
             foreach (var property in row.RawPropertyValues)
             {
                 var contentTypeAlias = context.ContentTypes.GetReplacementAlias(row.ContentTypeAlias);
-                var editorAlias = context.ContentTypes.GetEditorAliasByTypeAndProperty(contentTypeAlias, property.Key);
+                var propertyAlias = context.ContentTypes.GetReplacementAlias(property.Key);
+                var editorAlias = context.ContentTypes.GetEditorAliasByTypeAndProperty(contentTypeAlias, propertyAlias);
                 if (editorAlias == null) continue;
 
                 try
