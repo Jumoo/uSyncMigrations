@@ -9,7 +9,8 @@ using Umbraco.Extensions;
 using uSync.Migrations.Core.Legacy.Grid;
 
 namespace uSync.Migrations.Migrators.BlockGrid.BlockMigrators;
-internal class DocTypeGridEditorBlockMigrator : ISyncBlockMigrator
+
+public class DocTypeGridEditorBlockMigrator : ISyncBlockMigrator
 {
     private readonly IContentTypeService _contentTypeService;
 
