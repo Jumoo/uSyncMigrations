@@ -129,7 +129,17 @@ internal class GridToBlockGridConfigBlockHelper
 
             _logger.LogDebug("Adding {editor} to block config for {count} blocks", editor.Alias, blocks.Count);
 
-            gridBlockContext.ContentBlocks.AddRange(blocks);
+            var containingBlockKeys = gridBlockContext.ContentBlocks.Select(x => x.ContentElementTypeKey).ToArray();
+
+            foreach (var block in blocks)
+            {
+                if (containingBlockKeys.Contains(block.ContentElementTypeKey))
+                {
+                    _logger.LogDebug("Block ContentElementTypeKey {block} already exists in the config", block.ContentElementTypeKey);
+                    continue;
+                }
+                gridBlockContext.ContentBlocks.Add(block);
+            }
 
             allowedContentTypes[editor.Alias!] = blocks.Select(x => x.ContentElementTypeKey).ToArray();
         }
