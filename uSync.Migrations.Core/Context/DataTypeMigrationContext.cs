@@ -22,6 +22,8 @@ public class DataTypeMigrationContext
     /// </summary>
     private Dictionary<Guid, string> _dataTypeVariations { get; set; } = new();
 
+    private Dictionary<string, string> _dataTypePropertyEditorsReplacements = new();
+
 
     /// <summary>
     ///  contains a lookup from defition (guid) to alias, so we can pass that along. 
@@ -97,4 +99,17 @@ public class DataTypeMigrationContext
         return dataTypeDefinition?.Key ?? null;
     }
 
+    public void AddPropertyEditorsReplacementNames(string editorAlias, string newEditorAlias)
+    {
+        if (editorAlias != newEditorAlias)
+            _dataTypePropertyEditorsReplacements.TryAdd(editorAlias, newEditorAlias);
+    }
+
+    public string? GetPropertyEditorReplacementName(string editorAlias)
+    {
+        if (_dataTypePropertyEditorsReplacements.TryGetValue(editorAlias, out var value))
+            return value;
+
+        return null;
+    }
 }

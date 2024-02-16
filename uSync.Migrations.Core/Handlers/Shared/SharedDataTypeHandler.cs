@@ -161,6 +161,8 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
         var newDatabaseType = GetNewDatabaseType(migrator, dataTypeProperty, context);
         var newConfig = GetDataTypeConfig(migrator, dataTypeProperty, context) ?? MakeEmptyLabelConfig(dataTypeProperty);
 
+        context.DataTypes.AddPropertyEditorsReplacementNames(editorAlias, newEditorAlias);
+
         return MakeMigratedXml(key, name, GetLevel(source, level), newEditorAlias, newDatabaseType, folder, newConfig);
     }
 
