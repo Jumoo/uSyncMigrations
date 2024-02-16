@@ -73,7 +73,7 @@ internal static class GridConfigurationExtensions
                 }
                 yield return new BlockGridConfiguration.BlockGridBlockConfiguration
                 {
-                    Label = editorConfig.GetBlockname(),
+                    Label = label,
                     ContentElementTypeKey = elementKey,
                     GroupKey = groupKey != Guid.Empty ? groupKey.ToString() : null,
                     BackgroundColor = Grid.GridBlocks.Background,
