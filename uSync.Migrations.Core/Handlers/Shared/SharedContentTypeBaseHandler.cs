@@ -259,6 +259,7 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
         var messages = new List<MigrationMessage>();
         messages.AddRange(base.PreDoMigration(context));
         messages.AddRange(CreateAdditional(context));
+        messages.AddRange(UpdateDataTypePropertyReplacedEditors(context));
         return messages;
     }
 
@@ -324,4 +325,12 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
         }
     }
 
+    private IEnumerable<MigrationMessage> UpdateDataTypePropertyReplacedEditors(SyncMigrationContext context)
+    {
+        var messages = new List<MigrationMessage>();
+
+        context.ContentTypes.UpdatePropertyEditorTargets(context.DataTypes);
+
+        return messages;
+    }
 }
