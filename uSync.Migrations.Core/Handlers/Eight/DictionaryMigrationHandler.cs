@@ -12,7 +12,7 @@ namespace uSync.Migrations.Core.Handlers.Eight;
     SourceVersion = 8,
     SourceFolderName = "Dictionary",
     TargetFolderName = "Dictionary")]
-internal class DictionaryMigrationHandler : SharedHandlerBase<DictionaryItem>, ISyncMigrationHandler
+public class DictionaryMigrationHandler : SharedHandlerBase<DictionaryItem>, ISyncMigrationHandler
 {
     public DictionaryMigrationHandler(
         IEventAggregator eventAggregator,

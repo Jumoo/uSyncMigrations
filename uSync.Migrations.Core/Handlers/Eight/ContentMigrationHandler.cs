@@ -12,7 +12,7 @@ namespace uSync.Migrations.Core.Handlers.Eight;
     SourceVersion = 8,
     SourceFolderName = "Content",
     TargetFolderName = "Content")]
-internal class ContentMigrationHandler : ContentBaseMigrationHandler<Content>, ISyncMigrationHandler
+public class ContentMigrationHandler : ContentBaseMigrationHandler<Content>, ISyncMigrationHandler
 {
     public ContentMigrationHandler(
         IEventAggregator eventAggregator,

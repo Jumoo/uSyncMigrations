@@ -12,7 +12,7 @@ namespace uSync.Migrations.Core.Handlers.Eight;
     SourceVersion = 8,
     SourceFolderName = "Media",
     TargetFolderName = "Media")]
-internal class MediaMigrationHandler : ContentBaseMigrationHandler<Media>, ISyncMigrationHandler
+public class MediaMigrationHandler : ContentBaseMigrationHandler<Media>, ISyncMigrationHandler
 {
     public MediaMigrationHandler(
         IEventAggregator eventAggregator,
