@@ -77,7 +77,7 @@ public class DocTypeGridEditorBlockMigrator : ISyncBlockMigrator
     public string GetEditorAlias(ILegacyGridEditorConfig editor)
         => string.Empty;
 
-    public Dictionary<string, object> GetPropertyValues(GridValue.GridControl control, SyncMigrationContext context)
+    public virtual Dictionary<string, object> GetPropertyValues(GridValue.GridControl control, SyncMigrationContext context)
     {
         var propertyValues = new Dictionary<string, object>();
 
