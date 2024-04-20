@@ -295,13 +295,16 @@ internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TE
             var publishedNode = node.Element("Info")?.Element("Published");
             var publishedValue = publishedNode?.Attribute("Default").ValueOrDefault(false) ?? false;
 
+            var existingNodeNames = nodeNameNode.Elements("Name").Select(x => x.Attribute("Culture").ValueOrDefault(string.Empty)).ToList();
+            var existingPublished = publishedNode?.Elements("Published").Select(x => x.Attribute("Culture").ValueOrDefault(string.Empty)).ToList();
+
             foreach (var language in languages)
             {
-                nodeNameNode.Add(new XElement("Name",
-                    new XAttribute("Culture", language), defaultName));
+                if (!existingNodeNames.Contains(language))
+                    nodeNameNode.Add(new XElement("Name", new XAttribute("Culture", language), defaultName));
 
-                publishedNode?.Add(new XElement("Published",
-                        new XAttribute("Culture", language), publishedValue));
+                if (!(existingPublished?.Contains(language) == true))
+                    publishedNode!.Add(new XElement("Published", new XAttribute("Culture", language), publishedValue));
             }
         }
     }
