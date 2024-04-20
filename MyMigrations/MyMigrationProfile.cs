@@ -47,8 +47,8 @@ public class MyMigrationProfile : ISyncMigrationPlan
         // for this migrator we want to use our special grid migrator.
         PreferredMigrators = new Dictionary<string, string>()
         {
-            // { Umbraco.Cms.Core.Constants.PropertyEditors.Aliases.Grid, nameof(GridToBlockListMigrator) }
-            { Umbraco.Cms.Core.Constants.PropertyEditors.Aliases.NestedContent, nameof(NestedToBlockListMigrator) }
+            // { uSyncMigrations.EditorAliases.Grid, nameof(GridToBlockListMigrator) }
+            { uSyncMigrations.EditorAliases.NestedContent, nameof(NestedToBlockListMigrator) }
         },
 
         // eveything beneath is optional... 

@@ -1,5 +1,6 @@
 ﻿using uSync.BackOffice.Services;
 using uSync.Core;
+using uSync.Migrations.Core;
 
 namespace uSync.Migrations.Lite.Services;
 internal class SyncMigrationConversionService : ISyncMigrationConversionService
@@ -12,7 +13,7 @@ internal class SyncMigrationConversionService : ISyncMigrationConversionService
     }
     private static string[] _legacyEditors = new string[] {
         "Umbraco.Grid",
-        "Umbraco.NestedContent" 
+        uSyncMigrations.EditorAliases.NestedContent
     };
 
     public bool HasLegacyEditors()

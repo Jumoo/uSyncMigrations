@@ -3,12 +3,13 @@ using Newtonsoft.Json;
 using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Extensions;
 
+using uSync.Migrations.Core;
 using uSync.Migrations.Core.Extensions;
 
 namespace uSync.Migrations.Migrators.Core;
 
-[SyncMigrator(UmbConstants.PropertyEditors.Aliases.NestedContent, typeof(NestedContentConfiguration), IsDefaultAlias = true)]
-[SyncMigrator("Our.Umbraco.NestedContent")]
+[SyncMigrator(uSyncMigrations.EditorAliases.NestedContent, typeof(NestedContentConfiguration), IsDefaultAlias = true)]
+[SyncMigrator(uSyncMigrations.EditorAliases.NestedContentCommunity)]
 [SyncDefaultMigrator]
 public class NestedContentMigrator : SyncPropertyMigratorBase
 {
@@ -16,7 +17,7 @@ public class NestedContentMigrator : SyncPropertyMigratorBase
     { }
 
     public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
-        => UmbConstants.PropertyEditors.Aliases.NestedContent;
+        => uSyncMigrations.EditorAliases.NestedContent;
 
     public override object? GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {

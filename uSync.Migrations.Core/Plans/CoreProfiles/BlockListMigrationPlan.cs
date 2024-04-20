@@ -29,7 +29,7 @@ public class BlockListMigrationPlan : ISyncMigrationPlan
         SourceVersion = 8,
         PreferredMigrators = new Dictionary<string, string>
         {
-            { UmbConstants.PropertyEditors.Aliases.NestedContent, "NestedToBlockListMigrator" },
+            { uSyncMigrations.EditorAliases.NestedContent, "NestedToBlockListMigrator" },
         }
     };
 }

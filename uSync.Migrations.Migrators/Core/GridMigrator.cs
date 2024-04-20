@@ -7,6 +7,8 @@ using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Extensions;
 
+using uSync.Migrations.Core;
+
 namespace uSync.Migrations.Migrators.Core;
 
 /// <summary>
@@ -21,7 +23,7 @@ namespace uSync.Migrations.Migrators.Core;
 ///  the main feature here is migrating DTGE elements between grids, 
 ///  
 /// </remarks>
-[SyncMigrator(UmbEditors.Aliases.Grid, typeof(GridConfiguration), IsDefaultAlias = true)]
+[SyncMigrator(uSyncMigrations.EditorAliases.Grid, typeof(GridConfiguration), IsDefaultAlias = true)]
 [SyncDefaultMigrator]
 
 public class GridMigrator : SyncPropertyMigratorBase
@@ -37,7 +39,7 @@ public class GridMigrator : SyncPropertyMigratorBase
     }
 
     public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
-        => UmbEditors.Aliases.Grid;
+        => uSyncMigrations.EditorAliases.Grid;
 
     public override string GetDatabaseType(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
         => nameof(ValueStorageType.Ntext);

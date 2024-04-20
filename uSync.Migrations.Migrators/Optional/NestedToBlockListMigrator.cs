@@ -10,6 +10,7 @@ using Umbraco.Cms.Core.Models.Blocks;
 using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Extensions;
 
+using uSync.Migrations.Core;
 using uSync.Migrations.Core.Extensions;
 using uSync.Migrations.Migrators.Core;
 
@@ -17,8 +18,8 @@ using static Umbraco.Cms.Core.Constants;
 
 namespace uSync.Migrations.Migrators.Optional;
 
-[SyncMigrator(UmbConstants.PropertyEditors.Aliases.NestedContent)]
-[SyncMigrator("Our.Umbraco.NestedContent")]
+[SyncMigrator(uSyncMigrations.EditorAliases.NestedContent)]
+[SyncMigrator(uSyncMigrations.EditorAliases.NestedContentCommunity)]
 [SyncMigratorVersion(7, 8)]
 public class NestedToBlockListMigrator : SyncPropertyMigratorBase
 {

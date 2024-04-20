@@ -29,6 +29,20 @@ public static class uSyncMigrations
 
         public const int Media = 110;
     }
+
+    public static class EditorAliases
+    {
+        /// <remarks>
+        ///  at some point this will leave the core code base, so we need to start 
+        ///  refencing our own versions of some alias values.
+        /// </remarks>
+        public const string NestedContent = "Umbraco.NestedContent";
+        public const string NestedContentCommunity = "Our.Umbraco.NestedContent";
+
+        public const string Grid = "Umbraco.Grid";
+
+
+	}
 }
 
 

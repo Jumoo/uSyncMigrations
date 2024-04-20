@@ -6,13 +6,14 @@ using Newtonsoft.Json.Linq;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Extensions;
 
+using uSync.Migrations.Core;
 using uSync.Migrations.Core.Context;
 using uSync.Migrations.Core.Migrators;
 using uSync.Migrations.Core.Migrators.Models;
 
 namespace MyMigrations.DTGEMigrator;
 
-[SyncMigrator(Umbraco.Cms.Core.Constants.PropertyEditors.Aliases.Grid)]
+[SyncMigrator(uSyncMigrations.EditorAliases.Grid)]
 [SyncMigratorVersion(7, 8)]
 [SyncDefaultMigrator]
 public class DTGEMigrator : SyncPropertyMigratorBase
@@ -33,9 +34,9 @@ public class DTGEMigrator : SyncPropertyMigratorBase
     }
 
     public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
-        => Umbraco.Cms.Core.Constants.PropertyEditors.Aliases.Grid;
+        => uSyncMigrations.EditorAliases.Grid;
 
-    public override string GetDatabaseType(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
+	public override string GetDatabaseType(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
         => nameof(ValueStorageType.Ntext);
 
     public override object? GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)

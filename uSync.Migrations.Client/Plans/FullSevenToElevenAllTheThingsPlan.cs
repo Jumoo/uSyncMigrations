@@ -30,8 +30,8 @@ public class FullSevenToElevenAllTheThingsPlan : ISyncMigrationPlan
         SourceVersion = 7,
         PreferredMigrators = new Dictionary<string, string>
         {
-            { UmbConstants.PropertyEditors.Aliases.NestedContent, "NestedToBlockListMigrator" },
-            { UmbConstants.PropertyEditors.Aliases.Grid, "GridToBlockGridMigrator" }
+            { uSyncMigrations.EditorAliases.NestedContent, "NestedToBlockListMigrator" },
+            { uSyncMigrations.EditorAliases.Grid, "GridToBlockGridMigrator" }
         }
     };
 }
