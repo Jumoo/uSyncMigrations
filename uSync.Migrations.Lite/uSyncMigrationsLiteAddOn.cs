@@ -9,7 +9,7 @@ public class uSyncMigrationsLiteAddOn : ISyncAddOn
 
     public string Icon => uSyncMigrationsLite.Icon;
 
-    public string View => string.Empty;
+    public string View => "/App_Plugins/uSyncMigrationsLite/dashboard.html";
 
     public string Alias => Name.ToLowerInvariant();
 

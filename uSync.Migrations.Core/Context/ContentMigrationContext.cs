@@ -7,7 +7,6 @@ public class ContentMigrationContext
 {
     private Dictionary<Guid, string> _contentKeys { get; set; } = new();
     private Dictionary<Guid, string> _contentPaths { get; set; } = new();
-
     private Dictionary<string, MergingPropertiesConfig> _mergedProperties { get; set; } = new(StringComparer.InvariantCultureIgnoreCase);
 
     /// <summary>
