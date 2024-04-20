@@ -1,4 +1,5 @@
-﻿using uSync.Migrations.Core.Configuration.Models;
+﻿using Umbraco.Extensions;
+using uSync.Migrations.Core.Configuration.Models;
 using uSync.Migrations.Core.Models;
 
 namespace uSync.Migrations.Core.Context;
@@ -319,4 +320,21 @@ public class ContentTypeMigrationContext
     public string GetReplacementAlias(string alias)
         => _replacementAliases.TryGetValue(alias, out var replacement)
             ? replacement : alias;
+
+
+    public void UpdatePropertyEditorTargets(DataTypeMigrationContext dataTypeContext)
+    {
+        foreach (var property in _propertyTypes.Values)
+        {
+            var editorAlias = property.UpdatedEditorAlias;
+
+            var newEditorName = dataTypeContext.GetPropertyEditorReplacementName(editorAlias);
+
+            if (newEditorName.IsNullOrWhiteSpace() == true)
+            {
+                continue;
+            }
+            property.UpdatedEditorAlias = newEditorName;
+        }
+    }
 }
