@@ -81,6 +81,7 @@ internal class SyncMigrationService : ISyncMigrationService
     /// <returns></returns>
     public MigrationResults Validate(MigrationOptions? options)
     {
+        var sw = Stopwatch.StartNew();
         if (options == null)
         {
             return new MigrationResults
@@ -100,10 +101,12 @@ internal class SyncMigrationService : ISyncMigrationService
 
         var messages = new List<MigrationMessage>();
 
+        int index = 0;
         foreach (var validator in _migrationValidators)
         {
             try
             {
+                options.Callbacks?.Update($"Validating {validator.GetType().Name}", index++, _migrationValidators.Count);
                 messages.AddRange(validator.Validate(validationContext));
             }
             catch
@@ -111,6 +114,9 @@ internal class SyncMigrationService : ISyncMigrationService
                 // TODO: what do we do if the validator fails ???
             }
         }
+
+        sw.Stop();
+        options.Callbacks?.Update($"Validated ({sw.ElapsedMilliseconds}ms)", index, _migrationValidators.Count);
 
         return new MigrationResults
         {

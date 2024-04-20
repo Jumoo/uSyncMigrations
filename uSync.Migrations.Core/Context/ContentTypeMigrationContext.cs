@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-﻿using Umbraco.Extensions;
-using uSync.Migrations.Core.Configuration.Models;
+using Umbraco.Extensions;
+
 using uSync.Migrations.Core.Models;
 using uSync.Migrations.Core.Plans.Models;
 
