@@ -40,8 +40,8 @@ public class SyncDefaultMigratorAttribute : Attribute { }
 /// </summary>
 /// <remarks>
 ///  if the attribute is not present then the migrator will assume it supports v7. 
-///  but you use the attribute you have to specifiy all versions you support. 
-///  the version is passed in the Context so you can choose to do diffrent things per version
+///  but you use the attribute you have to specifically all versions you support. 
+///  the version is passed in the Context so you can choose to do different things per version
 /// </remarks>
 
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]

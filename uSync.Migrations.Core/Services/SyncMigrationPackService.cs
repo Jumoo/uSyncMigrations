@@ -117,7 +117,7 @@ internal class SyncMigrationPackService : ISyncMigrationPackService
         var configJson = JsonConvert.SerializeObject(_gridConfig.EditorsConfig.Editors, Formatting.Indented);
         var configFile = Path.Combine(targetFolder, _siteFolder, "config", "grid.editors.config.js");
 
-        Directory.CreateDirectory(Path.GetDirectoryName(configFile)); 
+        Directory.CreateDirectory(Path.GetDirectoryName(configFile));
 
         File.WriteAllText(configFile, configJson);
     }

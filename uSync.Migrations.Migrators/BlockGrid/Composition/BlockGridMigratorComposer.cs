@@ -2,8 +2,7 @@
 
 using Umbraco.Cms.Core.Composing;
 using Umbraco.Cms.Core.DependencyInjection;
-
-using uSync.Migrations.Core.Composing;
+using uSync.Migrations.Core;
 using uSync.Migrations.Migrators.BlockGrid.BlockMigrators;
 using uSync.Migrations.Migrators.BlockGrid.Extensions;
 using uSync.Migrations.Migrators.BlockGrid.SettingsMigrators;

@@ -36,15 +36,15 @@ public class DTGENestedContentMigrator : NestedContentMigrator
 
             foreach (var property in row.RawPropertyValues)
             {
-                var editorAlias = context.ContentTypes.GetEditorAliasByTypeAndProperty(row.ContentTypeAlias, property.Key);
-                if (editorAlias == null) continue;
+                if (context.ContentTypes.TryGetEditorAliasByTypeAndProperty(row.ContentTypeAlias, property.Key, out var editorAlias) is false) { continue; }
 
                 try
                 {
-                    var migrator = context.Migrators.TryGetMigrator("DTGE." + editorAlias.OriginalEditorAlias)
-                        ?? context.Migrators.TryGetMigrator(editorAlias.OriginalEditorAlias);
-
-                    if (migrator == null) continue;
+                    if (context.Migrators.TryGetMigrator("DTGE." + editorAlias.OriginalEditorAlias, out var migrator) is false &&
+                        context.Migrators.TryGetMigrator(editorAlias.OriginalEditorAlias, out migrator) is false)
+                    {
+                        continue;
+                    }
 
                     var contentValue = migrator.GetContentValue(
                         new SyncMigrationContentProperty(

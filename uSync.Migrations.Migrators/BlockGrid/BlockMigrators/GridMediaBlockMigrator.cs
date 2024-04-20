@@ -23,7 +23,7 @@ public class GridMediaBlockMigrator : GridBlockMigratorSimpleBase, ISyncBlockMig
 
     public override string GetEditorAlias(ILegacyGridEditorConfig editor) => "Media Picker";
 
-    public override Dictionary<string, object> GetPropertyValues(GridValue.GridControl control, SyncMigrationContext context)
+    public override Dictionary<string, object> GetPropertyValues(LegacyGridValue.GridControl control, SyncMigrationContext context)
     {
         var properties = new Dictionary<string, object>();
         if (control.Value == null) return properties;

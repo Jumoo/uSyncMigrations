@@ -1,3 +1,7 @@
+using System.Diagnostics.CodeAnalysis;
+
+using Lucene.Net.Search;
+
 using uSync.Migrations.Core.Models;
 
 namespace uSync.Migrations.Core.Context;
@@ -41,11 +45,8 @@ public class DataTypeMigrationContext
     /// <summary>
     ///  get the alias based on the DTD value (which we have in contenttype).
     /// </summary>
-    /// <param name="dtd"></param>
-    /// <returns></returns>
-    public string GetAlias(Guid dtd)
-        => _dataTypeAliases?.TryGetValue(dtd, out var alias) == true
-            ? alias : string.Empty;
+    public bool TryGetAlias(Guid dtd, [MaybeNullWhen(false)] out string alias)
+        => _dataTypeAliases.TryGetValue(dtd, out alias);
 
     /// <summary>
     ///  add a datatypedefinion (aka datatype key) to the context.
@@ -56,10 +57,18 @@ public class DataTypeMigrationContext
     /// <summary>
     ///  get a datatype definiton from the context.
     /// </summary>
-    public DataTypeInfo? GetByDefinition(Guid guid)
-        => _dataTypeDefinitions?.TryGetValue(guid, out var def) == true
-            ? def
-            : null;
+    public bool TryGetInfoByDefinition(Guid guid, [MaybeNullWhen(false)] out DataTypeInfo info)
+        => _dataTypeDefinitions.TryGetValue(guid, out info);
+
+    public bool TryUpdateDefinitionOriginalEditor(Guid guid, string originalEditor)
+    {
+        if (_dataTypeDefinitions.ContainsKey(guid)) { 
+            _dataTypeDefinitions[guid].OriginalEditorAlias = originalEditor;
+            return true;
+        }
+
+        return false;
+    }
 
     /// <summary>
     ///  add the key that replaces a datatype to the context.

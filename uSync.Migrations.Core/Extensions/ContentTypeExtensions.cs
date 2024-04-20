@@ -81,8 +81,10 @@ internal static class ContentTypeExtensions
     {
         foreach (var composition in newDocType.CompositionAliases)
         {
+            if (context.ContentTypes.TryGetKeyByAlias(composition, out var compositionKey) is false) {  continue; }
+
             var element = new XElement("Composition");
-            element.Add(new XAttribute("Key", context.ContentTypes.GetKeyByAlias(composition)));
+            element.Add(new XAttribute("Key", compositionKey));
             element.Add(composition);
             yield return element;
         }

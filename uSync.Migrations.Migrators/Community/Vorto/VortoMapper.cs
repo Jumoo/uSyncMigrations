@@ -62,7 +62,7 @@ public class VortoMapper : SyncPropertyMigratorBase,
         // guid is the guid of the wrapped datatype.
         var attempt = value.Value<string>("guid").TryConvertTo<Guid>();
         if (attempt)
-            return (attempt.Result, context.DataTypes.GetByDefinition(attempt.Result));
+            return (attempt.Result, context.DataTypes.TryGetInfoByDefinition(attempt.Result, out var dataTypeInfo) is true ? dataTypeInfo : null);
 
         return (Guid.Empty, null);
     }
@@ -77,13 +77,9 @@ public class VortoMapper : SyncPropertyMigratorBase,
             var culturedValues = JsonConvert.DeserializeObject<CulturedPropertyValue>(contentProperty.Value);
             if (culturedValues is not null)
             {
-                var dataType = context.DataTypes.GetByDefinition(culturedValues.DtdGuid);
-                if (dataType is not null)
+                if (context.DataTypes.TryGetInfoByDefinition(culturedValues.DtdGuid, out var dataType) is true)
                 {
-                    var migrator = context.Migrators.TryGetMigrator(
-                        $"{contentProperty.ContentTypeAlias}_{contentProperty.PropertyAlias}", dataType.OriginalEditorAlias);
-
-                    if (migrator != null)
+                    if (context.Migrators.TryGetMigrator($"{contentProperty.ContentTypeAlias}_{contentProperty.PropertyAlias}", dataType.OriginalEditorAlias, out var migrator) is true)
                     {
                         foreach (var cultureValue in culturedValues.Values)
                         {

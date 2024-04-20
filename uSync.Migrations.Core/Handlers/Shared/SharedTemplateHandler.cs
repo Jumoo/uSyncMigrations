@@ -14,7 +14,7 @@ namespace uSync.Migrations.Core.Handlers.Shared;
 /// <summary>
 ///  stuff that is the same in v7 and v8 template migrations.
 /// </summary>
-internal abstract class SharedTemplateHandler : SharedHandlerBase<Template>
+public abstract class SharedTemplateHandler : SharedHandlerBase<Template>
 {
     protected readonly IFileService _fileService;
 

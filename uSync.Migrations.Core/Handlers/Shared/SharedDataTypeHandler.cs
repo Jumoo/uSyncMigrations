@@ -16,7 +16,7 @@ using uSync.Migrations.Core.Serialization;
 using uSync.Migrations.Core.Services;
 
 namespace uSync.Migrations.Core.Handlers.Shared;
-internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
+public abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
 {
     protected readonly IDataTypeService _dataTypeService;
     protected readonly JsonSerializerSettings _jsonSerializerSettings;
@@ -54,14 +54,7 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
     /// Whether properties using this property editor should be split into multiple properties
     /// </summary>
     protected bool IsSplitPropertyEditor(string editorAlias, SyncMigrationContext context)
-    {
-        //
-        // replacements
-        //
-        var migrator = context.Migrators.TryGetPropertySplittingMigrator(editorAlias);
-
-        return migrator != null;
-    }
+        => context.Migrators.TryGetPropertySplittingMigrator(editorAlias, out _);
 
     protected override void PrepareFile(XElement source, SyncMigrationContext context)
     {
@@ -87,12 +80,9 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
             }
         }
 
-        if (context.DataTypes.GetByDefinition(dtd) != null && !string.IsNullOrEmpty(editorAlias))
-        {
-            context.DataTypes.GetByDefinition(dtd)!.OriginalEditorAlias = editorAlias;
-        }
+        context.DataTypes.TryUpdateDefinitionOriginalEditor(dtd, editorAlias);
     }
-    
+
     protected override void PrePrepareFile(XElement source, SyncMigrationContext context)
     {
         var editorAlias = GetEditorAlias(source);
@@ -112,11 +102,6 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
 
         // add alias, (won't update if replacement was added)
         context.DataTypes.AddDefinition(dtd, new Models.DataTypeInfo(editorAlias, editorAlias, dataTypeName));
-        if (context.DataTypes.GetByDefinition(dtd) != null)
-        {
-            // ensured that we always populated old alias, so we can use it in archetype
-            context.DataTypes.GetByDefinition(dtd)!.OriginalEditorAlias = editorAlias;
-        }
         context.DataTypes.AddAlias(dtd, alias);
     }
 
@@ -150,8 +135,7 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
         var folder = GetDataTypeFolder(source);
         var databaseType = GetDatabaseType(source);
 
-        var migrator = context.Migrators.TryGetMigrator(editorAlias);
-        if (migrator is null)
+        if (context.Migrators.TryGetMigrator(editorAlias, out var migrator) is false)
         {
             // no migrator. 
         }
