@@ -5,10 +5,11 @@ using Umbraco.Extensions;
 
 using uSync.Migrations.Core;
 using uSync.Migrations.Core.Extensions;
+using uSync.Migrations.Core.Legacy;
 
 namespace uSync.Migrations.Migrators.Core;
 
-[SyncMigrator(uSyncMigrations.EditorAliases.NestedContent, typeof(NestedContentConfiguration), IsDefaultAlias = true)]
+[SyncMigrator(uSyncMigrations.EditorAliases.NestedContent, typeof(LegacyNestedContentConfiguration), IsDefaultAlias = true)]
 [SyncMigrator(uSyncMigrations.EditorAliases.NestedContentCommunity)]
 [SyncDefaultMigrator]
 public class NestedContentMigrator : SyncPropertyMigratorBase
@@ -21,10 +22,10 @@ public class NestedContentMigrator : SyncPropertyMigratorBase
 
     public override object? GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
-        if (dataTypeProperty?.PreValues == null) return new NestedContentConfiguration();
+        if (dataTypeProperty?.PreValues == null) return new LegacyNestedContentConfiguration();
 
-        var config = (NestedContentConfiguration?)new NestedContentConfiguration().MapPreValues(dataTypeProperty.PreValues);
-        if (config?.ContentTypes == null) return new NestedContentConfiguration();
+        var config = (LegacyNestedContentConfiguration?)new LegacyNestedContentConfiguration().MapPreValues(dataTypeProperty.PreValues);
+        if (config?.ContentTypes == null) return new LegacyNestedContentConfiguration();
 
         var contentTypeKeys = config.ContentTypes.Select(x => x.Alias)
             .WhereNotNull() // satisfy nullability requirement
@@ -43,7 +44,7 @@ public class NestedContentMigrator : SyncPropertyMigratorBase
     {
         if (string.IsNullOrWhiteSpace(contentProperty.Value)) return string.Empty;
 
-        var rowValues = JsonConvert.DeserializeObject<IList<NestedContentRowValue>>(contentProperty.Value, new JsonSerializerSettings() { DateParseHandling = DateParseHandling.None });
+        var rowValues = JsonConvert.DeserializeObject<IList<LegacyNestedContentRowValue>>(contentProperty.Value, new JsonSerializerSettings() { DateParseHandling = DateParseHandling.None });
         if (rowValues == null) return string.Empty;
 
         foreach (var row in rowValues)
@@ -79,19 +80,4 @@ public class NestedContentMigrator : SyncPropertyMigratorBase
 
         return JsonConvert.SerializeObject(rowValues, Formatting.Indented);
     }
-}
-
-public class NestedContentRowValue
-{
-    [JsonProperty("key")]
-    public Guid Id { get; set; }
-
-    [JsonProperty("name")]
-    public string? Name { get; set; }
-
-    [JsonProperty("ncContentTypeAlias")]
-    public string ContentTypeAlias { get; set; } = null!;
-
-    [JsonExtensionData]
-    public IDictionary<string, object?> RawPropertyValues { get; set; } = null!;
 }

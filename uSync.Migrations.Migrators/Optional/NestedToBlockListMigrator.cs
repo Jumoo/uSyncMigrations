@@ -12,6 +12,7 @@ using Umbraco.Extensions;
 
 using uSync.Migrations.Core;
 using uSync.Migrations.Core.Extensions;
+using uSync.Migrations.Core.Legacy;
 using uSync.Migrations.Migrators.Core;
 
 using static Umbraco.Cms.Core.Constants;
@@ -54,7 +55,7 @@ public class NestedToBlockListMigrator : SyncPropertyMigratorBase
         if (dataTypeProperty.PreValues == null)
             return new BlockListConfiguration();
 
-        var nestedConfig = (NestedContentConfiguration?)(new NestedContentConfiguration().MapPreValues(dataTypeProperty.PreValues));
+        var nestedConfig = (LegacyNestedContentConfiguration?)(new LegacyNestedContentConfiguration().MapPreValues(dataTypeProperty.PreValues));
         if (nestedConfig == null) return new BlockListConfiguration();
 
         return GetBlockListConfigFromNestedConfig(nestedConfig, context);
@@ -66,13 +67,13 @@ public class NestedToBlockListMigrator : SyncPropertyMigratorBase
         if (string.IsNullOrWhiteSpace(dataTypeProperty.ConfigAsString))
             return new BlockListConfiguration();
 
-        var nestedConfig = JsonConvert.DeserializeObject<NestedContentConfiguration>(dataTypeProperty.ConfigAsString);
+        var nestedConfig = JsonConvert.DeserializeObject<LegacyNestedContentConfiguration>(dataTypeProperty.ConfigAsString);
         if (nestedConfig == null) return new BlockListConfiguration();
 
         return GetBlockListConfigFromNestedConfig(nestedConfig, context);
     }
 
-    private object GetBlockListConfigFromNestedConfig(NestedContentConfiguration nestedConfig, SyncMigrationContext context)
+    private object GetBlockListConfigFromNestedConfig(LegacyNestedContentConfiguration nestedConfig, SyncMigrationContext context)
     {
         var config = new BlockListConfiguration()
         {
@@ -131,7 +132,7 @@ public class NestedToBlockListMigrator : SyncPropertyMigratorBase
             return contentProperty.Value;
         }
 
-        var rowValues = JsonConvert.DeserializeObject<IList<NestedContentRowValue>>(contentProperty.Value, new JsonSerializerSettings() { DateParseHandling = DateParseHandling.None });
+        var rowValues = JsonConvert.DeserializeObject<IList<LegacyNestedContentRowValue>>(contentProperty.Value, new JsonSerializerSettings() { DateParseHandling = DateParseHandling.None });
         if (rowValues == null) return string.Empty;
 
         var blockValue = new BlockValue();

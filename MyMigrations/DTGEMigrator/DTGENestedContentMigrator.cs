@@ -1,17 +1,17 @@
 ﻿using Newtonsoft.Json;
 
-using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Extensions;
 
 using uSync.Migrations.Core;
 using uSync.Migrations.Core.Context;
+using uSync.Migrations.Core.Legacy;
 using uSync.Migrations.Core.Migrators;
 using uSync.Migrations.Core.Migrators.Models;
 using uSync.Migrations.Migrators.Core;
 
 namespace MyMigrations.DTGEMigrator;
 
-[SyncMigrator("DTGE." + uSyncMigrations.EditorAliases.NestedContent, typeof(NestedContentConfiguration), IsDefaultAlias = true)]
+[SyncMigrator("DTGE." + uSyncMigrations.EditorAliases.NestedContent, typeof(LegacyNestedContentConfiguration), IsDefaultAlias = true)]
 [SyncMigrator("DTGE." + uSyncMigrations.EditorAliases.NestedContentCommunity)]
 [SyncDefaultMigrator]
 public class DTGENestedContentMigrator : NestedContentMigrator
@@ -25,7 +25,7 @@ public class DTGENestedContentMigrator : NestedContentMigrator
     {
         if (string.IsNullOrWhiteSpace(contentProperty.Value)) return string.Empty;
 
-        var rowValues = JsonConvert.DeserializeObject<IList<NestedContentRowValue>>(contentProperty.Value);
+        var rowValues = JsonConvert.DeserializeObject<IList<LegacyNestedContentRowValue>>(contentProperty.Value);
         if (rowValues == null) return string.Empty;
 
         foreach (var row in rowValues)
@@ -69,22 +69,5 @@ public class DTGENestedContentMigrator : NestedContentMigrator
 
         return JsonConvert.SerializeObject(rowValues, Formatting.Indented);
     }
-
-
-}
-
-internal class NestedContentRowValue
-{
-    [JsonProperty("key")]
-    public Guid Id { get; set; }
-
-    [JsonProperty("name")]
-    public string? Name { get; set; }
-
-    [JsonProperty("ncContentTypeAlias")]
-    public string ContentTypeAlias { get; set; } = null!;
-
-    [JsonExtensionData]
-    public IDictionary<string, object?> RawPropertyValues { get; set; } = null!;
 }
 
