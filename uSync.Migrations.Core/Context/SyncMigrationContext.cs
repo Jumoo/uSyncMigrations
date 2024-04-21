@@ -1,4 +1,5 @@
 ﻿using uSync.BackOffice;
+using uSync.Migrations.Core.Models;
 
 namespace uSync.Migrations.Core.Context;
 
@@ -48,9 +49,32 @@ public class SyncMigrationContext : IDisposable
     /// </summary>
     public TemplateMigratorContext Templates { get; } = new TemplateMigratorContext();
 
-    // generic stuff (applies to all types).
+    /// <summary>
+    ///  messages that can be stored in the context. 
+    /// </summary>
+    private List<MigrationMessage> _messages { get; } = new();
 
-    private HashSet<string> _blockedTypes = new(StringComparer.OrdinalIgnoreCase);
+	/// <summary>
+	///  add a message to the context, this will be returned at the end of migrations
+	/// </summary>
+	public void AddMessage(MigrationMessage message)
+        => _messages.Add(message);
+
+	/// <summary>
+	///  add a message to the context, this will be returned at the end of migrations
+	/// </summary>
+	public void AddMessage(string itemType, string itemName, string message, MigrationMessageType messageType)
+        => _messages.Add(new MigrationMessage(itemType, itemName, message, messageType));
+
+    /// <summary>
+    ///  list all the messages in the migration.
+    /// </summary>
+    /// <returns></returns>
+    public List<MigrationMessage> GetMessages()
+        => _messages;
+
+	// generic stuff (applies to all types).
+	private HashSet<string> _blockedTypes = new(StringComparer.OrdinalIgnoreCase);
     private Dictionary<int, Guid> _idKeyMap { get; set; } = new();
     private Dictionary<Guid, string> _keyToUdiEntityTypeMap { get; set; } = new();
 

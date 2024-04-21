@@ -12,6 +12,7 @@ using uSync.Core;
 using uSync.Migrations.Core.Context;
 using uSync.Migrations.Core.Migrators;
 using uSync.Migrations.Core.Migrators.Models;
+using uSync.Migrations.Core.Models;
 using uSync.Migrations.Core.Serialization;
 using uSync.Migrations.Core.Services;
 
@@ -42,7 +43,7 @@ public abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
     {
         foreach (var datatype in _dataTypeService.GetAll())
         {
-            context.DataTypes.AddDefinition(datatype.Key, new Models.DataTypeInfo(datatype.EditorAlias, datatype.EditorAlias, datatype.Name ?? datatype.EditorAlias));
+            context.DataTypes.AddDefinition(datatype.Key, new Models.DataTypeInfo(datatype));
         }
     }
 
@@ -94,6 +95,7 @@ public abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
         if (isSplitPropertyEditor)
         {
             // if this editor is to be split, then by default we won't migrate the data type
+            context.AddMessage(this.ItemType, alias ?? dtd.ToString(), "This editor will be split, so not migrating base type", MigrationMessageType.Information);
             return;
         }
 
@@ -128,6 +130,7 @@ public abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
         if (context.DataTypes.GetReplacement(key) != key)
         {
             // this data type has been replaced and isn't to be migrated
+            context.AddMessage(this.ItemType, alias ?? key.ToString(), "Datatype has been replaced and is not being migrated", MigrationMessageType.Information); 
             return null;
         }
 
@@ -137,6 +140,7 @@ public abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
 
         if (context.Migrators.TryGetMigrator(editorAlias, out var migrator) is false)
         {
+            context.AddMessage(this.ItemType, editorAlias, "No Migrator found", MigrationMessageType.Information);
             // no migrator. 
         }
 

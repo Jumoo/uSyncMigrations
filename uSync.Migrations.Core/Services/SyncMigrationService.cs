@@ -146,7 +146,7 @@ internal class SyncMigrationService : ISyncMigrationService
 
         using (var migrationContext = PrepareContext(migrationId, sourceRoot, options))
         {
-            var results = MigrateFromDisk(migrationId, sourceRoot, migrationContext, handlers);
+            var results = MigrateFromDisk(migrationId, sourceRoot, migrationContext, handlers).ToList();
 
             var success = results.All(x => x.MessageType != MigrationMessageType.Error);
 
@@ -161,6 +161,9 @@ internal class SyncMigrationService : ISyncMigrationService
                 _migrationFileService.CopyMigrationToFolder(migrationId, targetRoot);
                 _migrationFileService.RemoveMigration(migrationId);
             }
+
+            // add any messages that have been added from the context. 
+            results.AddRange(migrationContext.GetMessages());
 
             sw.Stop();
             _logger.LogInformation("Migration Complete {success} {count} ({elapsed}ms)", success, results.Count(), sw.ElapsedMilliseconds);
