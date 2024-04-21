@@ -151,6 +151,12 @@ public abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBase<
 
                 if (context.ContentTypes.IsIgnoredProperty(alias, name))
                 {
+                    context.AddMessage(
+						this.ItemType,
+						alias,
+						$"{alias} [{name}] is ignored property will not be migrated",
+						MigrationMessageType.Information);
+                    
                     continue;
                 }
 
@@ -286,6 +292,7 @@ public abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBase<
             var migratingNotification = new SyncMigratingNotification<TEntity>(source, context);
             if (_eventAggregator.PublishCancelable(migratingNotification) == true)
             {
+                context.AddMessage(this.ItemType, contentType.Alias, "Create cancelled by notifcation will not be created", MigrationMessageType.Information); 
                 continue;
             }
 

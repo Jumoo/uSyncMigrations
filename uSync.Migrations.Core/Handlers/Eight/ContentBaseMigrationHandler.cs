@@ -12,6 +12,7 @@ using uSync.Migrations.Core.Context;
 using uSync.Migrations.Core.Extensions;
 using uSync.Migrations.Core.Handlers.Shared;
 using uSync.Migrations.Core.Migrators.Models;
+using uSync.Migrations.Core.Models;
 using uSync.Migrations.Core.Services;
 
 namespace uSync.Migrations.Core.Handlers.Eight;
@@ -99,6 +100,7 @@ internal class ContentBaseMigrationHandler<TEntity> : SharedContentBaseHandler<T
             }
             catch (Exception ex)
             {
+                context.AddMessage(this.ItemType, editorAlias, $"error trying to migrate variant values : {ex.Message}", MigrationMessageType.Error);                
                 _logger.LogError(ex, "Error trying to migrate variant node values {editor}", editorAlias);
                 throw;
             }

@@ -63,6 +63,7 @@ public class DictionaryMigrationHandler : SharedHandlerBase<DictionaryItem>, ISy
             var migratingNotification = new SyncMigratingNotification<DictionaryItem>(source, context);
             if (_eventAggregator.PublishCancelable(migratingNotification) == true)
             {
+                context.AddMessage(this.ItemType, source.GetAlias(), "Item canceled via notification", MigrationMessageType.Information);
                 continue;
             }
 

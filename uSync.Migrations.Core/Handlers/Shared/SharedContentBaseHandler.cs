@@ -97,12 +97,14 @@ public abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TEnt
         {
             if (_ignoredProperties.Contains(property.Name.LocalName))
             {
-                continue;
+				context.AddMessage(this.ItemType, alias, $"Ignoring property {property.Name.LocalName}", MigrationMessageType.Information);
+				continue;
             }
 
             if (context.ContentTypes.IsIgnoredProperty(contentType, property.Name.LocalName))
             {
-                continue;
+				context.AddMessage(this.ItemType, alias, $"Ignoring property {property.Name.LocalName}", MigrationMessageType.Information);
+				continue;
             }
 
             var newProperty = ConvertPropertyValue(ItemType, contentType, property, context);
@@ -167,6 +169,7 @@ public abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TEnt
         {
             _logger.LogWarning("Failed to migrate property [{editorAlias} {property}] {ex}",
                 editorAlias, property.Name.LocalName, ex.Message);
+            context.AddMessage(this.ItemType, property.Name.LocalName, ex.Message, MigrationMessageType.Warning);
             throw new Exception($"Failed migrating [{editorAlias} - {property.Name.LocalName}] : {ex.Message}", ex);
         }
     }
@@ -229,6 +232,12 @@ public abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TEnt
 
         if (string.IsNullOrWhiteSpace(migrationProperty.EditorAlias))
         {
+            context.AddMessage(
+				this.ItemType,
+				migrationProperty.ContentTypeAlias,
+				$"{migrationProperty.GetDetailString()} has a blank editor alias and can't be migrated",
+				MigrationMessageType.Warning);
+
             _logger.LogDebug("{info} has a blank editorAlias, can't migrate",
                 migrationProperty.GetDetailString());
 
