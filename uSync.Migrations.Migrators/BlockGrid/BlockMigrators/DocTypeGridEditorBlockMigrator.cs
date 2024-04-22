@@ -59,7 +59,7 @@ internal class DocTypeGridEditorBlockMigrator : ISyncBlockMigrator
     /// <param name="control"></param>
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
-    public string GetContentTypeAlias(LegacyGridValue.GridControl control)
+    public string GetContentTypeAlias(LegacyGridValue.LegacyGridControl control)
         => control.Value?.Value<string>("dtgeContentTypeAlias") ?? string.Empty;
 
     /// <remarks>
@@ -76,7 +76,7 @@ internal class DocTypeGridEditorBlockMigrator : ISyncBlockMigrator
     public string GetEditorAlias(ILegacyGridEditorConfig editor)
         => string.Empty;
 
-    public Dictionary<string, object> GetPropertyValues(LegacyGridValue.GridControl control, SyncMigrationContext context)
+    public Dictionary<string, object> GetPropertyValues(LegacyGridValue.LegacyGridControl control, SyncMigrationContext context)
     {
         var propertyValues = new Dictionary<string, object>();
 

@@ -16,7 +16,7 @@ namespace uSync.Migrations.Migrators.BlockGrid.Config;
 /// </remarks>
 internal class GridToBlockGridConfigContext
 {
-    public GridConfiguration GridConfiguration { get; }
+    public LegacyGridConfiguration GridConfiguration { get; }
     public ILegacyGridEditorsConfig GridEditorsConfig { get; }
     public int? GridColumns { get; }
 
@@ -40,7 +40,7 @@ internal class GridToBlockGridConfigContext
     };
 
 
-    public GridToBlockGridConfigContext(GridConfiguration gridConfiguration, ILegacyGridEditorsConfig gridConfig)
+    public GridToBlockGridConfigContext(LegacyGridConfiguration gridConfiguration, ILegacyGridEditorsConfig gridConfig)
     {
         GridEditorsConfig = gridConfig;
         GridConfiguration = gridConfiguration;

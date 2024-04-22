@@ -8,6 +8,7 @@ using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Extensions;
 
 using uSync.Migrations.Core;
+using uSync.Migrations.Core.Legacy.Grid;
 
 namespace uSync.Migrations.Migrators.Core;
 
@@ -23,7 +24,7 @@ namespace uSync.Migrations.Migrators.Core;
 ///  the main feature here is migrating DTGE elements between grids, 
 ///  
 /// </remarks>
-[SyncMigrator(uSyncMigrations.EditorAliases.Grid, typeof(GridConfiguration), IsDefaultAlias = true)]
+[SyncMigrator(uSyncMigrations.EditorAliases.Grid, typeof(LegacyGridConfiguration), IsDefaultAlias = true)]
 [SyncDefaultMigrator]
 
 public class GridMigrator : SyncPropertyMigratorBase
@@ -62,7 +63,7 @@ public class GridMigrator : SyncPropertyMigratorBase
     public override string? GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
     {
         if (contentProperty.Value == null) return string.Empty;
-        var grid = JsonConvert.DeserializeObject<GridValue>(contentProperty.Value);
+        var grid = JsonConvert.DeserializeObject<LegacyGridValue>(contentProperty.Value);
         if (grid == null) return contentProperty.Value;
 
 
@@ -86,14 +87,14 @@ public class GridMigrator : SyncPropertyMigratorBase
         return JsonConvert.SerializeObject(grid);
     }
 
-    private string GetDTGEContentTypeAlias(GridValue.GridControl control)
+    private string GetDTGEContentTypeAlias(LegacyGridValue.LegacyGridControl control)
     => control.Value?.Value<string>(_dtgeContentTypeAliasValue) ?? string.Empty;
 
-    private bool isDoctypeGridEditorControl(GridValue.GridControl control)
+    private bool isDoctypeGridEditorControl(LegacyGridValue.LegacyGridControl control)
         => !string.IsNullOrEmpty(control.Value?.Value<string>(_dtgeContentTypeAliasValue));
 
     private Dictionary<string, object?> GetPropertyValues(
-        GridValue.GridControl control, SyncMigrationContext context)
+        LegacyGridValue.LegacyGridControl control, SyncMigrationContext context)
     {
         var propertyValues = new Dictionary<string, object?>();
 

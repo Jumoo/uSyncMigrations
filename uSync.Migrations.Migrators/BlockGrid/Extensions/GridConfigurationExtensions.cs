@@ -17,7 +17,7 @@ using GridConfiguration = Umbraco.Cms.Core.PropertyEditors.GridConfiguration;
 namespace uSync.Migrations.Migrators.BlockGrid.Extensions;
 internal static class GridConfigurationExtensions
 {
-    public static int? GetGridColumns(this GridConfiguration gridConfiguration)
+    public static int? GetGridColumns(this LegacyGridConfiguration gridConfiguration)
     {
         if (gridConfiguration.Items?.TryGetValue("columns", out var columns) == true)
         {
@@ -27,7 +27,7 @@ internal static class GridConfigurationExtensions
         return 12;
     }
 
-    public static JToken? GetItemBlock(this GridConfiguration gridConfiguration, string name)
+    public static JToken? GetItemBlock(this LegacyGridConfiguration gridConfiguration, string name)
     {
         if (gridConfiguration.Items?.TryGetValue(name, out var block) == true)
         {

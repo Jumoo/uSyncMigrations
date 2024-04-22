@@ -52,7 +52,7 @@ public abstract class GridBlockMigratorSimpleBase
     public virtual IEnumerable<string> GetAllowedContentTypes(ILegacyGridEditorConfig config, SyncMigrationContext context)
         => GetContentTypeAlias(config).AsEnumerableOfOne();
 
-    public virtual string GetContentTypeAlias(LegacyGridValue.GridControl control)
+    public virtual string GetContentTypeAlias(LegacyGridValue.LegacyGridControl control)
         => control.Editor.Alias.GetBlockElementContentTypeAlias(_shortStringHelper);
 
     public virtual string GetContentTypeAlias(ILegacyGridEditorConfig editorConfig)
@@ -64,7 +64,7 @@ public abstract class GridBlockMigratorSimpleBase
         return alias.GetBlockElementContentTypeAlias(_shortStringHelper);
     }
 
-    public virtual Dictionary<string, object> GetPropertyValues(LegacyGridValue.GridControl control, SyncMigrationContext context)
+    public virtual Dictionary<string, object> GetPropertyValues(LegacyGridValue.LegacyGridControl control, SyncMigrationContext context)
     {
         return new Dictionary<string, object>
         {

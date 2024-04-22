@@ -181,7 +181,7 @@ internal class GridToBlockContentHelper
         return block;
     }
 
-    private IEnumerable<BlockContentPair> GetGridAreaBlockContent(LegacyGridValue.GridArea area, SyncMigrationContext context)
+    private IEnumerable<BlockContentPair> GetGridAreaBlockContent(LegacyGridValue.LegacyGridArea area, SyncMigrationContext context)
     {
         foreach (var control in area.Controls)
         {
@@ -195,7 +195,7 @@ internal class GridToBlockContentHelper
         }
     }
 
-    private IEnumerable<BlockGridLayoutItem> GetGridAreaBlockLayouts(LegacyGridValue.GridArea area, IEnumerable<BlockContentPair> contentAndSettings)
+    private IEnumerable<BlockGridLayoutItem> GetGridAreaBlockLayouts(LegacyGridValue.LegacyGridArea area, IEnumerable<BlockContentPair> contentAndSettings)
     {
         foreach (var item in contentAndSettings)
         {
@@ -211,7 +211,7 @@ internal class GridToBlockContentHelper
         }
     }
 
-    private BlockContentPair GetGridRowBlockContentAndSettings(LegacyGridValue.GridRow row, SyncMigrationContext context, string dataTypeAlias)
+    private BlockContentPair GetGridRowBlockContentAndSettings(LegacyGridValue.LegacyGridRow row, SyncMigrationContext context, string dataTypeAlias)
     {
         var rowLayoutContentTypeAlias = _conventions.LayoutContentTypeAlias(row.Name);
         var rowContentTypeKey = context.GetContentTypeKeyOrDefault(rowLayoutContentTypeAlias, rowLayoutContentTypeAlias.ToGuid());
@@ -227,7 +227,7 @@ internal class GridToBlockContentHelper
 
         return new BlockContentPair(content: contentData, settings: settingsData);
     }
-    private BlockItemData? GetSettingsBlockItemDataFromRow(LegacyGridValue.GridRow row, SyncMigrationContext context, string dataTypeAlias, Udi contentUdi)
+    private BlockItemData? GetSettingsBlockItemDataFromRow(LegacyGridValue.LegacyGridRow row, SyncMigrationContext context, string dataTypeAlias, Udi contentUdi)
     {
         if (dataTypeAlias.IsNullOrWhiteSpace())
         {
@@ -282,7 +282,7 @@ internal class GridToBlockContentHelper
 
     }
 
-    private BlockItemData? GetBlockItemDataFromGridControl(LegacyGridValue.GridControl control, SyncMigrationContext context)
+    private BlockItemData? GetBlockItemDataFromGridControl(LegacyGridValue.LegacyGridControl control, SyncMigrationContext context)
     {
         if (control.Value == null) return null;
 

@@ -10,7 +10,7 @@ using Newtonsoft.Json;
 namespace uSync.Migrations.Core.Legacy.Grid;
 
 /// <summary>
-///  leagacy grid structure., 
+///  legacy grid structure., 
 /// </summary>
 /// <remarks>
 ///  this is being removed from the core in v14, but we still need it 
@@ -18,16 +18,16 @@ namespace uSync.Migrations.Core.Legacy.Grid;
 /// </remarks>
 public class LegacyGridValue
 {
-    public class GridSection
+    public class LegacyGridSection
     {
         [JsonProperty("grid")]
         public string? Grid { get; set; }
 
         [JsonProperty("rows")]
-        public IEnumerable<GridRow> Rows { get; set; }
+        public IEnumerable<LegacyGridRow> Rows { get; set; }
     }
 
-    public class GridRow
+    public class LegacyGridRow
     {
         [JsonProperty("name")]
         public string? Name { get; set; }
@@ -36,7 +36,7 @@ public class LegacyGridValue
         public Guid Id { get; set; }
 
         [JsonProperty("areas")]
-        public IEnumerable<GridArea> Areas { get; set; }
+        public IEnumerable<LegacyGridArea> Areas { get; set; }
 
         [JsonProperty("styles")]
         public JToken? Styles { get; set; }
@@ -45,14 +45,13 @@ public class LegacyGridValue
         public JToken? Config { get; set; }
     }
 
-    [Obsolete("The grid is obsolete, will be removed in V13")]
-    public class GridArea
+    public class LegacyGridArea
     {
         [JsonProperty("grid")]
         public string? Grid { get; set; }
 
         [JsonProperty("controls")]
-        public IEnumerable<GridControl> Controls { get; set; }
+        public IEnumerable<LegacyGridControl> Controls { get; set; }
 
         [JsonProperty("styles")]
         public JToken? Styles { get; set; }
@@ -61,14 +60,13 @@ public class LegacyGridValue
         public JToken? Config { get; set; }
     }
 
-    [Obsolete("The grid is obsolete, will be removed in V13")]
-    public class GridControl
+    public class LegacyGridControl
     {
         [JsonProperty("value")]
         public JToken? Value { get; set; }
 
         [JsonProperty("editor")]
-        public GridEditor Editor { get; set; }
+        public LegacyGridEditor Editor { get; set; }
 
         [JsonProperty("styles")]
         public JToken? Styles { get; set; }
@@ -77,8 +75,7 @@ public class LegacyGridValue
         public JToken? Config { get; set; }
     }
 
-    [Obsolete("The grid is obsolete, will be removed in V13")]
-    public class GridEditor
+    public class LegacyGridEditor
     {
         [JsonProperty("alias")]
         public string Alias { get; set; }
@@ -91,5 +88,5 @@ public class LegacyGridValue
     public string? Name { get; set; }
 
     [JsonProperty("sections")]
-    public IEnumerable<GridSection> Sections { get; set; }
+    public IEnumerable<LegacyGridSection> Sections { get; set; }
 }
