@@ -6,8 +6,10 @@ namespace uSync.Migrations.Migrators.BlockGrid.SettingsMigrators;
 public interface IGridSettingsViewMigrator : IDiscoverable
 {
     string ViewKey { get; }
-    string NewDataTypeAlias { get; }
+    string GetNewDataTypeAlias(string gridAlias, string? configItemLabel);
     public object ConvertContentString(string value);
+
+    public NewDataTypeInfo? GetAdditionalDataType(string dataTypeAlias, IEnumerable<string>? preValues);
 }
 
 public class GridSettingsViewMigratorCollectionBuilder

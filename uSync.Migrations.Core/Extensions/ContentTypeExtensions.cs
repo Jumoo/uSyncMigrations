@@ -41,17 +41,21 @@ internal static class ContentTypeExtensions
                 index++;
 
                 var dataType = dataTypeService.GetDataType(property.DataTypeAlias);
-                if (dataType == null) continue;
+                var newDataType = dataType == null ?
+                                  context.DataTypes.GetNewDataType(property.DataTypeAlias) :
+                                  null;
+
+                if (dataType == null && newDataType == null) continue;
 
                 var propNode = new XElement("GenericProperty",
                 new XElement("Key", $"{newDocType.Alias}_{property.Alias}".ToGuid()),
                     new XElement("Name", property.Name),
                     new XElement("Alias", property.Alias),
-                    new XElement("Definition", dataType.Key),
-                    new XElement("Type", dataType.EditorAlias),
+                    new XElement("Definition", dataType == null ? newDataType!.Key : dataType.Key),
+                    new XElement("Type", dataType == null ? newDataType!.EditorAlias : dataType.EditorAlias),
                     new XElement("Mandatory", false),
                     new XElement("Validation", ""),
-                    new XElement("Description", new XCData("")),
+                    new XElement("Description", new XCData(property.Description ?? "")),
                     new XElement("SortOrder", index),
                     GetTabElement(property, newDocType),
                     new XElement("Variations", "Nothing"),

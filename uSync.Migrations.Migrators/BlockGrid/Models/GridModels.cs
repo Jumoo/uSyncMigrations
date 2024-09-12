@@ -60,7 +60,7 @@ internal class GridSettingsConfiguration
     GridSettingsConfigurationItem[]? ConfigItems { get; set; }
 }
 
-internal class GridSettingsConfigurationItem
+public class GridSettingsConfigurationItem
 {
     [JsonProperty("label")]
     public string? Label { get; set; }
@@ -79,6 +79,18 @@ internal class GridSettingsConfigurationItem
 
     [JsonProperty("applyTo")]
     public string? ApplyTo { get; set; }
+
+    [JsonProperty("prevalues")]
+    public IEnumerable<GridSettingsConfigurationItemPrevalue>? Prevalues { get; set; }
+
+}
+public class GridSettingsConfigurationItemPrevalue
+{
+    [JsonProperty("label")]
+    public string? Label { get; set; }
+
+    [JsonProperty("value")]
+    public string? Value { get; set; }
 }
 /// <summary>
 ///  contains the data for a block (content and settings)

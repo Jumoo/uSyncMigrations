@@ -61,20 +61,29 @@ internal class GridToBlockGridConfigLayoutSettingsHelper
                 return null;
             }
             var gridSettingPropertyMigrator = _gridSettingsViewMigrators.GetMigrator(configItem.View);
-            var dataTypeAlias = gridSettingPropertyMigrator is not null && !gridSettingPropertyMigrator.NewDataTypeAlias.IsNullOrWhiteSpace()
-                                ? gridSettingPropertyMigrator.NewDataTypeAlias
+            string? migratorDataTypeAlias = gridSettingPropertyMigrator?.GetNewDataTypeAlias(gridAlias, configItem.Label);
+
+            var dataTypeAlias = !migratorDataTypeAlias.IsNullOrWhiteSpace()
+                                ? migratorDataTypeAlias
                                 : configItem.View;
             if (dataTypeAlias.IsNullOrWhiteSpace() == true)
             {
                 _logger.LogError("No view defined for grid layout configuration in {alias}", gridAlias);
                 return null;
             }
-            return new NewContentTypeProperty(configItem.Label ?? contentTypeAlias, contentTypeAlias, dataTypeAlias);
+
+            var additionalDataType = gridSettingPropertyMigrator?.GetAdditionalDataType(dataTypeAlias, configItem.Prevalues?.Select(v => v.Label!));
+            if (additionalDataType != null)
+            {
+                context.DataTypes.AddNewDataType(additionalDataType);
+            }
+
+            return new NewContentTypeProperty(configItem.Label ?? contentTypeAlias, contentTypeAlias, dataTypeAlias, orginalEditorAlias: null, configItem.Description);
         }).WhereNotNull();
 
         var alias = _conventions.LayoutSettingsContentTypeAlias(gridAlias);
 
-        context.ContentTypes.AddNewContentType(new NewContentTypeInfo(alias.ToGuid(), alias, alias, "icon-book color-red", "BlockGrid/settings")
+        context.ContentTypes.AddNewContentType(new NewContentTypeInfo(alias.ToGuid(), alias, alias, "icon-book color-red", "BlockGrid/Settings")
         {
             Description = alias,
             IsElement = true,

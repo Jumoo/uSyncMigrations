@@ -2,11 +2,11 @@
 
 namespace uSync.Migrations.Migrators.BlockGrid.SettingsMigrators;
 
-public class GridViewPropertyBooleanMigrator : IGridSettingsViewMigrator
+public class GridViewPropertyNumberMigrator : IGridSettingsViewMigrator
 {
-    public string ViewKey => "Boolean";
+    public string ViewKey => "Number";
 
-    public string GetNewDataTypeAlias(string gridAlias, string? configItemLabel) => "True/false";
+    public string GetNewDataTypeAlias(string gridAlias, string? configItemLabel) => "Numeric";
 
     public object ConvertContentString(string value)
     {
