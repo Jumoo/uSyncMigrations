@@ -66,8 +66,9 @@ public class MyMigrationProfile : ISyncMigrationPlan
         BlockedItems = new Dictionary<string, List<string>>
         {
             { nameof(DataType),
+                // Specify DataTypes here, not property editors
                 new List<string> {
-                    "Custom.LegacyType", "My.BoxGrid.Things"
+                    "Custom Legacy Type", "My BoxGrid Things"
                 }
             }
         },
