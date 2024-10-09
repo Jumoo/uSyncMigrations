@@ -16,6 +16,7 @@ internal class GridToBlockGridConfigLayoutSettingsHelper
     private readonly GridSettingsViewMigratorCollection _gridSettingsViewMigrators;
     private readonly ILogger<GridToBlockGridConfigLayoutSettingsHelper> _logger;
 
+    public bool AnyAreaSettings { get; set; } = false;
 
     public GridToBlockGridConfigLayoutSettingsHelper(
         GridConventions conventions,
@@ -33,11 +34,15 @@ internal class GridToBlockGridConfigLayoutSettingsHelper
 
         var gridStyles = GetGridSettingsFromConfig(gridBlockContext.GridConfiguration?.GetItemBlock("styles"));
 
-        // Take only the settings that have applyTo = row. Other value here could be cell.
-        // TODO: Implement cell settings converter.
-        var gridSettings = gridConfig.Concat(gridStyles).Where(s => s.ApplyTo != "cell");
+        var gridRowSettings = gridConfig.Concat(gridStyles).Where(s => s.ApplyTo != "cell");
 
-        AddGridLayoutSettings(gridSettings, gridBlockContext, context, gridAlias);
+        AddGridLayoutSettings(gridRowSettings, gridBlockContext, context, gridAlias, isArea: false);
+
+        var gridAreaSettings = gridConfig.Concat(gridStyles).Where(s => s.ApplyTo != "row");
+
+        AnyAreaSettings = gridAreaSettings.Any();
+
+        AddGridLayoutSettings(gridAreaSettings, gridBlockContext, context, gridAlias, isArea: true);
     }
 
     private IEnumerable<GridSettingsConfigurationItem> GetGridSettingsFromConfig(JToken? config)
@@ -50,7 +55,7 @@ internal class GridToBlockGridConfigLayoutSettingsHelper
         return config.ToObject<IEnumerable<GridSettingsConfigurationItem>>() ?? Enumerable.Empty<GridSettingsConfigurationItem>();
     }
 
-    private void AddGridLayoutSettings(IEnumerable<GridSettingsConfigurationItem> gridLayoutConfigurations, GridToBlockGridConfigContext gridBlockContext, SyncMigrationContext context, string gridAlias)
+    private void AddGridLayoutSettings(IEnumerable<GridSettingsConfigurationItem> gridLayoutConfigurations, GridToBlockGridConfigContext gridBlockContext, SyncMigrationContext context, string gridAlias, bool isArea = false)
     {
         var contentTypeProperties = gridLayoutConfigurations.Where(configItem => configItem.Key is not null).Select(configItem =>
         {
@@ -72,7 +77,7 @@ internal class GridToBlockGridConfigLayoutSettingsHelper
                 return null;
             }
 
-            var additionalDataType = gridSettingPropertyMigrator?.GetAdditionalDataType(dataTypeAlias, configItem.Prevalues?.Select(v => v.Label!));
+            var additionalDataType = gridSettingPropertyMigrator?.GetAdditionalDataType(dataTypeAlias, configItem.Prevalues);
             if (additionalDataType != null)
             {
                 context.DataTypes.AddNewDataType(additionalDataType);
@@ -81,7 +86,7 @@ internal class GridToBlockGridConfigLayoutSettingsHelper
             return new NewContentTypeProperty(configItem.Label ?? contentTypeAlias, contentTypeAlias, dataTypeAlias, orginalEditorAlias: null, configItem.Description);
         }).WhereNotNull();
 
-        var alias = _conventions.LayoutSettingsContentTypeAlias(gridAlias);
+        var alias = isArea ? _conventions.LayoutAreaSettingsContentTypeAlias(gridAlias) : _conventions.LayoutSettingsContentTypeAlias(gridAlias);
 
         context.ContentTypes.AddNewContentType(new NewContentTypeInfo(alias.ToGuid(), alias, alias, "icon-book color-red", "BlockGrid/Settings")
         {

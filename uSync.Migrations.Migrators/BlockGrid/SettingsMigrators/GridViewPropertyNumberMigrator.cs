@@ -13,7 +13,7 @@ public class GridViewPropertyNumberMigrator : IGridSettingsViewMigrator
         return value;
     }
 
-    public NewDataTypeInfo? GetAdditionalDataType(string dataTypeAlias, IEnumerable<string>? preValues)
+    public NewDataTypeInfo? GetAdditionalDataType(string dataTypeAlias, IEnumerable<GridSettingsConfigurationItemPrevalue>? preValues)
     {
         return null;
     }

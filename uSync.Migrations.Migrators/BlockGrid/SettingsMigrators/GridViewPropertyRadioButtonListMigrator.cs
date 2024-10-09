@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Extensions;
+using uSync.Migrations.Migrators.BlockGrid.Models;
 
 namespace uSync.Migrations.Migrators.BlockGrid.SettingsMigrators;
 
@@ -26,7 +27,7 @@ public class GridViewPropertyRadioButtonListMigrator : IGridSettingsViewMigrator
         return value;
     }
 
-    public NewDataTypeInfo? GetAdditionalDataType(string dataTypeAlias, IEnumerable<string>? preValues)
+    public NewDataTypeInfo? GetAdditionalDataType(string dataTypeAlias, IEnumerable<GridSettingsConfigurationItemPrevalue>? preValues)
     {
         if (preValues is null)
         {
@@ -47,9 +48,9 @@ public class GridViewPropertyRadioButtonListMigrator : IGridSettingsViewMigrator
 
 public class RadioButtonListConfig
 {
-    public RadioButtonListConfig(IEnumerable<string> preValues) 
+    public RadioButtonListConfig(IEnumerable<GridSettingsConfigurationItemPrevalue> preValues) 
     {
-        Items = preValues.Select((value, ix) => new RadioButtonListConfigItem() { Id = ix, Value = value });
+        Items = preValues.Select((preValue, ix) => new RadioButtonListConfigItem() { Id = ix, Value = preValue.Label, OldValue = preValue.Value });
     }
 
     [JsonProperty("items")]
@@ -63,4 +64,7 @@ public class RadioButtonListConfigItem
 
     [JsonProperty("value")]
     public string? Value { get; set; }
+
+    [JsonIgnore]
+    public string? OldValue { get; set; }
 }

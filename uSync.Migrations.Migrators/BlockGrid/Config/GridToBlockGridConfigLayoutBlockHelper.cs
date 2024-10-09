@@ -26,13 +26,19 @@ internal class GridToBlockGridConfigLayoutBlockHelper
         _logger = logger;
     }
 
-    public void AddLayoutBlocks(GridToBlockGridConfigContext gridBlockContext, SyncMigrationContext context, string dataTypeAlias)
+    public void AddLayoutBlocks(GridToBlockGridConfigContext gridBlockContext, SyncMigrationContext context, string dataTypeAlias, bool addAreaSettingsLayout = false)
     {
         // gather all the layout blocks we can from the templates 
         // and layouts sections of the config. 
         GetTemplateLayouts(gridBlockContext.GridConfiguration.GetItemBlock("templates"), gridBlockContext, context);
 
         GetLayoutLayouts(gridBlockContext.GridConfiguration.GetItemBlock("layouts"), gridBlockContext, context, dataTypeAlias);
+
+        if (addAreaSettingsLayout)
+        {
+            // Add a single layout to serve as a container for areas with settings
+            GetSettingsContainerLayout(gridBlockContext, context, dataTypeAlias);
+        }
 
         AddContentTypesForLayoutBlocks(gridBlockContext, context);
     }
@@ -205,6 +211,52 @@ internal class GridToBlockGridConfigLayoutBlockHelper
             });
         }
 
+    }
+
+    private void GetSettingsContainerLayout(GridToBlockGridConfigContext gridBlockContext, SyncMigrationContext context, string dataTypeAlias)
+    {
+        var rowAreas = new List<BlockGridConfiguration.BlockGridAreaConfiguration>();
+
+        var allowed = new List<string> { "*" };
+
+        var label = _conventions.SettingsContainerLayoutBlockLabel;
+        var alias = label;
+
+        var area = new BlockGridConfiguration.BlockGridAreaConfiguration
+        {
+            Alias = _conventions.AreaAlias(0),
+            ColumnSpan = gridBlockContext.GridColumns,
+            RowSpan = 1,
+            Key = alias.ToGuid()
+        };
+
+        rowAreas.Add(area);
+
+        gridBlockContext.AllowedEditors[area] = allowed;
+
+        var contentTypeAlias = alias;
+        var settingsContentTypeAlias = _conventions.LayoutAreaSettingsContentTypeAlias(dataTypeAlias);
+
+        var layoutBlock = new BlockGridConfiguration.BlockGridBlockConfiguration
+        {
+            Label = label,
+            Areas = rowAreas.ToArray(),
+            ContentElementTypeKey = context.GetContentTypeKeyOrDefault(contentTypeAlias, contentTypeAlias.ToGuid()),
+            SettingsElementTypeKey = context.GetContentTypeKeyOrDefault(settingsContentTypeAlias, settingsContentTypeAlias.ToGuid()),
+            GroupKey = gridBlockContext.LayoutsGroup.Key.ToString(),
+            BackgroundColor = Grid.LayoutBlocks.Background,
+            IconColor = Grid.LayoutBlocks.Icon,
+            AllowAtRoot = false,
+            AllowInAreas = true
+        };
+
+        gridBlockContext.LayoutBlocks.TryAdd(contentTypeAlias, layoutBlock);
+
+        context.ContentTypes.AddNewContentType(new NewContentTypeInfo(layoutBlock.ContentElementTypeKey, contentTypeAlias, contentTypeAlias, "icon-layout color-purple", folder: "BlockGrid/Layouts")
+        {
+            Description = "Grid Layoutblock",
+            IsElement = true
+        });
     }
 
     private void AddContentTypesForLayoutBlocks(GridToBlockGridConfigContext gridBlockContext, SyncMigrationContext context)

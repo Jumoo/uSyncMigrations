@@ -1,5 +1,6 @@
 ﻿using Umbraco.Cms.Core.Composing;
 using Umbraco.Extensions;
+using uSync.Migrations.Migrators.BlockGrid.Models;
 
 namespace uSync.Migrations.Migrators.BlockGrid.SettingsMigrators;
 
@@ -9,7 +10,7 @@ public interface IGridSettingsViewMigrator : IDiscoverable
     string GetNewDataTypeAlias(string gridAlias, string? configItemLabel);
     public object ConvertContentString(string value);
 
-    public NewDataTypeInfo? GetAdditionalDataType(string dataTypeAlias, IEnumerable<string>? preValues);
+    public NewDataTypeInfo? GetAdditionalDataType(string dataTypeAlias, IEnumerable<GridSettingsConfigurationItemPrevalue>? preValues);
 }
 
 public class GridSettingsViewMigratorCollectionBuilder

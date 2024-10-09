@@ -31,8 +31,14 @@ internal class GridConventions
 
     public string LayoutContentTypeAlias(string layout)
         => layout.GetBlockGridLayoutContentTypeAlias(ShortStringHelper);
+
     public string LayoutSettingsContentTypeAlias(string layout)
         => layout.GetBlockGridLayoutSettingsContentTypeAlias(ShortStringHelper);
+
+    public string LayoutAreaSettingsContentTypeAlias(string layout)
+        => layout.GetBlockGridLayoutAreaSettingsContentTypeAlias(ShortStringHelper);
+
+    public string SettingsContainerLayoutBlockLabel => "Settings container";
 
     public string FormatGridSettingKey(string setting)
     {
