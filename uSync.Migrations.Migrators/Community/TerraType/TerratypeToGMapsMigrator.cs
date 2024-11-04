@@ -32,7 +32,7 @@ public class TerratypeToGMapsMigrator : SyncPropertyMigratorBase
         var zoom = oldValue.SelectToken("zoom") ?? "12";
 
         var latLng = oldValue.SelectToken("position.datum") ?? DefaultPosition;
-        var parts = latLng.ToString().Split(',');
+        var parts = latLng.ToString().Split(',').Select(double.Parse).ToArray();
 
 
         var newValue = JObject.FromObject(new
