@@ -17,6 +17,7 @@ internal static class Grid
     {
         public const string Background = "#fce5cd";
         public const string Icon = "#ce7e00";
+        public const string View = "~/App_Plugins/Umbraco.Community.BlockPreview/views/block-preview.html";
     }
 }
 

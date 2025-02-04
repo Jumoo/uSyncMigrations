@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 
 using Newtonsoft.Json.Linq;
-
+using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Extensions;
 
 using uSync.Migrations.Migrators.BlockGrid.Extensions;
@@ -94,5 +94,23 @@ internal class GridToBlockGridConfigLayoutSettingsHelper
             IsElement = true,
             Properties = contentTypeProperties.ToList()
         });
+
+        if (isArea)
+        {
+            var areaSettingsBlock = new BlockGridConfiguration.BlockGridBlockConfiguration
+            {
+                Label = _conventions.AreaSettingsElementTypeName,
+                AllowAtRoot = false,
+                ContentElementTypeKey = context.GetContentTypeKeyOrDefault(_conventions.AreaSettingsElementTypeAlias, _conventions.AreaSettingsElementTypeAlias.ToGuid()),
+                SettingsElementTypeKey = context.GetContentTypeKeyOrDefault(alias, alias.ToGuid()),
+                GroupKey = gridBlockContext.AreaSettingsGroup.Key.ToString(),
+                BackgroundColor = Grid.LayoutBlocks.Background,
+                IconColor = Grid.LayoutBlocks.Icon,
+                ForceHideContentEditorInOverlay = true
+            };
+
+            gridBlockContext.AreaSettingsBlocks.Add(areaSettingsBlock);
+
+        }
     }
 }

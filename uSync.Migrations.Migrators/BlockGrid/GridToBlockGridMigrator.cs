@@ -91,7 +91,7 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
         layoutSettingsBlockHelper.AddGridSettings(gridToBlockContext, context, dataTypeProperty.DataTypeAlias);
 
         // prep the layouts 
-        layoutBlockHelper.AddLayoutBlocks(gridToBlockContext, context, dataTypeProperty.DataTypeAlias, addAreaSettingsLayout: layoutSettingsBlockHelper.AnyAreaSettings);
+        layoutBlockHelper.AddLayoutBlocks(gridToBlockContext, context, dataTypeProperty.DataTypeAlias, addAreaSettings: layoutSettingsBlockHelper.AnyAreaSettings);
 
         // Add the content blocks
         contentBlockHelper.AddContentBlocks(gridToBlockContext, context);

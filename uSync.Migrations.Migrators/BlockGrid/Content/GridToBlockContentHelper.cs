@@ -118,7 +118,30 @@ internal class GridToBlockContentHelper
                     var layouts = GetGridAreaBlockLayouts(area.value, content).ToList();
                     if (!layouts.Any()) continue;
 
-                    if (settings is null && areaIsFullWidth)
+                    if (settings is not null)
+                    {
+                        var areaSettingsContentItem = new BlockItemData()
+                        {
+                            Udi = Udi.Create(UmbConstants.UdiEntityType.Element, Guid.NewGuid()),
+                            ContentTypeKey = context.ContentTypes.GetKeyByAlias(_conventions.AreaSettingsElementTypeAlias)
+                        };
+
+                        content.Add(areaSettingsContentItem);
+
+                        var areaSettingsItem = new BlockGridLayoutItem()
+                        {
+                            ContentUdi = areaSettingsContentItem.Udi,
+                            ColumnSpan = gridColumns,
+                            RowSpan = 1,
+                            SettingsUdi = settings.Udi
+                        };
+
+                        layouts.Insert(0, areaSettingsItem);
+
+                        block.SettingsData.Add(settings);
+                    }
+
+                    if (areaIsFullWidth)
                     {
                         blockLayouts.AddRange(layouts);
                     }
@@ -130,36 +153,6 @@ internal class GridToBlockContentHelper
                             Items = layouts.ToArray()
                         };
 
-                        if (settings is not null)
-                        {
-                            // create a container that we can add the settings to, put the content in the container, and put the container in areaItem
-
-                            var childAreaItem = new BlockGridLayoutAreaItem
-                            {
-                                Key = _conventions.SettingsContainerLayoutBlockLabel.ToGuid(),
-                                Items = layouts.ToArray()
-                            };
-
-                            var settingsContainerLayoutItem = new BlockGridLayoutItem()
-                            {
-                                ContentUdi = settings.Udi,
-                                ColumnSpan = gridColumns,
-                                RowSpan = 1,
-                                SettingsUdi = settings.Udi,
-                                Areas = new BlockGridLayoutAreaItem[] { childAreaItem }
-                            };
-
-                            var childContentData = new BlockItemData
-                            {
-                                Udi = settings.Udi,
-                                ContentTypeKey = _conventions.SettingsContainerLayoutBlockLabel.ToGuid(),
-                            };
-
-                            content.Add(childContentData);
-
-                            areaItem.Items = new BlockGridLayoutItem[] { settingsContainerLayoutItem };
-                        }
-
                         rowLayoutAreas.Add(areaItem);
                     }
 
@@ -168,16 +161,10 @@ internal class GridToBlockContentHelper
                     {
                         block.ContentData.Add(x);
                     });
-
-                    if (settings is not null)
-                    {
-                        block.SettingsData.Add(settings);
-                    }
                 }
 
                 // row 
                 if (!rowLayoutAreas.Any()) continue;
-
 
                 var rowContentAndSettings = GetGridRowBlockContentAndSettings(row, context, dataTypeAlias);
 

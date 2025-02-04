@@ -78,6 +78,8 @@ public class NestedToBlockListMigrator : SyncPropertyMigratorBase
                 Max = nestedConfig.MaxItems == 0 ? null : nestedConfig.MaxItems,
                 Min = nestedConfig.MinItems == 0 ? null : nestedConfig.MinItems
             },
+            MaxPropertyWidth = "100%",
+            UseInlineEditingAsDefault = true
         };
 
         if (nestedConfig.ContentTypes != null)
