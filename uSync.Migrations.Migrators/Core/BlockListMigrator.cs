@@ -64,6 +64,11 @@ public class BlockListMigrator : SyncPropertyMigratorBase
 
     private static void MigratePropertiesWithin(SyncMigrationContext context, BlockListRowValue row)
     {
+        if (row.RawPropertyValues == null)
+        {
+            return;
+        }
+
         foreach (var property in row.RawPropertyValues)
         {
             var contentTypeAlias = context.ContentTypes.GetAliasByKey(row.ContentTypeKey);
