@@ -1,3 +1,8 @@
+
+> [!WARNING]
+> This is a pre-release early access beta migration assostant. Migrations can be complicated you can ask, but support of Migrations is much more of a community effort so results may vary.
+
+
 # uSync Migrations
 
 uSync Migrations is a tool to help you migrate your site settings and content from Umbraco 7.x to the latest and greatest versions of Umbraco.
@@ -42,6 +47,3 @@ If you want to see how you can customize the process. take a look at the [MyMigr
 
 **And remember: contribute back any editors you think others will benefit from**
 
-## Support ?
-
-This is a pre-release early access beta migration tool. you can ask, but lets hope other people are watching. 
