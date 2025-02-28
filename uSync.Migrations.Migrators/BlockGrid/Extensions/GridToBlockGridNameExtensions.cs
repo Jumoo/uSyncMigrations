@@ -33,4 +33,7 @@ internal static class GridToBlockGridNameExtensions
     public static string GetBlockGridLayoutSettingsContentTypeAlias(this string name, IShortStringHelper shortStringHelper)
         => name.GetContentTypeAlias("BlockGridLayoutSettings_", shortStringHelper);
 
+    public static string GetBlockGridLayoutAreaSettingsContentTypeAlias(this string name, IShortStringHelper shortStringHelper)
+        => name.GetContentTypeAlias("BlockGridLayoutAreaSettings_", shortStringHelper);
+
 }

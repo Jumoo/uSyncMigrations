@@ -37,7 +37,7 @@ public abstract class GridBlockMigratorSimpleBase
             $"{editor.Icon ?? "icon-book"} color-purple",
             "BlockGrid/Elements")
         {
-            Description = $"Converted from Grid {editor.Name} element",
+            //Description = $"Converted from Grid {editor.Name} element",
             IsElement = true,
             Properties = new List<NewContentTypeProperty>
             {
