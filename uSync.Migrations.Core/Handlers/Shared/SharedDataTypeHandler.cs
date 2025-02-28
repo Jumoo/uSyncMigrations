@@ -10,6 +10,7 @@ using Umbraco.Cms.Core.Services;
 
 using uSync.Core;
 using uSync.Migrations.Core.Context;
+using uSync.Migrations.Core.Extensions;
 using uSync.Migrations.Core.Migrators;
 using uSync.Migrations.Core.Migrators.Models;
 using uSync.Migrations.Core.Models;
@@ -181,6 +182,40 @@ public abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
         }
 
         return target;
+    }
+
+    /// <summary>
+    ///  hook into the DoMigration loop so we can add additional datatypes
+    /// </summary>
+    /// <param name="context"></param>
+    /// <returns></returns>
+	protected override IEnumerable<MigrationMessage> PostDoMigration(SyncMigrationContext context)
+    {
+        var messages = new List<MigrationMessage>();
+        messages.AddRange(base.PostDoMigration(context));
+        messages.AddRange(CreateAdditional(context));
+        return messages;
+    }
+
+    /// <summary>
+    ///  Add additional data types that might have been added by datatypes during the 
+    ///  first part of the migration (i.e BlockGrid conversion)
+    /// </summary>
+    /// <param name="context"></param>
+    /// <returns></returns>
+    protected IEnumerable<MigrationMessage> CreateAdditional(SyncMigrationContext context)
+    {
+        var messages = new List<MigrationMessage>();
+
+        foreach (var dataType in context.DataTypes.GetNewDataTypes())
+        {
+            // if this has been blocked don't add it. 
+            if (context.IsBlocked(ItemType, dataType.Alias)) continue;
+
+            var source = dataType.MakeXMLFromNewDataType(_jsonSerializerSettings);
+            messages.Add(SaveTargetXml(context.Metadata.MigrationId, source));
+        }
+        return messages;
     }
 
 }

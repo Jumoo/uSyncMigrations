@@ -5,6 +5,7 @@ using uSync.Migrations.Core.Extensions;
 namespace uSync.Migrations.Migrators.Community.TerraType;
 
 [SyncMigrator("Terratype")]
+[SyncDefaultMigrator]
 public class TerratypeToOpenStreetmapMigrator : SyncPropertyMigratorBase
 {
     public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)

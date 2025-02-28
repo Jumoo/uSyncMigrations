@@ -34,6 +34,9 @@ public class DataTypeMigrationContext
     /// </summary>
     private Dictionary<Guid, string> _dataTypeAliases { get; set; } = new();
 
+    private Dictionary<string, NewDataTypeInfo> _newDataTypes
+            = new Dictionary<string, NewDataTypeInfo>(StringComparer.OrdinalIgnoreCase);
+
     /// <summary>
     ///  add a datatype alias to the lookup
     /// </summary>
@@ -96,6 +99,30 @@ public class DataTypeMigrationContext
     public string GetVariation(Guid guid, string defaultValue)
         => _dataTypeVariations?.TryGetValue(guid, out var variation) == true
             ? variation : defaultValue;
+
+    /// <summary>
+    ///  add a new data type - will then be processed as part of the 
+    ///  migration process.
+    /// </summary>
+    public void AddNewDataType(NewDataTypeInfo newDataType)
+    {
+        if (!_newDataTypes.ContainsKey(newDataType.Alias))
+            _newDataTypes.Add(newDataType.Alias, newDataType);
+    }
+
+    /// <summary>
+    ///  list of all the new data types to be created. 
+    /// </summary>
+    /// <returns></returns>
+    public IList<NewDataTypeInfo> GetNewDataTypes()
+        => _newDataTypes.Values.ToList();
+
+    /// <summary>
+    ///  get new datatype by alias
+    /// </summary>
+    /// <returns></returns>
+    public NewDataTypeInfo? GetNewDataType(string alias)
+        => _newDataTypes.Values.FirstOrDefault(dt => dt.Alias == alias);
 
     /// <summary>
     ///  return the first definition that we find matching the editorAlias

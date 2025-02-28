@@ -23,6 +23,7 @@ internal class GridToBlockGridConfigContext
     public List<BlockGridConfiguration.BlockGridGroupConfiguration> BlockGroups { get; } = new();
     public Dictionary<string, BlockGridConfiguration.BlockGridBlockConfiguration> LayoutBlocks { get; } = new();
     public List<BlockGridConfiguration.BlockGridBlockConfiguration> ContentBlocks { get; } = new();
+    public List<BlockGridConfiguration.BlockGridBlockConfiguration> AreaSettingsBlocks { get; } = new();
 
     public BlockGridConfiguration.BlockGridAreaConfiguration RootArea { get; } = new();
     public Dictionary<BlockGridConfiguration.BlockGridAreaConfiguration, IEnumerable<string>> AllowedEditors { get; } = new();
@@ -39,6 +40,12 @@ internal class GridToBlockGridConfigContext
         Name = "Grid Blocks"
     };
 
+    public BlockGridConfiguration.BlockGridGroupConfiguration AreaSettingsGroup { get; } = new()
+    {
+        Key = $"group_{nameof(AreaSettingsGroup)}".ToGuid(),
+        Name = "Area Settings"
+    };
+
 
     public GridToBlockGridConfigContext(LegacyGridConfiguration gridConfiguration, ILegacyGridEditorsConfig gridConfig)
     {
@@ -48,6 +55,7 @@ internal class GridToBlockGridConfigContext
 
         BlockGroups.Add(LayoutsGroup);
         BlockGroups.Add(GridBlocksGroup);
+        BlockGroups.Add(AreaSettingsGroup);
     }
 
     public IEnumerable<string> GetAllowedLayouts(BlockGridConfiguration.BlockGridAreaConfiguration area)
@@ -97,6 +105,7 @@ internal class GridToBlockGridConfigContext
 
         result.Blocks = ContentBlocks
             .Union(LayoutBlocks.Values)
+            .Union(AreaSettingsBlocks)
             .Where(x => x.ContentElementTypeKey != Guid.Empty)
             .ToArray();
 
@@ -110,6 +119,7 @@ internal class GridToBlockGridConfigContext
             .Where(x => referencedGroupKeys.Contains(x.Key))
             .ToArray();
 
+        result.MaxPropertyWidth = "100%";
 
         return result;
 

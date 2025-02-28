@@ -323,11 +323,17 @@ public abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBase<
         foreach (var property in contentType.Properties)
         {
             var dataType = _dataTypeService.GetDataType(property.DataTypeAlias);
+            var newDataType = dataType == null ?
+                              context.DataTypes.GetNewDataType(property.DataTypeAlias) :
+                              null;
 
-            if (dataType != null)
+            if (dataType != null || newDataType != null)
             {
+                var editorAlias = dataType == null ? newDataType!.EditorAlias : dataType.EditorAlias;
+                var key = dataType == null ? newDataType!.Key : dataType.Key;
+
                 context.ContentTypes.AddProperty(contentType.Alias, property.Alias,
-                    property.OriginalEditorAlias ?? dataType.EditorAlias, dataType.EditorAlias, dataType.Key);
+                    property.OriginalEditorAlias ?? editorAlias, editorAlias, key);
             }
         }
     }

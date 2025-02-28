@@ -2,17 +2,19 @@
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-
+using System.Text.RegularExpressions;
 using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Logging;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Models.Blocks;
+using Umbraco.Cms.Core.Services;
 using Umbraco.Extensions;
 
 using uSync.Migrations.Core.Legacy.Grid;
 using uSync.Migrations.Migrators.BlockGrid.BlockMigrators;
 using uSync.Migrations.Migrators.BlockGrid.Extensions;
 using uSync.Migrations.Migrators.BlockGrid.Models;
+using uSync.Migrations.Migrators.BlockGrid.SettingsMigrators;
 
 namespace uSync.Migrations.Migrators.BlockGrid.Content;
 
@@ -25,17 +27,20 @@ internal class GridToBlockContentHelper
     private readonly GridConventions _conventions;
     private readonly ILogger<GridToBlockContentHelper> _logger;
     private readonly IProfilingLogger _profilingLogger;
+    private readonly IMediaService _mediaService;
 
     public GridToBlockContentHelper(
         GridConventions gridConventions,
         SyncBlockMigratorCollection blockMigrators,
         ILogger<GridToBlockContentHelper> logger,
-        IProfilingLogger profilingLogger)
+        IProfilingLogger profilingLogger,
+        IMediaService mediaService)
     {
         _blockMigrators = blockMigrators;
         _conventions = gridConventions;
         _logger = logger;
         _profilingLogger = profilingLogger;
+        _mediaService = mediaService;
     }
 
     /// <summary>
@@ -104,12 +109,37 @@ internal class GridToBlockContentHelper
                     var areaIsFullWidth = rowIsFullWidth && area.value.Grid.GetIntOrDefault(0) == gridColumns;
 
                     // get the content
-                    var contentAndSettings = GetGridAreaBlockContent(area.value, context).ToList();
-                    if (!contentAndSettings.Any()) continue;
+                    var content = GetGridAreaBlockContent(area.value, context).ToList();
+                    if (!content.Any()) continue;
+
+                    var settings = GetSettingsBlockItemDataFromArea(area.value, context, dataTypeAlias);
 
                     // get the layouts 
-                    var layouts = GetGridAreaBlockLayouts(area.value, contentAndSettings).ToList();
+                    var layouts = GetGridAreaBlockLayouts(area.value, content).ToList();
                     if (!layouts.Any()) continue;
+
+                    if (settings is not null)
+                    {
+                        var areaSettingsContentItem = new BlockItemData()
+                        {
+                            Udi = Udi.Create(UmbConstants.UdiEntityType.Element, Guid.NewGuid()),
+                            ContentTypeKey = context.ContentTypes.GetKeyByAlias(_conventions.AreaSettingsElementTypeAlias)
+                        };
+
+                        content.Add(areaSettingsContentItem);
+
+                        var areaSettingsItem = new BlockGridLayoutItem()
+                        {
+                            ContentUdi = areaSettingsContentItem.Udi,
+                            ColumnSpan = gridColumns,
+                            RowSpan = 1,
+                            SettingsUdi = settings.Udi
+                        };
+
+                        layouts.Insert(0, areaSettingsItem);
+
+                        block.SettingsData.Add(settings);
+                    }
 
                     if (areaIsFullWidth)
                     {
@@ -126,20 +156,15 @@ internal class GridToBlockContentHelper
                         rowLayoutAreas.Add(areaItem);
                     }
 
-                    // add the content and settings to the block. 
-                    contentAndSettings.ForEach(x =>
+                    // add the content to the block. 
+                    content.ForEach(x =>
                     {
-                        block.ContentData.Add(x.Content);
-                        if (x.Settings != null)
-                        {
-                            block.SettingsData.Add(x.Settings);
-                        }
+                        block.ContentData.Add(x);
                     });
                 }
 
                 // row 
                 if (!rowLayoutAreas.Any()) continue;
-
 
                 var rowContentAndSettings = GetGridRowBlockContentAndSettings(row, context, dataTypeAlias);
 
@@ -181,28 +206,70 @@ internal class GridToBlockContentHelper
         return block;
     }
 
-    private IEnumerable<BlockContentPair> GetGridAreaBlockContent(LegacyGridValue.LegacyGridArea area, SyncMigrationContext context)
+    private IEnumerable<BlockItemData> GetGridAreaBlockContent(GridValue.GridArea area, SyncMigrationContext context)
     {
         foreach (var control in area.Controls)
         {
             var content = GetBlockItemDataFromGridControl(control, context);
             if (content == null) continue;
 
-            BlockItemData? settings = null;
-            // TODO Settings ? 
-
-            yield return new BlockContentPair(content, settings);
+            yield return content;
         }
     }
 
-    private IEnumerable<BlockGridLayoutItem> GetGridAreaBlockLayouts(LegacyGridValue.LegacyGridArea area, IEnumerable<BlockContentPair> contentAndSettings)
+    private BlockItemData? GetSettingsBlockItemDataFromArea(GridValue.GridArea area, SyncMigrationContext context, string dataTypeAlias)
     {
-        foreach (var item in contentAndSettings)
+        if (dataTypeAlias.IsNullOrWhiteSpace())
+        {
+            return null;
+        }
+
+        if ((area.Config is null || area.Config.Count() == 0) &&
+            (area.Styles is null || area.Styles.Count() == 0))
+        {
+            // avoid adding a settings container if there aren't any settings
+            return null;
+        }
+
+        var settingsValues = new Dictionary<string, object?>();
+
+        var areaLayoutSettingsContentTypeAlias = _conventions.LayoutAreaSettingsContentTypeAlias(dataTypeAlias);
+        var areaSettingsContentTypeKey = context.GetContentTypeKeyOrDefault(areaLayoutSettingsContentTypeAlias, areaLayoutSettingsContentTypeAlias.ToGuid());
+        var areaSettingsContentType = context.ContentTypes.GetNewContentTypes().FirstOrDefault(t => t.Alias == areaLayoutSettingsContentTypeAlias);
+
+        if (area.Config is not null)
+        {
+            foreach (JProperty config in area.Config)
+            {
+                AddPropertyValue(context, areaSettingsContentType, settingsValues, config);
+            }
+        }
+
+        if (area.Styles is not null)
+        {
+            foreach (JProperty style in area.Styles)
+            {
+                AddPropertyValue(context, areaSettingsContentType, settingsValues, style);
+            }
+        }
+
+        return new BlockItemData
+        {
+            Udi = Udi.Create(UmbConstants.UdiEntityType.Element, Guid.NewGuid()),
+            ContentTypeKey = areaSettingsContentTypeKey,
+            ContentTypeAlias = areaLayoutSettingsContentTypeAlias,
+            RawPropertyValues = settingsValues
+        };
+    }
+
+    private IEnumerable<BlockGridLayoutItem> GetGridAreaBlockLayouts(GridValue.GridArea area, IEnumerable<BlockItemData> content)
+    {
+        foreach (var item in content)
         {
             var layout = new BlockGridLayoutItem
             {
-                ContentUdi = item.Content.Udi,
-                SettingsUdi = item.Settings?.Udi,
+                ContentUdi = item.Udi,
+                SettingsUdi = null,
                 ColumnSpan = area.Grid.GetIntOrDefault(0),
                 RowSpan = 1
             };
@@ -238,12 +305,13 @@ internal class GridToBlockContentHelper
 
         var rowLayoutSettingsContentTypeAlias = _conventions.LayoutSettingsContentTypeAlias(dataTypeAlias);
         var rowSettingsContentTypeKey = context.GetContentTypeKeyOrDefault(rowLayoutSettingsContentTypeAlias, rowLayoutSettingsContentTypeAlias.ToGuid());
+        var rowSettingsContentType = context.ContentTypes.GetNewContentTypes().FirstOrDefault(t => t.Alias == rowLayoutSettingsContentTypeAlias);
 
         if (row.Config is not null)
         {
             foreach (JProperty config in row.Config)
             {
-                settingsValues.Add(_conventions.FormatGridSettingKey(config.Name), config.Value);
+                AddPropertyValue(context, rowSettingsContentType, settingsValues, config);
             }
         }
 
@@ -251,13 +319,7 @@ internal class GridToBlockContentHelper
         {
             foreach (JProperty style in row.Styles)
             {
-                // Dont overwrite values. If styles have same settings keys as config, what should happen?
-                // TODO: Figure out what to do here / what gets priority?##
-                var formattedKey = _conventions.FormatGridSettingKey(style.Name);
-                if (!settingsValues.ContainsKey(formattedKey))
-                {
-                    settingsValues.Add(formattedKey, style.Value);
-                }
+                AddPropertyValue(context, rowSettingsContentType, settingsValues, style);
             }
         }
 
@@ -269,6 +331,62 @@ internal class GridToBlockContentHelper
             RawPropertyValues = settingsValues
         };
     }
+
+    private void AddPropertyValue(SyncMigrationContext context, NewContentTypeInfo? rowSettingsContentType, Dictionary<string, object?> settingsValues, JProperty config)
+    {
+        var formattedKey = _conventions.FormatGridSettingKey(config.Name);
+
+        if (settingsValues.ContainsKey(formattedKey))
+        {
+            // Dont overwrite values. If styles have same settings keys as config, what should happen?
+            // TODO: Figure out what to do here / what gets priority?##
+            return;
+        }
+
+        var configValue = config.Value;
+
+        // For radio button list data types, replace the value with the label, since Umbraco radio button lists don't have separate labels and values.
+        // The new value (the old label) will need to be translated to the old value in the presentation code.
+        if (rowSettingsContentType != null)
+        {
+            var property = rowSettingsContentType.Properties.FirstOrDefault(p => p.Alias == config.Name);
+
+            if (property != null)
+            {
+                var dataType = context.DataTypes.GetNewDataType(property.DataTypeAlias);
+
+                if (dataType != null &&
+                    dataType.Config is RadioButtonListConfig)
+                {
+                    var radioButtonListConfig = (dataType.Config as RadioButtonListConfig)!;
+                    var configItem = radioButtonListConfig.Items.FirstOrDefault(i => i.OldValue == configValue.Value<string>());
+                    if (configItem != null)
+                    {
+                        configValue = JToken.Parse(string.Format("'{0}'", configItem.Value));
+                    }
+                }
+                else if (property.DataTypeAlias == "Image Media Picker")
+                {
+                    Match match = (new Regex(@"^url\((.*)\)$")).Match(config.Value.ToString());
+                    
+                    if (match.Success)
+                    {
+                        string path = match.Groups[1].Value;
+                        IMedia? media = _mediaService.GetMediaByPath(config.Value.ToString().Replace("url(", "").Replace(")", ""));
+
+                        if (media is not null)
+                        {
+                            configValue = JToken.Parse(string.Format("[{0}]", JsonConvert.SerializeObject(new { key = Guid.NewGuid(), mediaKey = media.Key })));
+                        }
+                    }
+                }
+            }
+        }
+
+        settingsValues.Add(formattedKey, configValue);
+    }
+
+
     private BlockGridLayoutItem GetGridRowBlockLayout(BlockContentPair rowContentAndSettings, List<BlockGridLayoutAreaItem> rowLayoutAreas, int? rowColumns)
     {
         return new BlockGridLayoutItem
@@ -279,7 +397,6 @@ internal class GridToBlockContentHelper
             ColumnSpan = rowColumns,
             RowSpan = 1,
         };
-
     }
 
     private BlockItemData? GetBlockItemDataFromGridControl(LegacyGridValue.LegacyGridControl control, SyncMigrationContext context)

@@ -28,6 +28,8 @@ public static class uSyncMigrations
         public const int Content = 100;
 
         public const int Media = 110;
+
+        public const int ContentTemplate = 120;
     }
 
     public static class EditorAliases

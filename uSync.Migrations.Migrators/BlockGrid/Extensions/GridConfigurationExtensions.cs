@@ -80,17 +80,19 @@ internal static class GridConfigurationExtensions
                 if (context.ContentTypes.TryGetAliasByKey(elementKey, out var contentTypeAlias) is false) { continue; }    
 
                 var label = editorConfig.GetBlockname();
-                if (keys.Count > 0)
+                /*if (keys.Count > 0)
                 {
-                    label = $"{label} ({contentTypeAlias})";
-                }
+                    label = $"{label} ({context.ContentTypes.GetAliasByKey(elementKey)})";
+                }*/
                 yield return new BlockGridConfiguration.BlockGridBlockConfiguration
                 {
                     Label = label,
                     ContentElementTypeKey = elementKey,
                     GroupKey = groupKey != Guid.Empty ? groupKey.ToString() : null,
                     BackgroundColor = Grid.GridBlocks.Background,
-                    IconColor = Grid.GridBlocks.Icon
+                    IconColor = Grid.GridBlocks.Icon,
+                    View = Grid.GridBlocks.View,
+                    AllowAtRoot = false
                 };
             }
         }
@@ -105,7 +107,10 @@ internal static class GridConfigurationExtensions
     {
         if (editorConfig?.Config.TryGetValue("nameTemplate", out var nameTemplateValue) == true)
         {
-            return nameTemplateValue as string ?? editorConfig?.Name ?? string.Empty;
+            if (!string.IsNullOrEmpty(nameTemplateValue as string))
+            {
+                return (nameTemplateValue as string)!;
+            }
         }
 
         // 
