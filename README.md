@@ -1,6 +1,6 @@
 
 > [!WARNING]
-> This is a pre-release early access beta migration assostant. Migrations can be complicated you can ask, but support of Migrations is much more of a community effort so results may vary.
+> This is a pre-release early access beta migration assistant. Migrations can be complicated you can ask, but support of Migrations is much more of a community effort so results may vary.
 
 
 # uSync Migrations
