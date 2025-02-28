@@ -15,11 +15,13 @@ using Umbraco.Extensions;
 using uSync.BackOffice;
 using uSync.BackOffice.Hubs;
 using uSync.BackOffice.Services;
+using uSync.Migrations.Client.Plans;
 using uSync.Migrations.Core;
 using uSync.Migrations.Core.Configuration;
-using uSync.Migrations.Core.Configuration.CoreProfiles;
-using uSync.Migrations.Core.Configuration.Models;
 using uSync.Migrations.Core.Models;
+using uSync.Migrations.Core.Plans;
+using uSync.Migrations.Core.Plans.CoreProfiles;
+using uSync.Migrations.Core.Plans.Models;
 using uSync.Migrations.Core.Services;
 
 namespace uSync.Migrations.Client.Controllers;

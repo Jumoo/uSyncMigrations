@@ -5,8 +5,6 @@ using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Models.Blocks;
 using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Extensions;
-
-using uSync.Migrations.Core.Composing;
 using uSync.Migrations.Core.Extensions;
 
 namespace uSync.Migrations.Migrators.Community.StackedContent;
@@ -35,12 +33,13 @@ public class StackedContentToBlockListMigrator : SyncPropertyMigratorBase
             .DeserializeObject<List<StackedContentConfigurationBlock>>(contentTypes)?
             .Select(x => new BlockListConfiguration.BlockConfiguration
             {
-                ContentElementTypeKey = !string.IsNullOrWhiteSpace(x.ContentTypeAlias) ? context.ContentTypes.GetKeyByAlias(x.ContentTypeAlias) : x.ContentTypeKey,
+                ContentElementTypeKey = GetElementKey(x),
                 Label = x.NameTemplate,
             })
-            .ToArray();
+            .Where(x => x.ContentElementTypeKey != Guid.Empty)
+            .ToArray() ?? Array.Empty<BlockListConfiguration.BlockConfiguration>();  
 
-        if (blocks?.Any() == true)
+        if (blocks.Length > 0)
         {
             context.ContentTypes.AddElementTypes(blocks.Select(x => x.ContentElementTypeKey), true);
         }
@@ -51,9 +50,16 @@ public class StackedContentToBlockListMigrator : SyncPropertyMigratorBase
 
         return new BlockListConfiguration
         {
-            Blocks = blocks ?? Array.Empty<BlockListConfiguration.BlockConfiguration>(),
+            Blocks = blocks,
             ValidationLimit = validationLimit
         };
+
+        Guid GetElementKey(StackedContentConfigurationBlock configurationBlock)
+        {
+            if (string.IsNullOrWhiteSpace(configurationBlock.ContentTypeAlias) is true) return configurationBlock.ContentTypeKey;
+            if (context.ContentTypes.TryGetKeyByAlias(configurationBlock.ContentTypeAlias, out var key) is true) return key;
+            return configurationBlock.ContentTypeKey;
+        }
     }
 
     public override string? GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
@@ -75,27 +81,29 @@ public class StackedContentToBlockListMigrator : SyncPropertyMigratorBase
 
         foreach (var item in items)
         {
-            var useGuid = string.IsNullOrWhiteSpace(item.ContentTypeAlias);
-            var contentTypeKey = useGuid
-                ? item.ContentTypeKey
-                : context.ContentTypes.GetKeyByAlias(item.ContentTypeAlias);
-            var contentTypeAlias = useGuid ? context.ContentTypes.GetAliasByKey(item.ContentTypeKey) : item.ContentTypeAlias;
+            var contentTypeKey = item.ContentTypeKey;
+            var contentTypeAlias = item.ContentTypeAlias;
+            if (string.IsNullOrWhiteSpace(item.ContentTypeAlias) is false)
+            {
+                if (context.ContentTypes.TryGetAliasByKey(item.ContentTypeKey, out contentTypeAlias) is false)
+                {
+                    contentTypeAlias = item.ContentTypeAlias;
+                }
+            }
+            else
+            {
+                if (context.ContentTypes.TryGetKeyByAlias(item.ContentTypeAlias, out contentTypeKey) is false)
+                {
+                    contentTypeKey = item.ContentTypeKey;
+                }
+            }
 
             foreach (var (propertyAlias, value) in item.Values)
             {
-                var editorAlias = context.ContentTypes.GetEditorAliasByTypeAndProperty(contentTypeAlias, propertyAlias);
+                // var editorAlias = context.ContentTypes.GetEditorAliasByTypeAndProperty(contentTypeAlias, propertyAlias);
 
-                if (editorAlias == null)
-                {
-                    continue;
-                }
-
-                var migrator = context.Migrators.TryGetMigrator(editorAlias.OriginalEditorAlias);
-
-                if (migrator == null)
-                {
-                    continue;
-                }
+                if (context.ContentTypes.TryGetEditorAliasByTypeAndProperty(contentTypeAlias, propertyAlias, out var editorAlias) is false) { continue; }
+                if (context.Migrators.TryGetMigrator(editorAlias.OriginalEditorAlias, out var migrator) is false) { continue; }               
 
                 var childProperty = new SyncMigrationContentProperty(editorAlias.OriginalEditorAlias,
                     contentTypeAlias, propertyAlias,

@@ -1,5 +1,6 @@
-﻿using uSync.Migrations.Core.Configuration.Models;
-using uSync.Migrations.Core.Models;
+﻿using uSync.Migrations.Core.Models;
+using uSync.Migrations.Core.Plans;
+using uSync.Migrations.Core.Plans.Models;
 
 namespace MyMigrations.Mergers;
 internal class SimpleMergePlan : ISyncMigrationPlan

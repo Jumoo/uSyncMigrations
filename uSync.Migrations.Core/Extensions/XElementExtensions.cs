@@ -5,7 +5,7 @@ using Umbraco.Extensions;
 using uSync.Core;
 
 namespace uSync.Migrations.Core.Extensions;
-internal static class XElementExtensions
+public static class XElementExtensions
 {
 
     /// <summary>

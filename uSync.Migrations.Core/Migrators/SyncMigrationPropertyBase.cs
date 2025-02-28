@@ -1,7 +1,7 @@
 ﻿namespace uSync.Migrations.Core.Migrators;
 
 /// <summary>
-///  base model for all property data passed to migratiors
+///  base model for all property data passed to migrators
 /// </summary>
 public class SyncMigrationPropertyBase
 {

@@ -1,4 +1,5 @@
-﻿using uSync.Migrations.Core.Legacy.Grid;
+﻿using uSync.Migrations.Core;
+using uSync.Migrations.Core.Legacy.Grid;
 using uSync.Migrations.Migrators.BlockGrid;
 using uSync.Migrations.Migrators.BlockGrid.BlockMigrators;
 
@@ -19,8 +20,8 @@ internal class BlockGridValidator : ISyncMigrationValidator
         if (validationContext.Metadata.SourceVersion == 7) return Enumerable.Empty<MigrationMessage>();
         if (validationContext.Options.PreferredMigrators == null) return Enumerable.Empty<MigrationMessage>();
 
-        if (!validationContext.Options.PreferredMigrators.ContainsKey(UmbEditors.Aliases.Grid)
-            || validationContext.Options.PreferredMigrators[UmbEditors.Aliases.Grid] != nameof(GridToBlockGridMigrator))
+        if (!validationContext.Options.PreferredMigrators.ContainsKey(uSyncMigrations.EditorAliases.Grid)
+            || validationContext.Options.PreferredMigrators[uSyncMigrations.EditorAliases.Grid] != nameof(GridToBlockGridMigrator))
         {
             return Enumerable.Empty<MigrationMessage>();
         }

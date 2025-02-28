@@ -1,4 +1,7 @@
-﻿using uSync.BackOffice;
+﻿using System.Diagnostics.CodeAnalysis;
+
+using Org.BouncyCastle.Bcpg.Sig;
+
 using uSync.Migrations.Core.Migrators;
 
 namespace uSync.Migrations.Core.Context;
@@ -28,6 +31,17 @@ public class MigratorsContext
         ? null
         : _migrators.TryGetValue(editorAlias, out var migrator) == true ? migrator : null;
 
+    public bool TryGetMigrator(string? editorAlias, [MaybeNullWhen(false)] out ISyncPropertyMigrator migrator)
+    {
+        if (string.IsNullOrEmpty(editorAlias))
+        {
+            migrator = null;
+            return false;
+        }
+
+        return _migrators.TryGetValue(editorAlias, out migrator);
+    }
+
     /// <summary>
     ///  try get a migrator for a property or editor alias. 
     /// </summary>
@@ -35,8 +49,13 @@ public class MigratorsContext
     ///  if a specific migrator has been set for a property that will be used, 
     ///  but if that fails you get the migrator for the editorAlias. 
     /// </remarks>
-    public ISyncPropertyMigrator? TryGetMigrator(string? propertyAlias, string? editorAlias)
-        => TryGetPropertyAliasMigrator(propertyAlias) ?? TryGetMigrator(editorAlias);
+    public bool TryGetMigrator(string propertyAlias, string editorAlias, [MaybeNullWhen(false)] out ISyncPropertyMigrator propertyMigrator)
+    {       
+        if (TryGetPropertyAliasMigrator(propertyAlias, out propertyMigrator) is true)
+            return true;
+
+        return TryGetMigrator(editorAlias, out propertyMigrator);
+    }
 
     /// <summary>
     ///  Add a migrator for a given editorAlias
@@ -63,15 +82,17 @@ public class MigratorsContext
     /// <summary>
     /// gets the property splitting version of a migrator (if there is one)
     /// </summary>
-    public ISyncPropertySplittingMigrator? TryGetPropertySplittingMigrator(string editorAlias)
+    public bool TryGetPropertySplittingMigrator(string editorAlias, [MaybeNullWhen(false)] out ISyncPropertySplittingMigrator migrator)
     {
-        if (_migrators.TryGetValue(editorAlias, out var migrator)
-            && migrator is ISyncPropertySplittingMigrator propertySplittingMigrator)
+        migrator = null;
+        if (_migrators.TryGetValue(editorAlias, out var migratorInternal)
+            && migratorInternal is ISyncPropertySplittingMigrator splittingMigrator)
         {
-            return propertySplittingMigrator;
+            migrator = splittingMigrator;
+            return true;
         }
 
-        return null;
+        return false;
     }
 
     #endregion
@@ -86,24 +107,22 @@ public class MigratorsContext
     /// <summary>
     ///  try and get the migrator for a given property alias. 
     /// </summary>
-    private ISyncPropertyMigrator? TryGetPropertyAliasMigrator(string? propertyAlias)
+    private bool TryGetPropertyAliasMigrator(string propertyAlias, [MaybeNullWhen(false)] out ISyncPropertyMigrator propertyMigrator)
     {
-        if (string.IsNullOrEmpty(propertyAlias)) return null;
+        propertyMigrator = null;
+        if (string.IsNullOrEmpty(propertyAlias)) { return false; }
 
-        // search for the full pattern
-        if (_propertyMigrators.TryGetValue(propertyAlias, out var migrator))
-            return migrator;
+        if (_propertyMigrators.TryGetValue(propertyAlias, out propertyMigrator))
+            return true;
 
-        // if we haven't found - but its a split (contentType_alias) value split the value and look just for the
-        // propertyAlias
-
+        // try without the split.
         if (propertyAlias.IndexOf('_') > 0)
         {
             var propertyEditorAlias = propertyAlias.Substring(propertyAlias.IndexOf('_') + 1);
-            return _propertyMigrators.TryGetValue(propertyEditorAlias, out var propertyAliasMigrator) == true
-                ? propertyAliasMigrator : null;
+            return _propertyMigrators.TryGetValue(propertyEditorAlias, out var propertyAliasMigrator);
         }
-        return null;
+
+        return false;
     }
 
     /// <summary>
@@ -132,8 +151,8 @@ public class MigratorsContext
     /// <summary>
     ///  get any migrators that merge properties together.
     /// </summary>
-    public ISyncPropertyMergingMigrator? GetMergingMigrator(string contentType)
-        => _mergingMigrators.TryGetValue(contentType, out var migrator) == true ? migrator : null;
+    public bool TryGetMergingMigrator(string contentTypeAlias, [MaybeNullWhen(false)] out ISyncPropertyMergingMigrator migrator)
+        => _mergingMigrators.TryGetValue(contentTypeAlias, out migrator);
 
     #endregion
 

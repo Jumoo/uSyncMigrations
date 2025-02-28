@@ -251,21 +251,16 @@ internal class GridToBlockGridConfigLayoutBlockHelper
                 var layoutContentTypeAliases = areaAllowed
                     .Select(x => _conventions.LayoutContentTypeAlias(x));
 
-                var specificedAllowance = new List<BlockGridConfiguration.BlockGridAreaConfigurationSpecifiedAllowance>(area.SpecifiedAllowance);
+                var specifiedAllowance = new List<BlockGridConfiguration.BlockGridAreaConfigurationSpecifiedAllowance>(area.SpecifiedAllowance);
 
                 foreach (var layoutContentTypeAlias in layoutContentTypeAliases)
                 {
-                    var contentTypeKey = context.ContentTypes.GetKeyByAlias(layoutContentTypeAlias);
-                    if (contentTypeKey != Guid.Empty)
-                    {
-                        specificedAllowance.Add(new()
-                        {
-                            ElementTypeKey = contentTypeKey
-                        });
-                    }
+                    if (context.ContentTypes.TryGetKeyByAlias(layoutContentTypeAlias, out var contentTypeKey) is false) { continue; }
+                    
+                    specifiedAllowance.Add(new() { ElementTypeKey = contentTypeKey });
                 }
 
-                area.SpecifiedAllowance = specificedAllowance.ToArray();
+                area.SpecifiedAllowance = specifiedAllowance.ToArray();
             }
 
             if (block.ContentElementTypeKey == Guid.Empty)

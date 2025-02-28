@@ -1,6 +1,6 @@
-﻿using uSync.Migrations.Core.Configuration.Models;
-using uSync.Migrations.Core.Handlers;
+﻿using uSync.Migrations.Core.Handlers;
 using uSync.Migrations.Core.Models;
+using uSync.Migrations.Core.Plans.Models;
 
 namespace uSync.Migrations.Core.Services;
 

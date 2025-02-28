@@ -9,7 +9,6 @@ using Umbraco.Cms.Core.Services;
 using Umbraco.Extensions;
 
 using uSync.Core;
-using uSync.Migrations.Core.Composing;
 using uSync.Migrations.Core.Context;
 using uSync.Migrations.Core.Handlers.Shared;
 using uSync.Migrations.Core.Migrators;
@@ -61,15 +60,16 @@ internal class DataTypeMigrationHandler : SharedDataTypeHandler, ISyncMigrationH
     {
         // replacements
         //
-        var migrator = context.Migrators.TryGetMigrator(editorAlias);
-        if (migrator != null && migrator is ISyncReplacablePropertyMigrator replacablePropertyMigrator)
-        {
-            return replacablePropertyMigrator.GetReplacementEditorId(
-                new SyncMigrationDataTypeProperty(dataTypeAlias, editorAlias, databaseType, GetXmlConfig(source)),
-                context);
-        }
 
-        return null;
+        if(context.Migrators.TryGetMigrator(editorAlias, out var migrator) is false ||
+            migrator is not ISyncReplacablePropertyMigrator replacablePropertyMigrator)
+        {
+            return null;
+        }
+        
+        return replacablePropertyMigrator.GetReplacementEditorId(
+            new SyncMigrationDataTypeProperty(dataTypeAlias, editorAlias, databaseType, GetXmlConfig(source)),
+            context);
     }
 
     protected override object? MakeEmptyLabelConfig(SyncMigrationDataTypeProperty dataTypeProperty)

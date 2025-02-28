@@ -3,6 +3,7 @@
 
     function dashboardController($q,
         uSyncMigrationService, uSyncHub,
+        usyncMigrationHelpers,
         editorService, notificationsService, navigationService) {
 
         var vm = this;
@@ -39,9 +40,10 @@
             uSyncMigrationService.getConversionDefaults()
                 .then(function (result) {
                     openStatus(result.data);
+                }, function (error) {
+                    notifyError(error);
                 });
         }
-
 
         function openStatus(existing) {
 
@@ -104,6 +106,8 @@
 
         function validate(status) {
             vm.validating = true;
+            status.clientId = getClientId();
+
             uSyncMigrationService.validate(status)
                 .then(function (result) {
                     vm.validating = false; 
@@ -111,7 +115,7 @@
                     vm.sourceValid = vm.validation.success;
                 }, function (error) {
                     vm.validating = false; 
-                    vm.error = error.data.ExceptionMessage;
+                    notifyError(error);
                 });
         }
 
@@ -141,10 +145,8 @@
                     vm.migrationStatus.success = result.success;
                     vm.working = false;
                 }, function (error) {
-                    vm.state = 'error';
                     vm.working = false;
-                    vm.error = error.data.ExceptionMessage;
-                    notificationsService.error('error', error.data.ExceptionMessage);
+                    notifyError(error);
                 });
         }
 
@@ -210,6 +212,13 @@
             }
             return "";
         }
+
+        function notifyError(methodName, error) {
+            vm.state = error; 
+            console.error('Error', methodName, error);
+            vm.error = usyncMigrationHelpers.notifyError(methodName, error);
+        }
+
     }
 
     angular.module('umbraco').controller('uSyncMigrationDashboardController', dashboardController);

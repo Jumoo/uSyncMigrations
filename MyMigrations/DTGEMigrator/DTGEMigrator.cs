@@ -6,13 +6,14 @@ using Newtonsoft.Json.Linq;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Extensions;
 
+using uSync.Migrations.Core;
 using uSync.Migrations.Core.Context;
 using uSync.Migrations.Core.Migrators;
 using uSync.Migrations.Core.Migrators.Models;
 
 namespace MyMigrations.DTGEMigrator;
 
-[SyncMigrator(Umbraco.Cms.Core.Constants.PropertyEditors.Aliases.Grid)]
+[SyncMigrator(uSyncMigrations.EditorAliases.Grid)]
 [SyncMigratorVersion(7, 8)]
 [SyncDefaultMigrator]
 public class DTGEMigrator : SyncPropertyMigratorBase
@@ -33,9 +34,9 @@ public class DTGEMigrator : SyncPropertyMigratorBase
     }
 
     public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
-        => Umbraco.Cms.Core.Constants.PropertyEditors.Aliases.Grid;
+        => uSyncMigrations.EditorAliases.Grid;
 
-    public override string GetDatabaseType(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
+	public override string GetDatabaseType(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
         => nameof(ValueStorageType.Ntext);
 
     public override object? GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
@@ -106,13 +107,13 @@ public class DTGEMigrator : SyncPropertyMigratorBase
 
         foreach (var (propertyAlias, value) in elementValue)
         {
-            var editorAlias = context.ContentTypes.GetEditorAliasByTypeAndProperty(contentTypeAlias, propertyAlias);
+            if (context.ContentTypes.TryGetEditorAliasByTypeAndProperty(contentTypeAlias, propertyAlias, out var editorAlias) is false) { continue; }
 
-            if (editorAlias == null) continue;
-
-            var migrator = context.Migrators.TryGetMigrator("DTGE." + editorAlias.OriginalEditorAlias);
-            if (migrator == null)
-                migrator = context.Migrators.TryGetMigrator(editorAlias.OriginalEditorAlias);
+            if (context.Migrators.TryGetMigrator("DTGE." + editorAlias.OriginalEditorAlias, out var migrator) is false
+                && context.Migrators.TryGetMigrator(editorAlias.OriginalEditorAlias, out migrator) is false)
+            {
+                return propertyValues;
+            }
 
             var propertyValue = value;
 

@@ -1,4 +1,8 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Umbraco.Cms.Core.PropertyEditors;
+
+using Umbraco.Cms.Core;
 
 namespace uSync.Migrations.Core.Legacy.Grid;
 

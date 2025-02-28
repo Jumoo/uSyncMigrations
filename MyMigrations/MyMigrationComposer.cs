@@ -4,7 +4,7 @@ using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 
 using uSync.Core;
-using uSync.Migrations.Core.Composing;
+using uSync.Migrations.Core;
 using uSync.Migrations.Core.Notifications;
 using uSync.Migrations.Migrators.Core;
 

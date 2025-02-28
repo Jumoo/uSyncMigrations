@@ -9,13 +9,14 @@ using Umbraco.Cms.Core.Models;
 using Umbraco.Extensions;
 
 using uSync.BackOffice.Configuration;
-using uSync.Migrations.Core.Composing;
 using uSync.Migrations.Core.Configuration;
-using uSync.Migrations.Core.Configuration.Models;
 using uSync.Migrations.Core.Context;
 using uSync.Migrations.Core.Handlers;
 using uSync.Migrations.Core.Helpers;
+using uSync.Migrations.Core.Migrators;
 using uSync.Migrations.Core.Models;
+using uSync.Migrations.Core.Plans.Models;
+using uSync.Migrations.Core.Validation;
 
 namespace uSync.Migrations.Core.Services;
 
@@ -80,6 +81,7 @@ internal class SyncMigrationService : ISyncMigrationService
     /// <returns></returns>
     public MigrationResults Validate(MigrationOptions? options)
     {
+        var sw = Stopwatch.StartNew();
         if (options == null)
         {
             return new MigrationResults
@@ -99,10 +101,12 @@ internal class SyncMigrationService : ISyncMigrationService
 
         var messages = new List<MigrationMessage>();
 
+        int index = 0;
         foreach (var validator in _migrationValidators)
         {
             try
             {
+                options.Callbacks?.Update($"Validating {validator.GetType().Name}", index++, _migrationValidators.Count);
                 messages.AddRange(validator.Validate(validationContext));
             }
             catch
@@ -110,6 +114,9 @@ internal class SyncMigrationService : ISyncMigrationService
                 // TODO: what do we do if the validator fails ???
             }
         }
+
+        sw.Stop();
+        options.Callbacks?.Update($"Validated ({sw.ElapsedMilliseconds}ms)", index, _migrationValidators.Count);
 
         return new MigrationResults
         {
@@ -139,7 +146,7 @@ internal class SyncMigrationService : ISyncMigrationService
 
         using (var migrationContext = PrepareContext(migrationId, sourceRoot, options))
         {
-            var results = MigrateFromDisk(migrationId, sourceRoot, migrationContext, handlers);
+            var results = MigrateFromDisk(migrationId, sourceRoot, migrationContext, handlers).ToList();
 
             var success = results.All(x => x.MessageType != MigrationMessageType.Error);
 
@@ -154,6 +161,9 @@ internal class SyncMigrationService : ISyncMigrationService
                 _migrationFileService.CopyMigrationToFolder(migrationId, targetRoot);
                 _migrationFileService.RemoveMigration(migrationId);
             }
+
+            // add any messages that have been added from the context. 
+            results.AddRange(migrationContext.GetMessages());
 
             sw.Stop();
             _logger.LogInformation("Migration Complete {success} {count} ({elapsed}ms)", success, results.Count(), sw.ElapsedMilliseconds);
@@ -187,13 +197,13 @@ internal class SyncMigrationService : ISyncMigrationService
         // maybe replace with a Dictionary<string, MigrationMessage> (with `ItemType` as the key)?
         var results = new List<MigrationMessage>();
 
-        for(int i =0; i < handlers.Count; i++)
+        for (int i = 0; i < handlers.Count; i++)
         {
-            var handlerName = handlers[i].GetType().Name;   
-            
+            var handlerName = handlers[i].GetType().Name;
+
             migrationContext.SendUpdate($"Migrating {handlerName}", i, handlers.Count);
             _logger.LogInformation("Migrating {handler} files", handlerName);
-            
+
             results.AddRange(handlers[i].DoMigration(migrationContext));
         }
 
@@ -251,7 +261,7 @@ internal class SyncMigrationService : ISyncMigrationService
         options.ReplacementAliases?
             .ForEach(kvp => context.ContentTypes.AddReplacementAlias(kvp.Key, kvp.Value));
 
-        context.SendUpdate("Preparing Migration handlers", 5,10);
+        context.SendUpdate("Preparing Migration handlers", 5, 10);
 
         // let the handlers run through their prep (populate all the lookups)
         GetHandlers(options.SourceVersion)?

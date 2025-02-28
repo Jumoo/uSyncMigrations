@@ -3,8 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Umbraco.Cms.Core.Composing;
 using Umbraco.Cms.Core.DependencyInjection;
-
-using uSync.Migrations.Core.Composing;
+using uSync.Migrations.Core;
 
 namespace uSync.Migrations.Migrators.Community.NuPickers;
 

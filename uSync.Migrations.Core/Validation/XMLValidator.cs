@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
+﻿using System.Xml.Linq;
 
 using Umbraco.Extensions;
 
 using uSync.BackOffice.Services;
 using uSync.Migrations.Core.Context;
 using uSync.Migrations.Core.Models;
-using uSync.Migrations.Core.Services;
 
 namespace uSync.Migrations.Core.Validation;
 internal class XMLValidator : ISyncMigrationValidator
@@ -29,8 +23,8 @@ internal class XMLValidator : ISyncMigrationValidator
 
         var errors = new List<MigrationMessage>();
 
-        foreach (var file in files) 
-        { 
+        foreach (var file in files)
+        {
             try
             {
                 var node = XElement.Load(file);
@@ -51,6 +45,6 @@ internal class XMLValidator : ISyncMigrationValidator
         {
             Message = "All uSync files in the source folder appear to be valid xml"
         }.AsEnumerableOfOne();
-        
+
     }
 }

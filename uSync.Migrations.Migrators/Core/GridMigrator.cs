@@ -7,6 +7,9 @@ using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Extensions;
 
+using uSync.Migrations.Core;
+using uSync.Migrations.Core.Legacy.Grid;
+
 namespace uSync.Migrations.Migrators.Core;
 
 /// <summary>
@@ -21,7 +24,7 @@ namespace uSync.Migrations.Migrators.Core;
 ///  the main feature here is migrating DTGE elements between grids, 
 ///  
 /// </remarks>
-[SyncMigrator(UmbEditors.Aliases.Grid, typeof(GridConfiguration), IsDefaultAlias = true)]
+[SyncMigrator(uSyncMigrations.EditorAliases.Grid, typeof(LegacyGridConfiguration), IsDefaultAlias = true)]
 [SyncDefaultMigrator]
 
 public class GridMigrator : SyncPropertyMigratorBase
@@ -37,7 +40,7 @@ public class GridMigrator : SyncPropertyMigratorBase
     }
 
     public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
-        => UmbEditors.Aliases.Grid;
+        => uSyncMigrations.EditorAliases.Grid;
 
     public override string GetDatabaseType(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
         => nameof(ValueStorageType.Ntext);
@@ -60,7 +63,7 @@ public class GridMigrator : SyncPropertyMigratorBase
     public override string? GetContentValue(SyncMigrationContentProperty contentProperty, SyncMigrationContext context)
     {
         if (contentProperty.Value == null) return string.Empty;
-        var grid = JsonConvert.DeserializeObject<GridValue>(contentProperty.Value);
+        var grid = JsonConvert.DeserializeObject<LegacyGridValue>(contentProperty.Value);
         if (grid == null) return contentProperty.Value;
 
 
@@ -84,14 +87,14 @@ public class GridMigrator : SyncPropertyMigratorBase
         return JsonConvert.SerializeObject(grid);
     }
 
-    private string GetDTGEContentTypeAlias(GridValue.GridControl control)
+    private string GetDTGEContentTypeAlias(LegacyGridValue.LegacyGridControl control)
     => control.Value?.Value<string>(_dtgeContentTypeAliasValue) ?? string.Empty;
 
-    private bool isDoctypeGridEditorControl(GridValue.GridControl control)
+    private bool isDoctypeGridEditorControl(LegacyGridValue.LegacyGridControl control)
         => !string.IsNullOrEmpty(control.Value?.Value<string>(_dtgeContentTypeAliasValue));
 
     private Dictionary<string, object?> GetPropertyValues(
-        GridValue.GridControl control, SyncMigrationContext context)
+        LegacyGridValue.LegacyGridControl control, SyncMigrationContext context)
     {
         var propertyValues = new Dictionary<string, object?>();
 
@@ -104,34 +107,29 @@ public class GridMigrator : SyncPropertyMigratorBase
 
         foreach (var (propertyAlias, value) in elementValue)
         {
-            var editorAliasInfo = context.ContentTypes.GetEditorAliasByTypeAndProperty(
-                contentTypeAlias, propertyAlias);
+            if (context.ContentTypes.TryGetEditorAliasByTypeAndProperty(contentTypeAlias, propertyAlias, out var editorAliasInfo) is false) { continue; }
+            if (context.Migrators.TryGetMigrator(editorAliasInfo.OriginalEditorAlias, out var migrator) is false) { continue; }
 
-            if (editorAliasInfo == null) continue;
+            var valueToConvert = (value?.ToString() ?? "").Trim();
 
-            var propertyValue = value;
+            var property = new SyncMigrationContentProperty(
+                editorAliasInfo.OriginalEditorAlias,
+                propertyAlias,
+                editorAliasInfo.OriginalEditorAlias,
+                valueToConvert);
 
-            var migrator = context.Migrators.TryGetMigrator(editorAliasInfo.OriginalEditorAlias);
-            if (migrator != null)
+            var convertedValue = migrator.GetContentValue(property, context);
+
+            object? propertyValue;
+            if (convertedValue?.Trim().DetectIsJson() == true)
             {
-                var valueToConvert = (value?.ToString() ?? "").Trim();
-
-                var property = new SyncMigrationContentProperty(
-                    editorAliasInfo.OriginalEditorAlias,
-                    propertyAlias,
-                    editorAliasInfo.OriginalEditorAlias,
-                    valueToConvert);
-
-                var convertedValue = migrator.GetContentValue(property, context);
-                if (convertedValue?.Trim().DetectIsJson() == true)
-                {
-                    propertyValue = JsonConvert.DeserializeObject(convertedValue ?? "");
-                }
-                else
-                {
-                    propertyValue = convertedValue;
-                }
+                propertyValue = JsonConvert.DeserializeObject(convertedValue ?? "");
             }
+            else
+            {
+                propertyValue = convertedValue;
+            }
+
 
             propertyValues[propertyAlias] = propertyValue;
         }

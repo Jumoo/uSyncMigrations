@@ -6,11 +6,14 @@ namespace uSync.Migrations.Core.Models;
 [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
 public class MigrationMessage
 {
-    public MigrationMessage(string type, string name, MigrationMessageType messageType)
-    {
-        ItemType = type;
-        ItemName = name;
-        Message = string.Empty;
+    public MigrationMessage(string itemType, string itemName, MigrationMessageType messageType)
+        : this(itemType, itemName, string.Empty, messageType) { }
+
+	public MigrationMessage(string itemType, string itemName, string message, MigrationMessageType messageType)
+	{
+		ItemType = itemType;
+        ItemName = itemName;
+        Message = message;
         MessageType = messageType;
     }
 

@@ -9,7 +9,6 @@ using Umbraco.Cms.Core.Services;
 using Umbraco.Extensions;
 
 using uSync.Core;
-using uSync.Migrations.Core.Composing;
 using uSync.Migrations.Core.Context;
 using uSync.Migrations.Core.Extensions;
 using uSync.Migrations.Core.Models;
@@ -17,7 +16,7 @@ using uSync.Migrations.Core.Notifications;
 using uSync.Migrations.Core.Services;
 
 namespace uSync.Migrations.Core.Handlers.Shared;
-internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBase<TEntity>
+public abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBase<TEntity>
     where TEntity : ContentTypeBase
 {
     private readonly IDataTypeService _dataTypeService;
@@ -57,8 +56,7 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
             var propertyName = property.Element("Name")?.ValueOrDefault(string.Empty) ?? string.Empty;
 
             // if this is a property splitting editor, we need to add the split properties
-            var propertySplittingMigrator = context.Migrators.TryGetPropertySplittingMigrator(editorAlias);
-            if (propertySplittingMigrator != null)
+            if (context.Migrators.TryGetPropertySplittingMigrator(editorAlias, out var propertySplittingMigrator) is true)
             {
                 context.ContentTypes.AddProperty(contentTypeAlias, alias, editorAlias, "none", definition); // add the original property so we can reference the original EditorAlias later
 
@@ -73,11 +71,11 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
             }
             else
             {
-                context.ContentTypes.AddProperty(contentTypeAlias, alias,
-                    editorAlias, context.DataTypes.GetByDefinition(definition)?.EditorAlias, definition);
+                context.ContentTypes.AddProperty(contentTypeAlias, alias, editorAlias,
+                    context.DataTypes.TryGetInfoByDefinition(definition, out var dataTypeInfo) is true ? dataTypeInfo.EditorAlias : string.Empty);
 
-                context.ContentTypes.AddDataTypeAlias(contentTypeAlias, alias,
-                    context.DataTypes.GetAlias(definition));
+                context.ContentTypes.AddDataTypeAlias(contentTypeAlias, alias, 
+                    context.DataTypes.TryGetAlias(definition, out var dataTypeAlias) is true ? dataTypeAlias : string.Empty);
             }
 
 
@@ -153,6 +151,12 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
 
                 if (context.ContentTypes.IsIgnoredProperty(alias, name))
                 {
+                    context.AddMessage(
+						this.ItemType,
+						alias,
+						$"{alias} [{name}] is ignored property will not be migrated",
+						MigrationMessageType.Information);
+                    
                     continue;
                 }
 
@@ -168,8 +172,7 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
     {
         var editorAlias = property.Element("Type").ValueOrDefault(string.Empty);
 
-        var propertySplittingMigrator = context.Migrators.TryGetPropertySplittingMigrator(editorAlias);
-        if (propertySplittingMigrator == null)
+        if (context.Migrators.TryGetPropertySplittingMigrator(editorAlias, out var propertySplittingMigrator) is false)
         {
             var updatedProperty = GetUpdatedProperty(source, contentTypeAlias, property, context);
             if (updatedProperty != null)
@@ -224,8 +227,11 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
     {
         var propertyAlias = newProperty.Element("Alias").ValueOrDefault(string.Empty);
 
-        var updatedType = context.ContentTypes.GetEditorAliasByTypeAndProperty(alias, propertyAlias)?.UpdatedEditorAlias ?? propertyAlias;
-        newProperty.CreateOrSetElement("Type", updatedType);
+        string? updatedEditorAlias = context.ContentTypes.TryGetEditorAliasByTypeAndProperty(alias, propertyAlias, out var editorInfo) is false
+            ? propertyAlias 
+            : editorInfo.UpdatedEditorAlias;
+
+        newProperty.CreateOrSetElement("Type", updatedEditorAlias);
 
         var definitionElement = newProperty.Element("Definition");
         if (definitionElement == null) return;
@@ -286,6 +292,7 @@ internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBas
             var migratingNotification = new SyncMigratingNotification<TEntity>(source, context);
             if (_eventAggregator.PublishCancelable(migratingNotification) == true)
             {
+                context.AddMessage(this.ItemType, contentType.Alias, "Create cancelled by notifcation will not be created", MigrationMessageType.Information); 
                 continue;
             }
 

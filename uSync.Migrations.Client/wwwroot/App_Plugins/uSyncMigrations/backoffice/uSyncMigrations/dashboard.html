@@ -177,6 +177,9 @@
                                         (For big sites this can take a while)
                                     </div>
                                 </umb-box-content>
+                                <umb-box-content>
+                                    <div>{{vm.update.message}}</div>
+                                </umb-box-content>
                             </umb-box>
                         </div>
                         <div ng-if="vm.validating == false">
@@ -262,6 +265,10 @@
                             icon="icon-arrow-left"
                             button-style="link"></umb-button>
             </umb-editor-footer-content-left>
+            <umb-editor-footer-content-right>
+                <small class="muted" 
+                       ng-if="vm.update">{{vm.update.message}} {{vm.update.count}}/{{vm.update.total}}</small>
+            </umb-editor-footer-content-right>
         </umb-editor-footer>
     </umb-editor-view>
 </div>

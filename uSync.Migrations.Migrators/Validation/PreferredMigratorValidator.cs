@@ -1,7 +1,5 @@
 ﻿using Umbraco.Extensions;
 
-using uSync.Migrations.Core.Composing;
-
 namespace uSync.Migrations.Migrators.Validation;
 
 internal class PreferredMigratorValidator : ISyncMigrationValidator

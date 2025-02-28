@@ -9,6 +9,7 @@ using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Cms.Core.Strings;
 
+using uSync.Migrations.Core;
 using uSync.Migrations.Core.Legacy.Grid;
 
 using uSync.Migrations.Migrators.BlockGrid.BlockMigrators;
@@ -21,7 +22,7 @@ using GridConfiguration = uSync.Migrations.Migrators.BlockGrid.Models.GridConfig
 
 namespace uSync.Migrations.Migrators.BlockGrid;
 
-[SyncMigrator(UmbConstants.PropertyEditors.Aliases.Grid)]
+[SyncMigrator(uSyncMigrations.EditorAliases.Grid)]
 [SyncMigratorVersion(7, 8)]
 public class GridToBlockGridMigrator : SyncPropertyMigratorBase
 {
@@ -122,13 +123,14 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
             return string.Empty;
         }
 
-        var dataTypeAlias = "";
+        var dataTypeGuid = context.ContentTypes.TryGetEditorAliasByTypeAndProperty(contentProperty.ContentTypeAlias, contentProperty.PropertyAlias, out var editorInfo) is true
+            ? editorInfo.DataTypeDefinition : Guid.Empty;
 
-        var dataTypeGuid = context.ContentTypes.GetEditorAliasByTypeAndProperty(contentProperty.ContentTypeAlias, contentProperty.PropertyAlias)?.DataTypeDefinition ?? Guid.Empty;
 
-        if (dataTypeGuid != Guid.Empty)
+        var dataTypeAlias = string.Empty;
+        if (dataTypeGuid.HasValue && dataTypeGuid.Value != Guid.Empty)
         {
-            dataTypeAlias = context.DataTypes.GetByDefinition(dataTypeGuid)?.DataTypeName;
+            dataTypeAlias = context.DataTypes.TryGetInfoByDefinition(dataTypeGuid.Value, out var dataTypeInfo) is true ? dataTypeInfo.DataTypeName : string.Empty;
         }
 
         if (string.IsNullOrWhiteSpace(dataTypeAlias))
@@ -189,11 +191,11 @@ public class GridToBlockGridMigrator : SyncPropertyMigratorBase
     }
 
 
-    private GridValue? GetGridValueFromString(string editorAlias, string value)
+    private LegacyGridValue? GetGridValueFromString(string editorAlias, string value)
     {
         try
         {
-            return JsonConvert.DeserializeObject<GridValue>(value);
+            return JsonConvert.DeserializeObject<LegacyGridValue>(value);
         }
         catch(Exception ex) 
         {

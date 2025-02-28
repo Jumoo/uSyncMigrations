@@ -1,4 +1,8 @@
-﻿namespace uSync.Migrations.Core.Context;
+﻿using System.Diagnostics.CodeAnalysis;
+
+using Org.BouncyCastle.Bcpg.OpenPgp;
+
+namespace uSync.Migrations.Core.Context;
 public class TemplateMigratorContext
 {
     private Dictionary<string, Guid> _templateKeys { get; set; } = new(StringComparer.OrdinalIgnoreCase);
@@ -12,7 +16,7 @@ public class TemplateMigratorContext
 
     /// <summary>
     ///  get a template key (Guid) from the context 
-    /// </summary>
-    public Guid GetKeyByAlias(string templateAlias)
-         => _templateKeys?.TryGetValue(templateAlias, out var key) == true ? key : Guid.Empty;
+    /// </summary>   
+    public bool TryGetKeyByAlias(string templateAlias, [MaybeNullWhen(false)] out Guid key)
+        => _templateKeys.TryGetValue(templateAlias, out key);
 }

@@ -69,7 +69,7 @@ public class RjpMultiUrlPickerToUmbMultiUrlPickerMigrator : SyncPropertyMigrator
 
             if (sourceDto.Udi != default)
             {
-                if (!string.IsNullOrWhiteSpace(context.Content.GetAliasByKey(sourceDto.Udi.Guid)))
+                if (context.Content.TryGetAliasByKey(sourceDto.Udi.Guid, out var _) is true)
                 {
                     umbLinkDto.Udi = sourceDto.Udi;
                 }
@@ -81,8 +81,7 @@ public class RjpMultiUrlPickerToUmbMultiUrlPickerMigrator : SyncPropertyMigrator
 
                 if (Guid.TryParse(sourceDto.Id, out var guid))
                 {
-                    if (!string.IsNullOrWhiteSpace(context.Content.GetAliasByKey(guid)))
-                    {
+                    if (context.Content.TryGetAliasByKey(guid, out var _) is true) { 
                         key = guid;
                     }
                 }

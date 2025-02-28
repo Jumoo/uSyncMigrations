@@ -9,7 +9,6 @@ using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Extensions;
 
-using uSync.Migrations.Core.Composing;
 using uSync.Migrations.Core.Context;
 using uSync.Migrations.Core.Extensions;
 using uSync.Migrations.Core.Handlers.Shared;

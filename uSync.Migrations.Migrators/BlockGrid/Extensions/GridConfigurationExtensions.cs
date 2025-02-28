@@ -1,6 +1,9 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Drawing.Text;
+using System.Text.RegularExpressions;
 
 using Newtonsoft.Json.Linq;
+
+using Org.BouncyCastle.Asn1.Cms;
 
 using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Extensions;
@@ -14,7 +17,7 @@ using GridConfiguration = Umbraco.Cms.Core.PropertyEditors.GridConfiguration;
 namespace uSync.Migrations.Migrators.BlockGrid.Extensions;
 internal static class GridConfigurationExtensions
 {
-    public static int? GetGridColumns(this GridConfiguration gridConfiguration)
+    public static int? GetGridColumns(this LegacyGridConfiguration gridConfiguration)
     {
         if (gridConfiguration.Items?.TryGetValue("columns", out var columns) == true)
         {
@@ -24,7 +27,7 @@ internal static class GridConfigurationExtensions
         return 12;
     }
 
-    public static JToken? GetItemBlock(this GridConfiguration gridConfiguration, string name)
+    public static JToken? GetItemBlock(this LegacyGridConfiguration gridConfiguration, string name)
     {
         if (gridConfiguration.Items?.TryGetValue(name, out var block) == true)
         {
@@ -57,15 +60,25 @@ internal static class GridConfigurationExtensions
             if (Regex.IsMatch(allowedAlias, "\\W"))
             {
                 var matchingAliases = context.ContentTypes.GetAllAliases().Where(x => Regex.IsMatch(x, allowedAlias)).ToList();
-                keys.AddRange(matchingAliases.Select(context.ContentTypes.GetKeyByAlias));
+
+                keys.AddRange(matchingAliases.Select(x =>
+                {
+                    if (context.ContentTypes.TryGetKeyByAlias(x, out var key))
+                        return key;
+
+                    return Guid.Empty;
+                }).Where(x => x != Guid.Empty)); 
             }
             else
             {
-                keys.Add(context.ContentTypes.GetKeyByAlias(allowedAlias));
+                if (context.ContentTypes.TryGetKeyByAlias(allowedAlias, out var allowedKey))
+                    keys.Add(allowedKey);
             }
 
             foreach (var elementKey in keys)
             {
+                if (context.ContentTypes.TryGetAliasByKey(elementKey, out var contentTypeAlias) is false) { continue; }    
+
                 var label = editorConfig.GetBlockname();
                 /*if (keys.Count > 0)
                 {

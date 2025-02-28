@@ -4,7 +4,6 @@ using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Services;
 
-using uSync.Migrations.Core.Composing;
 using uSync.Migrations.Core.Services;
 
 namespace uSync.Migrations.Core.Handlers.Eight;
