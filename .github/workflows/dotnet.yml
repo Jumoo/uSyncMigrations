@@ -17,12 +17,12 @@ jobs:
       with:
         versionSpec: '5.x'
     
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: |
             6.0.x
@@ -34,7 +34,7 @@ jobs:
       
     - name: Determine Version with GitVersion (MSBuild in Proj will do this)
       id:   gitversion
-      uses: gittools/actions/gitversion/execute@v0.9.15
+      uses: gittools/actions/gitversion/execute@v3
       with:
         useConfigFile: true
         configFilePath: ./GitVersion.yml
@@ -64,7 +64,7 @@ jobs:
       working-directory: uSync.Migrations
 
     - name: Upload nuget file as build artifact      
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: Nuget Build Output
         path: ./build.out/  
