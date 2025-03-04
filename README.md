@@ -2,6 +2,10 @@
 > [!CAUTION]
 > This is a pre-release early access beta migration assistant. Migrations can be complicated you can ask, but support of Migrations is much more of a community effort so results may vary.
 
+> [!IMPORTANT]
+> We advice that you DO NOT install and run migrations on your 'production' or 'live' site, migrations are often messy and take muiltiple steps, we recommend you do all this on a test site
+> away from live or critical infrastructure, and when you are happy with it, either use the resulting site's uSync files or database to make your new site. we cannot help if you put this
+> on a live site and things break.
 
 # uSync Migrations
 
