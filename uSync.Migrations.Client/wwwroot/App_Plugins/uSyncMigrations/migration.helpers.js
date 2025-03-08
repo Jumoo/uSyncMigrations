@@ -4,8 +4,8 @@
     function migrationHelpers(notificationsService) {
 
         return {
-            copyResults : copyResults
-
+            copyResults: copyResults,
+            notifyError: notifyError
         };
 
         function copyResults(results) {
@@ -53,6 +53,19 @@
 
         }
 
+        function notifyError(methodName, error) {
+            console.error('Error', methodName, error);
+
+            try {
+                const msg = error.data.ExceptionMessage ?? error.data.exceptionMessage;
+                notificationsService.error(`error ${methodName}`, msg);
+                return msg;
+            }
+            catch {
+                notificationsService.error(`error ${methodName}`, 'there was an error check the browser logs');
+                return JSON.stringify(error, null, 1);
+            }
+        }
     }
 
 

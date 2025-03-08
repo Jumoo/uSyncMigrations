@@ -36,11 +36,13 @@ public class RadioButtonListMigrator : SyncPropertyMigratorBase
     {
         if (string.IsNullOrWhiteSpace(contentProperty.Value) == false)
         {
-            var dataTypeAlias = context.ContentTypes.GetDataTypeAlias(contentProperty.ContentTypeAlias, contentProperty.PropertyAlias);
-            var items = context.Migrators.GetCustomValues($"dataType_{dataTypeAlias}_items");
-            if (items?.TryGetValue(contentProperty.Value, out var value) == true && value is string str)
+            if (context.ContentTypes.TryGetDataTypeAlias(contentProperty.ContentTypeAlias, contentProperty.PropertyAlias, out var dataTypeAlias) is true)
             {
-                return str;
+                var items = context.Migrators.GetCustomValues($"dataType_{dataTypeAlias}_items");
+                if (items?.TryGetValue(contentProperty.Value, out var value) == true && value is string str)
+                {
+                    return str;
+                }
             }
         }
 

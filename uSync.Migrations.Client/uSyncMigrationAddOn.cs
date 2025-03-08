@@ -1,15 +1,14 @@
 ﻿using uSync.BackOffice.Models;
-using uSync.Migrations.Core;
 
 namespace uSync.Migrations.Client;
 
 public class uSyncMigrationAddOn : ISyncAddOn
 {
-    public string Name => uSyncMigrations.AppName;
+    public string Name => uSyncMigrationsClient.AppName;
 
-    public string Version => uSyncMigrations.AppVersion;
+    public string Version => uSyncMigrationsClient.AppVersion;
 
-    public string Icon => uSyncMigrations.Icon;
+    public string Icon => uSyncMigrationsClient.Icon;
 
     public string View => string.Empty; // $"{uSyncMigrations.PluginFolder}/dashboard.html";
 

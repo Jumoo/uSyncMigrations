@@ -12,11 +12,11 @@ public interface ISyncBlockMigrator
     IEnumerable<NewContentTypeInfo> AdditionalContentTypes(ILegacyGridEditorConfig editorConfig);
     IEnumerable<string> GetAllowedContentTypes(ILegacyGridEditorConfig config, SyncMigrationContext context);
 
-    string GetContentTypeAlias(GridValue.GridControl control);
+    string GetContentTypeAlias(LegacyGridValue.LegacyGridControl control);
     string GetContentTypeAlias(ILegacyGridEditorConfig editorConfig);
     string GetEditorAlias(ILegacyGridEditorConfig editor);
 
-    Dictionary<string, object> GetPropertyValues(GridValue.GridControl control, SyncMigrationContext context);
+    Dictionary<string, object> GetPropertyValues(LegacyGridValue.LegacyGridControl control, SyncMigrationContext context);
 }
 
 

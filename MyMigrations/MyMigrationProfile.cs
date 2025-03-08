@@ -1,9 +1,10 @@
 ﻿using Umbraco.Cms.Core.Models;
 
 using uSync.Migrations.Core;
-using uSync.Migrations.Core.Composing;
-using uSync.Migrations.Core.Configuration.Models;
 using uSync.Migrations.Core.Extensions;
+using uSync.Migrations.Core.Handlers;
+using uSync.Migrations.Core.Plans;
+using uSync.Migrations.Core.Plans.Models;
 using uSync.Migrations.Migrators.Optional;
 
 namespace MyMigrations;
@@ -46,8 +47,8 @@ public class MyMigrationProfile : ISyncMigrationPlan
         // for this migrator we want to use our special grid migrator.
         PreferredMigrators = new Dictionary<string, string>()
         {
-            // { Umbraco.Cms.Core.Constants.PropertyEditors.Aliases.Grid, nameof(GridToBlockListMigrator) }
-            { Umbraco.Cms.Core.Constants.PropertyEditors.Aliases.NestedContent, nameof(NestedToBlockListMigrator) }
+            // { uSyncMigrations.EditorAliases.Grid, nameof(GridToBlockListMigrator) }
+            { uSyncMigrations.EditorAliases.NestedContent, nameof(NestedToBlockListMigrator) }
         },
 
         // eveything beneath is optional... 

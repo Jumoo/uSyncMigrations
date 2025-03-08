@@ -3,12 +3,14 @@ using Newtonsoft.Json;
 using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Extensions;
 
+using uSync.Migrations.Core;
 using uSync.Migrations.Core.Extensions;
+using uSync.Migrations.Core.Legacy;
 
 namespace uSync.Migrations.Migrators.Core;
 
-[SyncMigrator(UmbConstants.PropertyEditors.Aliases.NestedContent, typeof(NestedContentConfiguration), IsDefaultAlias = true)]
-[SyncMigrator("Our.Umbraco.NestedContent")]
+[SyncMigrator(uSyncMigrations.EditorAliases.NestedContent, typeof(LegacyNestedContentConfiguration), IsDefaultAlias = true)]
+[SyncMigrator(uSyncMigrations.EditorAliases.NestedContentCommunity)]
 [SyncDefaultMigrator]
 public class NestedContentMigrator : SyncPropertyMigratorBase
 {
@@ -16,20 +18,21 @@ public class NestedContentMigrator : SyncPropertyMigratorBase
     { }
 
     public override string GetEditorAlias(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
-        => UmbConstants.PropertyEditors.Aliases.NestedContent;
+        => uSyncMigrations.EditorAliases.NestedContent;
 
     public override object? GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
-        if (dataTypeProperty?.PreValues == null) return new NestedContentConfiguration();
+        if (dataTypeProperty?.PreValues == null) return new LegacyNestedContentConfiguration();
 
-        var config = (NestedContentConfiguration?)new NestedContentConfiguration().MapPreValues(dataTypeProperty.PreValues);
-        if (config?.ContentTypes == null) return new NestedContentConfiguration();
+        var config = (LegacyNestedContentConfiguration?)new LegacyNestedContentConfiguration().MapPreValues(dataTypeProperty.PreValues);
+        if (config?.ContentTypes == null) return new LegacyNestedContentConfiguration();
 
         var contentTypeKeys = config.ContentTypes.Select(x => x.Alias)
             .WhereNotNull() // satisfy nullability requirement
             .Select(context.ContentTypes.GetReplacementAlias)
             .Where(a => !string.IsNullOrWhiteSpace(a))
-            .Select(context.ContentTypes.GetKeyByAlias);
+            .Select(b => context.ContentTypes.TryGetKeyByAlias(b, out var key) ? key : Guid.Empty)
+            .Where(x => x != Guid.Empty);
 
         context.ContentTypes.AddElementTypes(contentTypeKeys, true);
 
@@ -41,7 +44,7 @@ public class NestedContentMigrator : SyncPropertyMigratorBase
     {
         if (string.IsNullOrWhiteSpace(contentProperty.Value)) return string.Empty;
 
-        var rowValues = JsonConvert.DeserializeObject<IList<NestedContentRowValue>>(contentProperty.Value, new JsonSerializerSettings() { DateParseHandling = DateParseHandling.None });
+        var rowValues = JsonConvert.DeserializeObject<IList<LegacyNestedContentRowValue>>(contentProperty.Value, new JsonSerializerSettings() { DateParseHandling = DateParseHandling.None });
         if (rowValues == null) return string.Empty;
 
         foreach (var row in rowValues)
@@ -55,20 +58,18 @@ public class NestedContentMigrator : SyncPropertyMigratorBase
             {
                 var contentTypeAlias = context.ContentTypes.GetReplacementAlias(row.ContentTypeAlias);
                 var propertyAlias = context.ContentTypes.GetReplacementAlias(property.Key);
-                var editorAlias = context.ContentTypes.GetEditorAliasByTypeAndProperty(contentTypeAlias, propertyAlias);
-                if (editorAlias == null) continue;
+
+                if (context.ContentTypes.TryGetEditorAliasByTypeAndProperty(contentTypeAlias, propertyAlias, out var editorAlias) is false) { continue; }
 
                 try
                 {
-                    var migrator = context.Migrators.TryGetMigrator(
-                        $"{contentProperty.ContentTypeAlias}_{contentProperty.PropertyAlias}", editorAlias.OriginalEditorAlias);
-                    if (migrator != null)
-                    {
-                        row.RawPropertyValues[property.Key] = migrator.GetContentValue(
-                            new SyncMigrationContentProperty(
-                                contentTypeAlias, property.Key, contentTypeAlias, property.Value?.ToString()),
-                                context);
-                    }
+                    if (context.Migrators.TryGetMigrator($"{contentProperty.ContentTypeAlias}_{contentProperty.PropertyAlias}", editorAlias.OriginalEditorAlias, out var migrator) is false) { continue; }
+
+                    row.RawPropertyValues[property.Key] = migrator.GetContentValue(
+                        new SyncMigrationContentProperty(
+                            contentTypeAlias, property.Key, contentTypeAlias, property.Value?.ToString()),
+                            context);
+
                 }
                 catch (Exception ex)
                 {
@@ -79,19 +80,4 @@ public class NestedContentMigrator : SyncPropertyMigratorBase
 
         return JsonConvert.SerializeObject(rowValues, Formatting.Indented);
     }
-}
-
-public class NestedContentRowValue
-{
-    [JsonProperty("key")]
-    public Guid Id { get; set; }
-
-    [JsonProperty("name")]
-    public string? Name { get; set; }
-
-    [JsonProperty("ncContentTypeAlias")]
-    public string ContentTypeAlias { get; set; } = null!;
-
-    [JsonExtensionData]
-    public IDictionary<string, object?> RawPropertyValues { get; set; } = null!;
 }

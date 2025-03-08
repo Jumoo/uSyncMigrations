@@ -18,7 +18,7 @@ using uSync.Migrations.Core.Serialization;
 using uSync.Migrations.Core.Services;
 
 namespace uSync.Migrations.Core.Handlers.Shared;
-internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
+public abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
 {
     protected readonly IDataTypeService _dataTypeService;
     protected readonly JsonSerializerSettings _jsonSerializerSettings;
@@ -44,7 +44,7 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
     {
         foreach (var datatype in _dataTypeService.GetAll())
         {
-            context.DataTypes.AddDefinition(datatype.Key, new Models.DataTypeInfo(datatype.EditorAlias, datatype.EditorAlias, datatype.Name ?? datatype.EditorAlias));
+            context.DataTypes.AddDefinition(datatype.Key, new Models.DataTypeInfo(datatype));
         }
     }
 
@@ -56,14 +56,7 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
     /// Whether properties using this property editor should be split into multiple properties
     /// </summary>
     protected bool IsSplitPropertyEditor(string editorAlias, SyncMigrationContext context)
-    {
-        //
-        // replacements
-        //
-        var migrator = context.Migrators.TryGetPropertySplittingMigrator(editorAlias);
-
-        return migrator != null;
-    }
+        => context.Migrators.TryGetPropertySplittingMigrator(editorAlias, out _);
 
     protected override void PrepareFile(XElement source, SyncMigrationContext context)
     {
@@ -89,12 +82,9 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
             }
         }
 
-        if (context.DataTypes.GetByDefinition(dtd) != null && !string.IsNullOrEmpty(editorAlias))
-        {
-            context.DataTypes.GetByDefinition(dtd)!.OriginalEditorAlias = editorAlias;
-        }
+        context.DataTypes.TryUpdateDefinitionOriginalEditor(dtd, editorAlias);
     }
-    
+
     protected override void PrePrepareFile(XElement source, SyncMigrationContext context)
     {
         var editorAlias = GetEditorAlias(source);
@@ -106,6 +96,7 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
         if (isSplitPropertyEditor)
         {
             // if this editor is to be split, then by default we won't migrate the data type
+            context.AddMessage(this.ItemType, alias ?? dtd.ToString(), "This editor will be split, so not migrating base type", MigrationMessageType.Information);
             return;
         }
 
@@ -114,11 +105,6 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
 
         // add alias, (won't update if replacement was added)
         context.DataTypes.AddDefinition(dtd, new Models.DataTypeInfo(editorAlias, editorAlias, dataTypeName));
-        if (context.DataTypes.GetByDefinition(dtd) != null)
-        {
-            // ensured that we always populated old alias, so we can use it in archetype
-            context.DataTypes.GetByDefinition(dtd)!.OriginalEditorAlias = editorAlias;
-        }
         context.DataTypes.AddAlias(dtd, alias);
     }
 
@@ -145,6 +131,7 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
         if (context.DataTypes.GetReplacement(key) != key)
         {
             // this data type has been replaced and isn't to be migrated
+            context.AddMessage(this.ItemType, alias ?? key.ToString(), "Datatype has been replaced and is not being migrated", MigrationMessageType.Information); 
             return null;
         }
 
@@ -152,9 +139,9 @@ internal abstract class SharedDataTypeHandler : SharedHandlerBase<DataType>
         var folder = GetDataTypeFolder(source);
         var databaseType = GetDatabaseType(source);
 
-        var migrator = context.Migrators.TryGetMigrator(editorAlias);
-        if (migrator is null)
+        if (context.Migrators.TryGetMigrator(editorAlias, out var migrator) is false)
         {
+            context.AddMessage(this.ItemType, editorAlias, "No Migrator found", MigrationMessageType.Information);
             // no migrator. 
         }
 

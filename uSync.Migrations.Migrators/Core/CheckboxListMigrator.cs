@@ -38,11 +38,20 @@ public class CheckboxListMigrator : SyncPropertyMigratorBase
         // (DTGE, maybe nested??)
 
         var values = JsonConvert.DeserializeObject<List<string>>(contentProperty.Value);
-        if (values == null) return null;
+        if (values == null)
+        {
+            context.AddMessage(
+				this.GetType().Name,
+				contentProperty.ContentTypeAlias,
+				$"Value is not valid string list [{contentProperty.Value ?? string.Empty}",
+				MigrationMessageType.Warning);
+            return null;
+        }
 
         var outputValues = new List<string>();
         foreach (var value in values)
         {
+            // TODO: Check this logic it seems odd. 
             if (int.TryParse(value, out int intValue))
             {
             }

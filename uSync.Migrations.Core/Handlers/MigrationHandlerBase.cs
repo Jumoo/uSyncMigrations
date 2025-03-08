@@ -16,7 +16,7 @@ using uSync.Migrations.Core.Notifications;
 using uSync.Migrations.Core.Services;
 
 namespace uSync.Migrations.Core.Handlers;
-internal abstract class MigrationHandlerBase<TObject>
+public abstract class MigrationHandlerBase<TObject>
     where TObject : IEntity
 {
     protected readonly IEventAggregator _eventAggregator;
@@ -157,7 +157,7 @@ internal abstract class MigrationHandlerBase<TObject>
         var messages = new List<MigrationMessage>();
 
 
-        foreach(var file in files) 
+        foreach (var file in files)
         {
             try
             {
@@ -217,7 +217,9 @@ internal abstract class MigrationHandlerBase<TObject>
     }
 
     protected abstract void PrepareFile(XElement source, SyncMigrationContext context);
-    protected virtual void PrePrepareFile(XElement source, SyncMigrationContext context) { }
+    protected virtual void PrePrepareFile(XElement source, SyncMigrationContext context) 
+    { }
+    
     protected abstract XElement? MigrateFile(XElement source, int level, SyncMigrationContext context);
 
     /// <summary>
@@ -227,18 +229,4 @@ internal abstract class MigrationHandlerBase<TObject>
     /// <param name="context">Migration context</param>
     /// <returns></returns>
     protected abstract (string alias, Guid key) GetAliasAndKey(XElement source, SyncMigrationContext? context);
-
-    /// <summary>
-    ///  Get the Alias and Key values for an item.
-    /// </summary>
-    /// <remarks>
-    ///  this method is obsolete, you should pass the context.
-    ///  this then allows for renames, and maniupulation based on config.
-    /// </remarks>
-    /// <param name="source">XML Source for item</param>
-    /// <returns></returns>
-    [Obsolete("Call GetAliasAndKey with MigrationContext")]
-    protected virtual (string alias, Guid key) GetAliasAndKey(XElement source)
-    => GetAliasAndKey(source, null);
-
 }

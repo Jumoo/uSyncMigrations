@@ -5,7 +5,7 @@
 ///  How a single value can be split into multiple 'variants' 
 /// </summary>
 /// <remarks>
-///  This is a direct represetation of how Vorto does it. 
+///  This is a direct representation of how Vorto does it. 
 ///  
 ///  if there is anything else that does this ??? then it 
 ///  needs to return something in this format and the 
@@ -13,6 +13,13 @@
 /// </remarks>
 public class CulturedPropertyValue
 {
+    /// <summary>
+    ///  the GUID of the datatype that can take these values.
+    /// </summary>
     public Guid DtdGuid { get; set; }
+
+    /// <summary>
+    ///  values organised by culture, 
+    /// </summary>
     public Dictionary<string, string> Values { get; set; } = new();
 }

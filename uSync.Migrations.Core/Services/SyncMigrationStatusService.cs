@@ -11,10 +11,10 @@ using Umbraco.Extensions;
 
 using uSync.BackOffice;
 using uSync.BackOffice.Hubs;
-using uSync.Migrations.Core.Configuration.CoreProfiles;
-using uSync.Migrations.Core.Configuration.Models;
 using uSync.Migrations.Core.Helpers;
 using uSync.Migrations.Core.Models;
+using uSync.Migrations.Core.Plans.CoreProfiles;
+using uSync.Migrations.Core.Plans.Models;
 
 namespace uSync.Migrations.Core.Services;
 
@@ -35,7 +35,7 @@ internal class SyncMigrationStatusService : ISyncMigrationStatusService
 
     private static readonly Dictionary<int, string> _defaultProfiles = new Dictionary<int, string>()
     {
-        { 7, nameof(UpgradeUmbracoSevenPlan) },
+        { 7, "UpgradeUmbracoSevenPlan" },
         { 8, nameof(BlockMigrationPlan) }
     };
 
