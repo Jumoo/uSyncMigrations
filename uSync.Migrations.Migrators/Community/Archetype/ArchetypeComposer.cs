@@ -15,7 +15,7 @@ public class ArchetypeComposer : IComposer
 {
     public void Compose(IUmbracoBuilder builder)
     {
-        builder.Services.TryAddSingleton<IArchetypeMigrationConfigurer, DefaultArchetypeMigrationConfigurer>();
+        builder.Services.TryAddSingleton<IArchetypeAliasResolver, DefaultArchetypeAliasResolver>();
         builder.Services.AddOptions<ArchetypeMigrationOptions>().Configure<IConfiguration>((settings, configuration)
             => configuration.GetSection(ArchetypeMigrationOptions.Section).Bind(settings));
     }
