@@ -17,7 +17,8 @@ using uSync.Migrations.Core.Models;
 using uSync.Migrations.Core.Services;
 
 namespace uSync.Migrations.Core.Handlers.Shared;
-internal abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TEntity>
+
+public abstract class SharedContentBaseHandler<TEntity> : SharedHandlerBase<TEntity>
     where TEntity : ContentBase
 {
     protected readonly IShortStringHelper _shortStringHelper;

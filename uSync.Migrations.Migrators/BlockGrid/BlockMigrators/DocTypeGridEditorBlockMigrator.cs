@@ -9,7 +9,8 @@ using Umbraco.Extensions;
 using uSync.Migrations.Core.Legacy.Grid;
 
 namespace uSync.Migrations.Migrators.BlockGrid.BlockMigrators;
-internal class DocTypeGridEditorBlockMigrator : ISyncBlockMigrator
+
+public class DocTypeGridEditorBlockMigrator : ISyncBlockMigrator
 {
     private readonly IContentTypeService _contentTypeService;
 
@@ -76,7 +77,7 @@ internal class DocTypeGridEditorBlockMigrator : ISyncBlockMigrator
     public string GetEditorAlias(ILegacyGridEditorConfig editor)
         => string.Empty;
 
-    public Dictionary<string, object> GetPropertyValues(GridValue.GridControl control, SyncMigrationContext context)
+    public virtual Dictionary<string, object> GetPropertyValues(GridValue.GridControl control, SyncMigrationContext context)
     {
         var propertyValues = new Dictionary<string, object>();
 

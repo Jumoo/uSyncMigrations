@@ -1,5 +1,6 @@
 ﻿namespace uSync.Migrations.Core.Handlers;
-internal class SyncMigrationHandlerAttribute : Attribute
+
+public class SyncMigrationHandlerAttribute : Attribute
 {
     public SyncMigrationHandlerAttribute(string group, int priority)
     {

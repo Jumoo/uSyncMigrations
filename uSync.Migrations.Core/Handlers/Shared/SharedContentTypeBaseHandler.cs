@@ -17,7 +17,8 @@ using uSync.Migrations.Core.Notifications;
 using uSync.Migrations.Core.Services;
 
 namespace uSync.Migrations.Core.Handlers.Shared;
-internal abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBase<TEntity>
+
+public abstract class SharedContentTypeBaseHandler<TEntity> : SharedHandlerBase<TEntity>
     where TEntity : ContentTypeBase
 {
     private readonly IDataTypeService _dataTypeService;
