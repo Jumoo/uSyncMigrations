@@ -25,6 +25,8 @@ public static class uSyncMigrations
         public const int Languages = 6;
 
         public const int Dictionary = 7;
+        
+        public const int Domains = 8;
 
         public const int DataTypes = 10;
 
