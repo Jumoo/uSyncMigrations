@@ -1,4 +1,4 @@
-name: .NET Build and Pack
+name: dotNet build and pack
 
 on:
   push:
