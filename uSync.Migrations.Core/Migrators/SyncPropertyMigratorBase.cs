@@ -53,7 +53,7 @@ public abstract class SyncPropertyMigratorBase : ISyncPropertyMigrator
         }
         else
         {
-            Versions = new[] { 7 };
+            Versions = new[] { 7, 8 };
         }
     }
 
