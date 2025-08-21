@@ -2,7 +2,7 @@
 
 public class SplitPropertyContent
 {
-    public SplitPropertyContent(string alias, string value)
+    public SplitPropertyContent(string alias, object value)
     {
         Alias = alias;
         Value = value;
@@ -10,5 +10,5 @@ public class SplitPropertyContent
 
     public string Alias { get; }
 
-    public string Value { get; }
+    public object Value { get; }
 }
