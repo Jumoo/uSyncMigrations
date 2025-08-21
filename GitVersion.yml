@@ -1,11 +1,6 @@
-assembly-versioning-scheme: MajorMinorPatch
-mode: ContinuousDeployment
+mode: Mainline
 branches:
-  main:
-    mode: ContinuousDeployment
-    tag: ''
+  master:
+    regex: ^latest$
   pull-request:
-    mode: ContinuousDeployment
-ignore:
-  sha: []
-merge-message-formats: {}
+    tag: pr
