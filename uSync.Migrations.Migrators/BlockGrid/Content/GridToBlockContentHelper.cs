@@ -120,23 +120,10 @@ internal class GridToBlockContentHelper
 
                     if (settings is not null)
                     {
-                        var areaSettingsContentItem = new BlockItemData()
-                        {
-                            Udi = Udi.Create(UmbConstants.UdiEntityType.Element, Guid.NewGuid()),
-                            ContentTypeKey = context.ContentTypes.GetKeyByAlias(_conventions.AreaSettingsElementTypeAlias)
-                        };
-
-                        content.Add(areaSettingsContentItem);
-
-                        var areaSettingsItem = new BlockGridLayoutItem()
-                        {
-                            ContentUdi = areaSettingsContentItem.Udi,
-                            ColumnSpan = gridColumns,
-                            RowSpan = 1,
-                            SettingsUdi = settings.Udi
-                        };
-
-                        layouts.Insert(0, areaSettingsItem);
+                        // add the settings to the layout items
+                        foreach (var layoutItem in layouts) {
+                            layoutItem.SettingsUdi = settings.Udi;
+                        }
 
                         block.SettingsData.Add(settings);
                     }

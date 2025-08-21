@@ -61,10 +61,10 @@ internal class GridToBlockGridConfigBlockHelper
         }
     }
 
-    public void AddContentBlocks(GridToBlockGridConfigContext gridBlockContext, SyncMigrationContext context)
+    public void AddContentBlocks(GridToBlockGridConfigContext gridBlockContext, SyncMigrationContext context, bool addAreaSettings)
     {
         // add the grid elements to the block config 
-        var gridContentTypeKeys = AddGridContentBlocksToConfig(gridBlockContext.GridEditorsConfig, gridBlockContext, context);
+        var gridContentTypeKeys = AddGridContentBlocksToConfig(gridBlockContext.GridEditorsConfig, gridBlockContext, context, addAreaSettings);
 
         // now add the editor to the right bit of the blocks.
         AddEditorsToAllowedAreasInBlocks(gridContentTypeKeys, gridBlockContext, context);
@@ -113,7 +113,7 @@ internal class GridToBlockGridConfigBlockHelper
     /// <summary>
     ///  returns all the allowed/known content types for a section of the grid.
     /// </summary>
-    private Dictionary<string, Guid[]> AddGridContentBlocksToConfig(ILegacyGridEditorsConfig gridEditorsConfig, GridToBlockGridConfigContext gridBlockContext, SyncMigrationContext context)
+    private Dictionary<string, Guid[]> AddGridContentBlocksToConfig(ILegacyGridEditorsConfig gridEditorsConfig, GridToBlockGridConfigContext gridBlockContext, SyncMigrationContext context, bool addAreaSettings)
     {
         var referencedEditors = gridBlockContext.AllEditors().ToList();
 
@@ -138,7 +138,24 @@ internal class GridToBlockGridConfigBlockHelper
                     _logger.LogDebug("Block ContentElementTypeKey {block} already exists in the config", block.ContentElementTypeKey);
                     continue;
                 }
+
                 gridBlockContext.ContentBlocks.Add(block);
+                
+                if (addAreaSettings) {
+                    var settings = gridBlockContext.AreaSettingsBlocks;
+
+                    if(settings is null || !settings.Any()) {
+                        _logger.LogDebug("No area settings found for {editor}", editor.Alias);
+                        continue;
+                    }
+
+                    foreach (var layout in gridBlockContext.LayoutBlocks) {
+                        settings.ForEach(setting => {
+                            block.SettingsElementTypeKey = setting.SettingsElementTypeKey;
+                        });
+                    }
+                }
+
             }
 
             allowedContentTypes[editor.Alias!] = blocks.Select(x => x.ContentElementTypeKey).ToArray();
