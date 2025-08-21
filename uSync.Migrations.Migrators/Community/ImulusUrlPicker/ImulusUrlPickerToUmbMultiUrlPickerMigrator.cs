@@ -1,9 +1,8 @@
 ﻿using Newtonsoft.Json;
-
 using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Extensions;
-
+using uSync.Migrations.Core.Extensions;
 using uSync.Migrations.Migrators.Community.ImulusUrlPicker.Models;
 
 namespace uSync.Migrations.Migrators.Community.ImulusUrlPicker;
@@ -17,7 +16,14 @@ public class ImulusUrlPickerToUmbMultiUrlPickerMigrator : SyncPropertyMigratorBa
 
     public override object? GetConfigValues(SyncMigrationDataTypeProperty dataTypeProperty, SyncMigrationContext context)
     {
-        var config = new MultiUrlPickerConfiguration();
+        bool multipleItems = dataTypeProperty.PreValues.GetPreValueOrDefault("multipleItems", false);
+        int maxItems = dataTypeProperty.PreValues.GetPreValueOrDefault("maxItems", 0);
+
+        var config = new MultiUrlPickerConfiguration
+        {
+            MaxNumber = multipleItems ? maxItems : 1,
+        };
+
         return config;
     }
 
@@ -64,6 +70,7 @@ public class ImulusUrlPickerToUmbMultiUrlPickerMigrator : SyncPropertyMigratorBa
 
             links.Add(link);
         }
+
         return JsonConvert.SerializeObject(links, Formatting.Indented);
     }
 
@@ -83,13 +90,17 @@ public class ImulusUrlPickerToUmbMultiUrlPickerMigrator : SyncPropertyMigratorBa
     {
         if (string.IsNullOrWhiteSpace(idValue)) return null;
 
-        if (!int.TryParse(idValue, out int valueIntId)) { return null; }
+        if (!int.TryParse(idValue, out int valueIntId))
+        {
+            return null;
+        }
 
         var guid = context.GetKey(valueIntId);
         if (guid == Guid.Empty) return null;
 
-        var entityType = pickerType == UrlPickerTypes.Content ? UmbConstants.UdiEntityType.Document : UmbConstants.UdiEntityType.Media;
+        var entityType = pickerType == UrlPickerTypes.Content
+            ? UmbConstants.UdiEntityType.Document
+            : UmbConstants.UdiEntityType.Media;
         return Udi.Create(entityType, guid) as GuidUdi;
     }
-
 }
