@@ -19,11 +19,12 @@ using uSync.Migrations.Core.Services;
 using uSync.Migrations.Core.Validation;
 
 namespace uSync.Migrations.Core.Handlers.Eight;
+
 [SyncMigrationHandler(BackOfficeConstants.Groups.Settings, uSyncMigrations.Priorities.DataTypes,
     SourceVersion = 8,
     SourceFolderName = "DataTypes",
     TargetFolderName = "DataTypes")]
-internal class DataTypeMigrationHandler : SharedDataTypeHandler, ISyncMigrationHandler, ISyncMigrationValidator
+public class DataTypeMigrationHandler : SharedDataTypeHandler, ISyncMigrationHandler, ISyncMigrationValidator
 {
     private readonly SyncPropertyMigratorCollection _migrators;
 

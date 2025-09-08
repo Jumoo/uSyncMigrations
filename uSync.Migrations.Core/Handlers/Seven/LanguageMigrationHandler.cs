@@ -17,7 +17,7 @@ namespace uSync.Migrations.Core.Handlers.Seven;
 [SyncMigrationHandler(BackOfficeConstants.Groups.Settings, uSyncMigrations.Priorities.Languages,
     SourceVersion = 7,
     SourceFolderName = "Languages", TargetFolderName = "Languages")]
-internal class LanguageMigrationHandler : SharedHandlerBase<Language>, ISyncMigrationHandler
+public class LanguageMigrationHandler : SharedHandlerBase<Language>, ISyncMigrationHandler
 {
     private readonly ILocalizationService _localizationService;
 

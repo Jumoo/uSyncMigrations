@@ -19,7 +19,7 @@ using uSync.Migrations.Core.Services;
 
 namespace uSync.Migrations.Core.Handlers.Seven;
 
-internal abstract class ContentTypeBaseMigrationHandler<TEntity> : SharedContentTypeBaseHandler<TEntity>
+public abstract class ContentTypeBaseMigrationHandler<TEntity> : SharedContentTypeBaseHandler<TEntity>
     where TEntity : ContentTypeBase
 {
 

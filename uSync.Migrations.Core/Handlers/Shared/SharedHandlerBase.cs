@@ -20,7 +20,7 @@ namespace uSync.Migrations.Core.Handlers.Shared;
 ///  
 ///  v7 migrators override the default behavors, to do the migrations.
 /// </remarks>
-internal abstract class SharedHandlerBase<TObject> : MigrationHandlerBase<TObject>
+public abstract class SharedHandlerBase<TObject> : MigrationHandlerBase<TObject>
     where TObject : IEntity
 {
     protected SharedHandlerBase(

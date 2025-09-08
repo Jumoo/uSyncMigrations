@@ -12,7 +12,7 @@ namespace uSync.Migrations.Core.Handlers.Eight;
     SourceVersion = 8,
     SourceFolderName = "Macros",
     TargetFolderName = "Macros")]
-internal class MacroMigrationHandler : SharedHandlerBase<Macro>, ISyncMigrationHandler
+public class MacroMigrationHandler : SharedHandlerBase<Macro>, ISyncMigrationHandler
 {
     public MacroMigrationHandler(
         IEventAggregator eventAggregator,

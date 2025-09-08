@@ -16,7 +16,7 @@ namespace uSync.Migrations.Core.Handlers.Seven;
     SourceVersion = 7,
     SourceFolderName = "Template",
     TargetFolderName = "Templates")]
-internal class TemplateMigrationHandler : SharedTemplateHandler, ISyncMigrationHandler
+public class TemplateMigrationHandler : SharedTemplateHandler, ISyncMigrationHandler
 {
     public TemplateMigrationHandler(
         IEventAggregator eventAggregator,

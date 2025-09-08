@@ -25,7 +25,7 @@ namespace uSync.Migrations.Core.Handlers.Seven;
     SourceVersion = 7,
     SourceFolderName = "DataType",
     TargetFolderName = "DataTypes")]
-internal class DataTypeMigrationHandler : SharedDataTypeHandler, ISyncMigrationHandler, ISyncMigrationValidator
+public class DataTypeMigrationHandler : SharedDataTypeHandler, ISyncMigrationHandler, ISyncMigrationValidator
 {
     private readonly SyncPropertyMigratorCollection _migrators;
 
