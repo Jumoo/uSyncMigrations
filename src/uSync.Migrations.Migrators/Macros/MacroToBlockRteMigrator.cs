@@ -37,7 +37,7 @@ internal class MacroToBlockRteMigrator : SyncValueMapperBase, ISyncMapper
     public override async Task<string?> GetImportValueAsync(string value, string editorAlias, SyncSerializerOptions options)
     {
         // it is the responsiblity of the mapper to know if the import has happened before. 
-        if (value.Contains("<?UMBRACO_MACRO") is false) return value;
+        if (value.Contains("UMBRACO_MACRO") is false) return value;
 
         // see if this has been converted to the new block style. 
         if (value.TryDeserialize<RichTextEditorValue>(out var richTextEditorValue) is false || richTextEditorValue is null)
