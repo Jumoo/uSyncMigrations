@@ -4,6 +4,16 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <StaticWebAssetBasePath>/</StaticWebAssetBasePath>
+
+    <!--
+      Migrations-Client is the npm/vite source for the backoffice client - it is not
+      code for this csproj to compile, and without this it gets swept up by the SDK's
+      default item globs and shipped inside the package as content/contentFiles
+      (package.json, tsconfig.json, package-lock.json). The built output it produces,
+      wwwroot/App_Plugins/uSyncMigrationsClient, is unaffected and still packs normally
+      as a static web asset.
+    -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);Migrations-Client/**</DefaultItemExcludes>
   </PropertyGroup>
 
   <PropertyGroup>

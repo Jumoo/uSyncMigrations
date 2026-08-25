@@ -23,6 +23,7 @@ concurrency:
 env:
   config: Release
   out_folder: ./build-out/
+  client_folder: ./src/uSync.Migrations.Client/Migrations-Client
   # uSync.Migrations.Site is a local test site, not something CI needs to build - it
   # is deliberately left out of this list.
   build_projects: >-
@@ -86,11 +87,28 @@ jobs:
             exit 1
           fi
 
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: "**/package-lock.json"
+
       - uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
           cache: true
           cache-dependency-path: "**/packages.lock.json"
+
+      - name: install client dependencies
+        run: npm ci
+        working-directory: ${{ env.client_folder }}
+
+      # runs tsc then vite - this produces wwwroot/App_Plugins, which is gitignored, so
+      # it has to happen before the dotnet build/pack pick up static assets. Without
+      # this the Client package ships with no backoffice assets at all.
+      - name: build client
+        run: npm run build
+        working-directory: ${{ env.client_folder }}
 
       - name: restore
         run: dotnet restore src/uSync.Migrations.slnx --locked-mode
