@@ -1,0 +1,39 @@
+<Project>
+
+	<!--
+		NOTE: adding this file stops any Directory.Build.props further up the disk from
+		applying. There is one at D:\Source\directory.build.props setting NuGetAuditMode,
+		which applied to local builds but never to CI - that setting is carried over below
+		so local and CI builds agree.
+	-->
+
+	<PropertyGroup>
+		<LangVersion>latest</LangVersion>
+		<NuGetAuditMode>direct</NuGetAuditMode>
+	</PropertyGroup>
+
+	<!-- shared package metadata, so the values can't drift between projects -->
+	<PropertyGroup>
+		<VersionPrefix>17.3.0</VersionPrefix>
+		<Authors>Jumoo</Authors>
+		<Company>Jumoo</Company>
+		<Copyright>Jumoo @ 2016-2026</Copyright>
+
+		<PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
+		<PackageProjectUrl>https://jumoo.co.uk</PackageProjectUrl>
+
+		<RepositoryUrl>https://github.com/Jumoo/uSyncMigrations</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<EmbedUntrackedSources>true</EmbedUntrackedSources>
+
+		<!-- don't append the build onto the version -->
+		<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+
+		<!-- lock files, so a transitive update can't change a build without a commit -->
+		<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+	</PropertyGroup>
+
+</Project>

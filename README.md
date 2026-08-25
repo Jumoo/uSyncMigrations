@@ -64,3 +64,60 @@ bring the uSync files to v17. The formats are all very close, and in fact v17 uS
 
 uSync.Migrations for v17 is aiming to do the slightly more complicated things (like the grid) - while still being something
 quite simple if you haven't done anything too clever...
+
+## Repository layout
+
+| Path | What it is |
+| --- | --- |
+| `src/uSync.Migrations` | The meta package - references the three below, this is what most sites install |
+| `src/uSync.Migrations.Core` | Core migration types, context, and services |
+| `src/uSync.Migrations.Client` | The backoffice client (the migrate tab, and its API) |
+| `src/uSync.Migrations.Migrators` | Built-in migrators, including the grid upgrader |
+| `src/uSync.Migrations.Migrators.Seven` | Migrators for content coming from a v7 site |
+| `src/uSync.Migrations.Site` | A local Umbraco site for manual testing - not shipped |
+| `dist/build-package.ps1` | Local packaging script, for a package you don't want to release |
+
+## Building
+
+Requires the .NET SDK pinned in [`global.json`](global.json).
+
+```bash
+dotnet build src/uSync.Migrations.slnx -c Release
+```
+
+Shared build and package metadata lives in [`src/Directory.Build.props`](src/Directory.Build.props).
+Restores are locked, so if you change a dependency you have to commit the regenerated lock file
+alongside it:
+
+```bash
+dotnet restore src/uSync.Migrations.slnx --force-evaluate
+```
+
+## Releasing
+
+Pushing a `v{version}` tag on `v17/main` publishes to NuGet:
+
+```bash
+git tag v17.3.1 && git push origin v17.3.1
+```
+
+The tag is the version — `v17.3.1` publishes `17.3.1`. The workflow refuses to run if the
+tag isn't a valid version, or if the tagged commit isn't on a release branch.
+
+Authentication is [trusted publishing](https://learn.microsoft.com/en-us/nuget/nuget-org/trusted-publishing) —
+the job exchanges a GitHub OIDC token for a short-lived NuGet key, so there is no API key
+stored in the repository. It depends on a policy on nuget.org naming this repository, the
+`release.yml` workflow and the `nuget` environment; if any of those are renamed, the policy
+has to be updated to match or publishing stops working.
+
+Every push to `v17/main` also builds packages and uploads them as a build artifact, so a
+release candidate can be tested without publishing anything.
+
+## Contributing
+
+Please read [SECURITY.md](SECURITY.md) before reporting anything security related, and
+[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) before taking part.
+
+## Licence
+
+[MPL-2.0](LICENSE).

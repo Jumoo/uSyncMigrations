@@ -1,0 +1,37 @@
+version: 2
+updates:
+  - package-ecosystem: "nuget"
+    directory: "/src"
+    schedule:
+      interval: "weekly"
+    # Umbraco and uSync are pinned deliberately. The versions referenced here set the
+    # minimum for anyone installing the package, so they move when we choose to move them -
+    # not on a weekly schedule. Note this also opts them out of dependabot security updates.
+    ignore:
+      - dependency-name: "Umbraco.*"
+      - dependency-name: "uSync*"
+    # majors are deliberately left out of the group so they arrive as one PR each.
+    groups:
+      nuget-dependencies:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    # gittools/actions v4 requires GitVersion >= 6.2, which needs GitVersion.yml migrating
+    # to the v6 schema. Dependabot can't see that the action version and the versionSpec
+    # input are coupled, so pin this until that migration happens deliberately.
+    ignore:
+      - dependency-name: "gittools/actions"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"

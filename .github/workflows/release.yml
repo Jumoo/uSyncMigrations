@@ -1,31 +1,140 @@
-name: Release Package
+name: Release to NuGet
 
-# This action will start when a correctly formatted tag is pushed (e.g. 0.1.0)
+# Publishing is triggered by pushing a version tag:
+#
+#   git tag v17.3.1 && git push origin v17.3.1
+#
+# NOTE: "branches" and "tags" under push: are OR'd, not AND'd - a tag filter cannot
+# be restricted to a branch in the trigger itself. The tag has to be on a release
+# branch (v17/main, v18/main, ...), so that is enforced as a step below instead.
+
+permissions:
+  contents: read
 
 on:
   push:
     tags:
-      - "[0-9]+.[0-9]+.[0-9]+"
+      - "v*"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  config: Release
+  out_folder: ./build-out/
+  # uSync.Migrations.Site is a local test site, not something CI needs to build - it
+  # is deliberately left out of this list.
+  build_projects: >-
+    ./src/uSync.Migrations.Core/uSync.Migrations.Core.csproj
+    ./src/uSync.Migrations.Client/uSync.Migrations.Client.csproj
+    ./src/uSync.Migrations.Migrators/uSync.Migrations.Migrators.csproj
+    ./src/uSync.Migrations.Migrators.Seven/uSync.Migrations.Migrators.Seven.csproj
+    ./src/uSync.Migrations/uSync.Migrations.csproj
+  # Migrators.Seven isn't shipped as its own package, so it's built above but not
+  # packed/released here.
+  package_projects: >-
+    ./src/uSync.Migrations.Core/uSync.Migrations.Core.csproj
+    ./src/uSync.Migrations.Client/uSync.Migrations.Client.csproj
+    ./src/uSync.Migrations.Migrators/uSync.Migrations.Migrators.csproj
+    ./src/uSync.Migrations/uSync.Migrations.csproj
+  nuget_source: https://api.nuget.org/v3/index.json
 
 jobs:
-  build:
+  release:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+      # required for trusted publishing - this is what lets the job request the
+      # short lived OIDC token that NuGet/login exchanges for a push key.
+      id-token: write
+
+    # This is load bearing: the trusted publishing policy on nuget.org names this
+    # environment, and the token exchange is rejected if the job doesn't run in an
+    # environment of exactly this name. Don't remove or rename it without updating
+    # the policy to match.
+    environment: nuget
+
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v2
+      - uses: actions/checkout@v7
         with:
-          dotnet-version: 10.0.x
+          # full history, the branch containment check below needs it
+          fetch-depth: 0
 
-      - name: Build & Pack
+      - name: check the tag looks like a version
+        id: version
         run: |
-          dotnet pack src/uSync.Migrations/uSync.Migrations.Core.csproj -c Release /p:Version=${{github.ref_name}} \
-          dotnet pack src/uSync.Migrations/uSync.Migrations.Client.csproj -c Release /p:Version=${{github.ref_name}} \
-          dotnet pack src/uSync.Migrations/uSync.Migrations.Migrators.csproj -c Release /p:Version=${{github.ref_name}} \
-          dotnet pack src/uSync.Migrations/uSync.Migrations.csproj -c Release /p:Version=${{github.ref_name}} \
+          version="${GITHUB_REF_NAME#v}"
+          if ! printf '%s' "$version" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$'; then
+            echo "::error::Tag '$GITHUB_REF_NAME' is not v{major}.{minor}.{patch}[-suffix]"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Releasing $version"
 
-      - name: Push to NuGet
-        run: dotnet nuget push **/*.nupkg -k ${{secrets.NUGET_API_KEY}} -s https://api.nuget.org/v3/index.json
+      - name: check the tag is on a release branch
+        run: |
+          # explicit, so this doesn't depend on exactly which refs checkout brought down.
+          # if the branches are missing the grep below finds nothing and we fail closed.
+          git fetch origin '+refs/heads/*:refs/remotes/origin/*' --quiet
+          branches=$(git branch -r --contains "$GITHUB_SHA" --format='%(refname:short)')
+          echo "Tagged commit is on:"
+          echo "$branches" | sed 's/^/  /'
+          if ! printf '%s\n' "$branches" | grep -qE '^origin/(v[0-9]+/)?main$'; then
+            echo "::error::Tag $GITHUB_REF_NAME is not on main or v{major}/main - refusing to publish"
+            exit 1
+          fi
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+          cache: true
+          cache-dependency-path: "**/packages.lock.json"
+
+      - name: restore
+        run: dotnet restore src/uSync.Migrations.slnx --locked-mode
+
+      - name: build
+        # one dotnet build per line, not wrapped - a folded (">") scalar only joins
+        # lines indented the same as the "for"/"done" lines, so a wrapped command
+        # indented deeper stays on its own line and "-c" runs as its own command.
+        run: |
+          for project in ${{ env.build_projects }}; do
+            dotnet build "$project" -c ${{ env.config }} --no-restore -p:ContinuousIntegrationBuild=true
+          done
+
+      # deliberately not --no-build: the version has to be stamped onto the assembly
+      # as well as the nuspec, so this rebuilds with it.
+      - name: package
+        run: |
+          for project in ${{ env.package_projects }}; do
+            dotnet pack "$project" -c ${{ env.config }} --output ${{ env.out_folder }} -p:version=${{ steps.version.outputs.version }} -p:ContinuousIntegrationBuild=true
+          done
+
+      # keep a copy regardless of what happens on the push
+      - name: upload packages as build artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: nuget-release-${{ steps.version.outputs.version }}
+          path: ${{ env.out_folder }}
+
+      # Trusted publishing: exchanges this job's OIDC token for a short lived NuGet
+      # key, so there is no long lived secret in the repo to leak or rotate. It only
+      # works if a matching policy exists on nuget.org for this repo + workflow, and
+      # "user" must be the nuget.org account that owns that policy.
+      - name: nuget login
+        id: nuget_login
+        uses: NuGet/login@v1
+        with:
+          user: ${{ vars.NUGET_USER || 'Jumoo' }}
+
+      # --skip-duplicate so re-running a tag is a no-op rather than a failure
+      - name: push to nuget
+        env:
+          NUGET_API_KEY: ${{ steps.nuget_login.outputs.NUGET_API_KEY }}
+        run: >
+          dotnet nuget push "${{ env.out_folder }}*.nupkg"
+          --api-key "$NUGET_API_KEY"
+          --source ${{ env.nuget_source }}
+          --skip-duplicate

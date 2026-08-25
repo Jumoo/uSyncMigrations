@@ -1,0 +1,15 @@
+next-version: 17.3.0
+assembly-versioning-scheme: MajorMinorPatch
+mode: ContinuousDeployment
+branches:
+  main:
+    mode: ContinuousDeployment
+    tag: ""
+    # this repo releases from "v17/main" - a branch per Umbraco major, matching the rest
+    # of Jumoo. plain "main" still matches so a re-created main also versions correctly.
+    regex: ^(v[0-9]+\/)?main$
+  pull-request:
+    mode: ContinuousDeployment
+ignore:
+  sha: []
+merge-message-formats: {}

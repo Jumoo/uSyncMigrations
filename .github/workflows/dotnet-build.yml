@@ -1,0 +1,56 @@
+name: PR Project Build
+
+permissions:
+  contents: read
+
+# NOTE: this repo releases from "v17/main" - a branch per Umbraco major, matching the
+# rest of Jumoo. Plain "main" is kept in the filter so a re-created main, or a branch
+# that hasn't been moved over yet, still builds.
+on:
+  pull_request:
+    branches: [ "main", "*/main" ]
+    paths-ignore:
+      - "**.md"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  config: Release
+  solution: ./src/uSync.Migrations.slnx
+  # uSync.Migrations.Site is a local test site, not something CI needs to build - it
+  # is deliberately left out of this list.
+  build_projects: >-
+    ./src/uSync.Migrations.Core/uSync.Migrations.Core.csproj
+    ./src/uSync.Migrations.Client/uSync.Migrations.Client.csproj
+    ./src/uSync.Migrations.Migrators/uSync.Migrations.Migrators.csproj
+    ./src/uSync.Migrations.Migrators.Seven/uSync.Migrations.Migrators.Seven.csproj
+    ./src/uSync.Migrations/uSync.Migrations.csproj
+
+jobs:
+  build-project:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+          cache: true
+          cache-dependency-path: "**/packages.lock.json"
+
+      # restoring the whole solution, not just the projects being built, keeps every
+      # packages.lock.json in the repo checked against --locked-mode, including Site's.
+      - name: restore
+        run: dotnet restore ${{ env.solution }} --locked-mode
+
+      - name: build
+        # one dotnet build per line, not wrapped - a folded (">") scalar only joins
+        # lines indented the same as the "for"/"done" lines, so a wrapped command
+        # indented deeper stays on its own line and "-c" runs as its own command.
+        run: |
+          for project in ${{ env.build_projects }}; do
+            dotnet build "$project" -c ${{ env.config }} --no-restore -p:ContinuousIntegrationBuild=true
+          done
