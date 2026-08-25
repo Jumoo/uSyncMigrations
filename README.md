@@ -72,6 +72,7 @@ quite simple if you haven't done anything too clever...
 | `src/uSync.Migrations` | The meta package - references the three below, this is what most sites install |
 | `src/uSync.Migrations.Core` | Core migration types, context, and services |
 | `src/uSync.Migrations.Client` | The backoffice client (the migrate tab, and its API) |
+| `src/uSync.Migrations.Client/Migrations-Client` | The backoffice client's TypeScript/Lit/Vite source |
 | `src/uSync.Migrations.Migrators` | Built-in migrators, including the grid upgrader |
 | `src/uSync.Migrations.Migrators.Seven` | Migrators for content coming from a v7 site |
 | `src/uSync.Migrations.Site` | A local Umbraco site for manual testing - not shipped |
@@ -79,7 +80,18 @@ quite simple if you haven't done anything too clever...
 
 ## Building
 
-Requires the .NET SDK pinned in [`global.json`](global.json).
+Requires the .NET SDK pinned in [`global.json`](global.json) and Node 24.
+
+The backoffice client has to be built first — it produces `wwwroot/App_Plugins`, which is
+gitignored, so a fresh clone has no client assets (and `uSync.Migrations.Client` packs with
+none) until you do:
+
+```bash
+npm ci --prefix src/uSync.Migrations.Client/Migrations-Client
+npm run build --prefix src/uSync.Migrations.Client/Migrations-Client
+```
+
+Then the solution itself:
 
 ```bash
 dotnet build src/uSync.Migrations.slnx -c Release

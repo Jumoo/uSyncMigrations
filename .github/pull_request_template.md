@@ -9,6 +9,7 @@
 
 ## Checklist
 
+- [ ] `npm run build --prefix src/uSync.Migrations.Client/Migrations-Client` runs clean if the client changed
 - [ ] `dotnet build src/uSync.Migrations.slnx -c Release` is clean
 - [ ] `CHANGELOG.md` updated under **Unreleased**
 - [ ] If a dependency changed, `dotnet restore src/uSync.Migrations.slnx --force-evaluate` was

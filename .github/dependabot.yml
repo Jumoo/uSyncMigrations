@@ -19,6 +19,23 @@ updates:
           - "minor"
           - "patch"
 
+  # the backoffice client - @umbraco-cms/backoffice and @jumoo/usync are pinned for
+  # the same reason as above, they have to line up with the server side packages.
+  - package-ecosystem: "npm"
+    directory: "/src/uSync.Migrations.Client/Migrations-Client"
+    schedule:
+      interval: "weekly"
+    ignore:
+      - dependency-name: "@umbraco-cms/*"
+      - dependency-name: "@jumoo/*"
+    groups:
+      npm-dependencies:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:

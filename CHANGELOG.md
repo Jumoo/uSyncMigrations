@@ -5,6 +5,14 @@ versions track the Umbraco major they target.
 
 ## Unreleased
 
+### Fixed
+
+- CI never ran the backoffice client's npm build before packing `uSync.Migrations.Client`,
+  so `17.0.1` shipped with no backoffice assets — and the client's `Migrations-Client`
+  source folder (`package.json`, `tsconfig.json`, `package-lock.json`) was being swept
+  into the package as loose content files instead. Workflows now build the client first,
+  and `Migrations-Client` is excluded from the csproj's default item globs.
+
 ### Added
 
 - Repository standards: `README.md`, `CHANGELOG.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md`,
