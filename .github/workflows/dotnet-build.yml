@@ -47,9 +47,10 @@ jobs:
         run: dotnet restore ${{ env.solution }} --locked-mode
 
       - name: build
-        run: >
+        # one dotnet build per line, not wrapped - a folded (">") scalar only joins
+        # lines indented the same as the "for"/"done" lines, so a wrapped command
+        # indented deeper stays on its own line and "-c" runs as its own command.
+        run: |
           for project in ${{ env.build_projects }}; do
-            dotnet build "$project"
-            -c ${{ env.config }} --no-restore
-            -p:ContinuousIntegrationBuild=true;
+            dotnet build "$project" -c ${{ env.config }} --no-restore -p:ContinuousIntegrationBuild=true
           done

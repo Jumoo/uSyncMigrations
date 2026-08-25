@@ -81,23 +81,20 @@ jobs:
         run: dotnet restore src/uSync.Migrations.slnx --locked-mode
 
       - name: build
-        run: >
+        # one dotnet build per line, not wrapped - a folded (">") scalar only joins
+        # lines indented the same as the "for"/"done" lines, so a wrapped command
+        # indented deeper stays on its own line and "-c" runs as its own command.
+        run: |
           for project in ${{ env.build_projects }}; do
-            dotnet build "$project"
-            -c ${{ env.config }} --no-restore
-            -p:ContinuousIntegrationBuild=true;
+            dotnet build "$project" -c ${{ env.config }} --no-restore -p:ContinuousIntegrationBuild=true
           done
 
       # deliberately not --no-build: the version has to be stamped onto the assembly as
       # well as the nuspec, so this step rebuilds with it.
       - name: package
-        run: >
+        run: |
           for project in ${{ env.package_projects }}; do
-            dotnet pack "$project"
-            -c ${{ env.config }}
-            --output ${{ env.out_folder }}
-            /p:version=${{ needs.version.outputs.version_string }}
-            -p:ContinuousIntegrationBuild=true;
+            dotnet pack "$project" -c ${{ env.config }} --output ${{ env.out_folder }} -p:version=${{ needs.version.outputs.version_string }} -p:ContinuousIntegrationBuild=true
           done
 
       # NOTE: intentionally no `dotnet nuget push` here - this workflow builds packages
