@@ -12,7 +12,7 @@
     "@hey-api/openapi-ts": "^0.85.0",
     "@jumoo/usync": "^17.0.4",
     "@umbraco-cms/backoffice": "^*",
-    "chalk": "^5.6.2",
+    "chalk": "^6.0.0",
     "cross-env": "^10.1.0",
     "node-fetch": "^3.3.2",
     "typescript": "^5.9.3",
