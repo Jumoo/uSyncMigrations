@@ -1,0 +1,43 @@
+name: PR Project Build
+
+permissions:
+  contents: read
+
+# NOTE: this repo releases from "v17/main" - a branch per Umbraco major, matching the
+# rest of Jumoo. Plain "main" is kept in the filter so a re-created main, or a branch
+# that hasn't been moved over yet, still builds.
+on:
+  pull_request:
+    branches: [ "main", "*/main" ]
+    paths-ignore:
+      - "**.md"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  config: Release
+  solution: ./src/uSync.Migrations.slnx
+
+jobs:
+  build-project:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+          cache: true
+          cache-dependency-path: "**/packages.lock.json"
+
+      - name: restore
+        run: dotnet restore ${{ env.solution }} --locked-mode
+
+      - name: build
+        run: >
+          dotnet build ${{ env.solution }}
+          -c ${{ env.config }} --no-restore
+          -p:ContinuousIntegrationBuild=true
