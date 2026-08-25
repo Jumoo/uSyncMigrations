@@ -23,6 +23,16 @@ concurrency:
 env:
   config: Release
   out_folder: ./build-out/
+  # uSync.Migrations.Site is a local test site, not something CI needs to build - it
+  # is deliberately left out of this list.
+  build_projects: >-
+    ./src/uSync.Migrations.Core/uSync.Migrations.Core.csproj
+    ./src/uSync.Migrations.Client/uSync.Migrations.Client.csproj
+    ./src/uSync.Migrations.Migrators/uSync.Migrations.Migrators.csproj
+    ./src/uSync.Migrations.Migrators.Seven/uSync.Migrations.Migrators.Seven.csproj
+    ./src/uSync.Migrations/uSync.Migrations.csproj
+  # Migrators.Seven isn't shipped as its own package, so it's built above but not
+  # packed/released here.
   package_projects: >-
     ./src/uSync.Migrations.Core/uSync.Migrations.Core.csproj
     ./src/uSync.Migrations.Client/uSync.Migrations.Client.csproj
@@ -87,9 +97,11 @@ jobs:
 
       - name: build
         run: >
-          dotnet build src/uSync.Migrations.slnx
-          -c ${{ env.config }} --no-restore
-          -p:ContinuousIntegrationBuild=true
+          for project in ${{ env.build_projects }}; do
+            dotnet build "$project"
+            -c ${{ env.config }} --no-restore
+            -p:ContinuousIntegrationBuild=true;
+          done
 
       # deliberately not --no-build: the version has to be stamped onto the assembly
       # as well as the nuspec, so this rebuilds with it.
