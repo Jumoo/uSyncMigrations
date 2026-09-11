@@ -42,8 +42,11 @@ internal class MacroRTEConfigSerializer : SyncConfigurationMigratorBase, IConfig
         if (configuration.TryGetValue("blocks", out var blocksConfig))
         {
             var blocksJson = blocksConfig.SerializeJsonString();
-            richTextBlocks = blocksJson.DeserializeJson<
-                List<RichTextConfiguration.RichTextBlockConfiguration>>() ?? [];
+            if (!string.IsNullOrWhiteSpace(blocksJson))
+            {
+                richTextBlocks = blocksJson.DeserializeJson<
+                    List<RichTextConfiguration.RichTextBlockConfiguration>>() ?? [];
+            }
         }
 
         if (richTextBlocks.Count > 0)
