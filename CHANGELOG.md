@@ -3,7 +3,18 @@
 Notable changes to uSync.Migrations. The package ships one release line per Umbraco major, so
 versions track the Umbraco major they target.
 
-## Unreleased
+## 17.0.3 - 2026-09-11
+
+### Fixed
+
+- `MacroRTEConfigSerializer.GetMigratedConfigurationAsync` threw
+  `System.Text.Json.JsonException: The input does not contain any JSON tokens` when a
+  datatype's `blocks` config serialized to an empty/whitespace string — as it does for
+  `Umbraco.TinyMCE` datatypes and the stock `RichtextEditor.config`. This aborted every RTE
+  datatype import and cascaded into dropped RTE properties on dependent content types.
+  ([#330](https://github.com/Jumoo/uSyncMigrations/issues/330))
+
+## 17.0.2 - 2026-08-25
 
 ### Fixed
 
@@ -26,4 +37,4 @@ versions track the Umbraco major they target.
 
 - Umbraco 17 release.
 
-[Unreleased]: https://github.com/Jumoo/uSyncMigrations/compare/v17.0.0...HEAD
+[Unreleased]: https://github.com/Jumoo/uSyncMigrations/compare/v17.0.3...HEAD
