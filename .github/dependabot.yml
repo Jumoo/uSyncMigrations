@@ -28,6 +28,12 @@ updates:
     ignore:
       - dependency-name: "@umbraco-cms/*"
       - dependency-name: "@jumoo/*"
+      # TypeScript stays on v5 until hey-api supports TypeScript 7, and hey-api is still
+      # 0.x, so its minors are breaking too.
+      - dependency-name: "typescript"
+        versions: [">= 6.0.0"]
+      - dependency-name: "@hey-api/*"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
     groups:
       npm-dependencies:
         patterns:
