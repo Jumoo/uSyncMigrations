@@ -12,10 +12,10 @@
     "@hey-api/openapi-ts": "^0.85.0",
     "@jumoo/usync": "^17.0.4",
     "@umbraco-cms/backoffice": "^*",
-    "chalk": "^6.0.0",
+    "chalk": "^6.0.1",
     "cross-env": "^10.1.0",
     "node-fetch": "^3.3.2",
     "typescript": "^5.9.3",
-    "vite": "^8.2.2"
+    "vite": "^8.3.5"
   }
 }
