@@ -1,10 +1,13 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 
 using Umbraco.Cms.Core.DependencyInjection;
+using Umbraco.Extensions;
 
+using uSync.BackOffice;
 using uSync.Migrations.Migrators.Grid.Config.Migrators;
 using uSync.Migrations.Migrators.Grid.Content.BlockMigrators;
 using uSync.Migrations.Migrators.Grid.Helpers;
+using uSync.Migrations.Migrators.NestedContent;
 
 namespace uSync.Migrations.Migrators;
 
@@ -21,6 +24,9 @@ public static class MigratorsBuilderExtensions
 
         builder.WithCollectionBuilder<SyncBlockMigratorCollectionBuilder>()
             .Add(() => builder.TypeLoader.GetTypes<ISyncBlockMigrator>());
+
+        // nested content doc types become element types for block list.
+        builder.AddNotificationAsyncHandler<uSyncImportingItemNotification, NestedContentElementTypeImportingHandler>();
 
         return builder;
     }
