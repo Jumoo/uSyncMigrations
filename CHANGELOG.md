@@ -3,6 +3,14 @@
 Notable changes to uSync.Migrations. The package ships one release line per Umbraco major, so
 versions track the Umbraco major they target.
 
+## [Unreleased]
+
+### Fixed
+
+- The Switcher to True/False migrator renamed `hideLabel` to `showLabels` without inverting
+  it, so labels hidden in v7/v8 showed after migration and vice versa. It now negates the
+  value. ([#306](https://github.com/Jumoo/uSyncMigrations/issues/306))
+
 ## 17.0.3 - 2026-09-11
 
 ### Fixed
