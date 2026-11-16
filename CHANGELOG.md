@@ -5,6 +5,8 @@ versions track the Umbraco major they target.
 
 ## [Unreleased]
 
+## 17.0.4 - 2026-11-16
+
 ### Fixed
 
 - The Switcher to True/False migrator renamed `hideLabel` to `showLabels` without inverting
@@ -45,4 +47,4 @@ versions track the Umbraco major they target.
 
 - Umbraco 17 release.
 
-[Unreleased]: https://github.com/Jumoo/uSyncMigrations/compare/v17.0.3...HEAD
+[Unreleased]: https://github.com/Jumoo/uSyncMigrations/compare/v17.0.4...HEAD
